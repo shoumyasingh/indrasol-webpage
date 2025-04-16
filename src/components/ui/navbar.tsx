@@ -66,7 +66,11 @@ function NavLinks({ className }: { className?: string }) {
     <>
       <Link to="/" className={cn(className)}>Home</Link>
       <Link to="/#services" className={cn(className)}>Services</Link>
+      <Link to="/#technologies" className={cn(className)}>Technologies</Link>
+      <Link to="/#products" className={cn(className)}>Products</Link>
       <Link to="/#about" className={cn(className)}>About Us</Link>
+      <Link to="/#careers" className={cn(className)}>Careers</Link>
+      <Link to="/#resources" className={cn(className)}>Resources</Link>
       <Link to="/#locations" className={cn(className)}>Locations</Link>
     </>
   );

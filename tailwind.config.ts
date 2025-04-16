@@ -28,6 +28,13 @@ export default {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
 				},
+				indrasol: {
+					blue: '#1e64b4',
+					lightblue: '#3a7bc8',
+					darkblue: '#144a89',
+					gray: '#f0f4f8',
+					orange: '#e67e22',
+				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'

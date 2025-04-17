@@ -24,7 +24,7 @@ export function AboutSection() {
           <div className="lg:col-span-5 relative">
             <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl">
               <img 
-                src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80" 
+                src="/lovable-uploads/offering.png" 
                 alt="Indrasol team working together" 
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               />

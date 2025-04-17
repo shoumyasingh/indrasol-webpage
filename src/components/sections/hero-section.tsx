@@ -47,7 +47,7 @@ export function HeroSection() {
               {/* Main image with enhanced styling */}
               <div className="relative overflow-hidden rounded-2xl shadow-2xl">
                 <img 
-                  src="/public/lovable-uploads/indrasol_hero1.png" 
+                  src="/lovable-uploads/Mascot_cloud.png" 
                   alt="Business professionals working on technology solutions" 
                   className="w-full transition-transform duration-700 hover:scale-105"
                 />

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Navbar } from "@/components/ui/navbar";
 import { HeroSection } from "@/components/sections/hero-section";
@@ -10,6 +9,7 @@ import { ContactSection } from "@/components/sections/contact-section";
 import { ClientsSection } from "@/components/sections/clients-section";
 import { Footer } from "@/components/ui/footer";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { ChatBot } from "../components/ui/chatbot"; // Update the import path to the correct location
 
 const Index = () => {
   return (
@@ -26,6 +26,7 @@ const Index = () => {
       </main>
       <Footer />
       <BackToTop />
+      <ChatBot /> {/* Add the ChatBot component here */}
     </div>
   );
 };

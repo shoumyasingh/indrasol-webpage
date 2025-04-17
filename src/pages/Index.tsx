@@ -10,6 +10,7 @@ import { ClientsSection } from "@/components/sections/clients-section";
 import { Footer } from "@/components/ui/footer";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { ChatBot } from "../components/ui/chatbot"; // Update the import path to the correct location
+import PartnersSection from "@/components/sections/partners-section";
 
 const Index = () => {
   return (
@@ -20,6 +21,7 @@ const Index = () => {
         <ClientsSection />
         <ServicesSection />
         <AboutSection />
+        <PartnersSection />
         <BusinessUnitsSection />
         <LocationsSection />
         <ContactSection />

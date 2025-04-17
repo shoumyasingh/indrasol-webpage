@@ -44,7 +44,10 @@ export function BusinessUnitsSection() {
           <span className="inline-block text-indrasol-blue font-semibold mb-2 bg-indrasol-blue/10 px-4 py-1 rounded-full">Our Expertise</span>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             <span className="text-gray-900">Specialized </span>
-            <span className="text-indrasol-blue">Business Units</span>
+            <span className="text-indrasol-blue relative">
+              <span className="relative z-10">Business Units</span>
+            </span>
+            
           </h2>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto">
             Our dedicated business units provide specialized services to meet specific industry needs with focused expertise.

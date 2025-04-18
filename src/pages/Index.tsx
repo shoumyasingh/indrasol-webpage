@@ -11,6 +11,7 @@ import { Footer } from "@/components/ui/footer";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { ChatBot } from "../components/ui/chatbot"; // Update the import path to the correct location
 import PartnersSection from "@/components/sections/partners-section";
+import AfterHeroSection from "@/components/sections/afterhero-section";
 
 const Index = () => {
   return (
@@ -18,6 +19,7 @@ const Index = () => {
       <Navbar />
       <main className="flex-grow">
         <HeroSection />
+        <AfterHeroSection/>
         <ClientsSection />
         <ServicesSection />
         <AboutSection />

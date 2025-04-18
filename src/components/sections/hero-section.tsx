@@ -16,11 +16,11 @@ export function HeroSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              <span className="text-gray-900">Transforming Organizations with</span>
-              <span className="text-indrasol-blue block mt-1">Cloud & Data Expertise</span>
+              <span className="text-gray-900">We Build and Secure </span>
+              <span className="text-indrasol-blue block mt-1">AI, Cloud and Data Systems</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-700 max-w-2xl">
-              Indrasol delivers consulting, implementation and support services for Oracle solutions, cloud platforms, and data analytics that drive business value.
+            From Development to Defense, Indrasol delivers end-to-end solutions for AI/LLM development, cloud-native engineering, data platforms, and security. We help you innovate faster, and safer.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-6">
               <Link 
@@ -40,20 +40,15 @@ export function HeroSection() {
           </div>
           <div className="hidden lg:block">
             <div className="relative">
-              {/* Multiple layered effect for depth */}
-              <div className="absolute inset-0 bg-indrasol-blue/5 rounded-2xl transform rotate-3 scale-105"></div>
-              <div className="absolute inset-0 bg-indrasol-blue/10 rounded-2xl transform -rotate-2"></div>
               
-              {/* Main image with enhanced styling */}
-              <div className="relative overflow-hidden rounded-2xl shadow-2xl">
+              <div className="relative ">
                 <img 
-                  src="/lovable-uploads/Mascot_cloud.png" 
+                  src="/lovable-uploads/indrasol-website - visual selection.png" 
                   alt="Business professionals working on technology solutions" 
                   className="w-full transition-transform duration-700 hover:scale-105"
                 />
                 
-                {/* Modern overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-indrasol-blue/20 to-transparent opacity-70"></div>
+                
               </div>
               
               {/* Floating accent element */}

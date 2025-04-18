@@ -16,7 +16,12 @@ import {
   Newspaper,
   Video,
   Activity,
-  Lock
+  Lock,
+  Building,
+  Briefcase,
+  MapPin,
+  Cpu,
+  Code
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -33,7 +38,7 @@ export function Navbar() {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center">
           <img 
-            src="/lovable-uploads/a0767fd7-b418-4f1f-a6cd-9450ec946277.png" 
+            src="/lovable-uploads/Indrasol company logo_.png" 
             alt="Indrasol Logo" 
             className="h-12"
           />
@@ -80,41 +85,41 @@ export function Navbar() {
 
 function NavLinks({ className, isMobile = false }: { className?: string, isMobile?: boolean }) {
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
-  const [technologiesDropdownOpen, setTechnologiesDropdownOpen] = useState(false);
   const [resourcesDropdownOpen, setResourcesDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
   
   const servicesDropdownRef = useRef<HTMLDivElement>(null);
-  const technologiesDropdownRef = useRef<HTMLDivElement>(null);
   const resourcesDropdownRef = useRef<HTMLDivElement>(null);
   const productsDropdownRef = useRef<HTMLDivElement>(null);
+  const aboutDropdownRef = useRef<HTMLDivElement>(null);
   
   const toggleServicesDropdown = () => {
     setServicesDropdownOpen(!servicesDropdownOpen);
-    if (technologiesDropdownOpen) setTechnologiesDropdownOpen(false);
     if (resourcesDropdownOpen) setResourcesDropdownOpen(false);
     if (productsDropdownOpen) setProductsDropdownOpen(false);
-  };
-  
-  const toggleTechnologiesDropdown = () => {
-    setTechnologiesDropdownOpen(!technologiesDropdownOpen);
-    if (servicesDropdownOpen) setServicesDropdownOpen(false);
-    if (resourcesDropdownOpen) setResourcesDropdownOpen(false);
-    if (productsDropdownOpen) setProductsDropdownOpen(false);
+    if (aboutDropdownOpen) setAboutDropdownOpen(false);
   };
   
   const toggleResourcesDropdown = () => {
     setResourcesDropdownOpen(!resourcesDropdownOpen);
     if (servicesDropdownOpen) setServicesDropdownOpen(false);
-    if (technologiesDropdownOpen) setTechnologiesDropdownOpen(false);
     if (productsDropdownOpen) setProductsDropdownOpen(false);
+    if (aboutDropdownOpen) setAboutDropdownOpen(false);
   };
   
   const toggleProductsDropdown = () => {
     setProductsDropdownOpen(!productsDropdownOpen);
     if (servicesDropdownOpen) setServicesDropdownOpen(false);
-    if (technologiesDropdownOpen) setTechnologiesDropdownOpen(false);
     if (resourcesDropdownOpen) setResourcesDropdownOpen(false);
+    if (aboutDropdownOpen) setAboutDropdownOpen(false);
+  };
+  
+  const toggleAboutDropdown = () => {
+    setAboutDropdownOpen(!aboutDropdownOpen);
+    if (servicesDropdownOpen) setServicesDropdownOpen(false);
+    if (resourcesDropdownOpen) setResourcesDropdownOpen(false);
+    if (productsDropdownOpen) setProductsDropdownOpen(false);
   };
 
   // Close dropdown when clicking outside
@@ -123,14 +128,14 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
       if (servicesDropdownRef.current && !servicesDropdownRef.current.contains(event.target as Node)) {
         setServicesDropdownOpen(false);
       }
-      if (technologiesDropdownRef.current && !technologiesDropdownRef.current.contains(event.target as Node)) {
-        setTechnologiesDropdownOpen(false);
-      }
       if (resourcesDropdownRef.current && !resourcesDropdownRef.current.contains(event.target as Node)) {
         setResourcesDropdownOpen(false);
       }
       if (productsDropdownRef.current && !productsDropdownRef.current.contains(event.target as Node)) {
         setProductsDropdownOpen(false);
+      }
+      if (aboutDropdownRef.current && !aboutDropdownRef.current.contains(event.target as Node)) {
+        setAboutDropdownOpen(false);
       }
     }
     
@@ -147,16 +152,6 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
       event.preventDefault();
     } else if (event.key === 'Escape' && servicesDropdownOpen) {
       setServicesDropdownOpen(false);
-    }
-  };
-  
-  // Handle Technologies dropdown keyboard navigation
-  const handleTechnologiesKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      toggleTechnologiesDropdown();
-      event.preventDefault();
-    } else if (event.key === 'Escape' && technologiesDropdownOpen) {
-      setTechnologiesDropdownOpen(false);
     }
   };
   
@@ -177,6 +172,16 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
       event.preventDefault();
     } else if (event.key === 'Escape' && productsDropdownOpen) {
       setProductsDropdownOpen(false);
+    }
+  };
+  
+  // Handle About dropdown keyboard navigation
+  const handleAboutKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      toggleAboutDropdown();
+      event.preventDefault();
+    } else if (event.key === 'Escape' && aboutDropdownOpen) {
+      setAboutDropdownOpen(false);
     }
   };
   
@@ -203,73 +208,32 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
             {servicesDropdownOpen && (
               <div className="pl-4 mt-2 space-y-2">
                 <Link 
-                  to="/services/managed" 
+                  to="/services/ai-solutions" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
-                  <Settings className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  Managed Services
+                  <Cpu className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                  AI Solutions & Security
                 </Link>
                 <Link 
-                  to="/services/professional" 
-                  className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
-                >
-                  <Users className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  Professional Services
-                </Link>
-                <Link 
-                  to="/services/cloud" 
+                  to="/services/cloud-engineering" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
                   <Cloud className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  Cloud Services
+                  Cloud Engineering & Security
                 </Link>
                 <Link 
-                  to="/services/cybersecurity" 
+                  to="/services/application-security" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
-                  <Shield className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  Cybersecurity Services
-                </Link>
-              </div>
-            )}
-          </div>
-          
-          {/* Technologies Dropdown (Mobile) */}
-          <div className={cn(className)}>
-            <div 
-              onClick={toggleTechnologiesDropdown}
-              onKeyDown={handleTechnologiesKeyDown}
-              className="flex items-center w-full text-left cursor-pointer"
-              tabIndex={0}
-              role="button"
-              aria-haspopup="true"
-              aria-expanded={technologiesDropdownOpen}
-            >
-              Technologies <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
-            </div>
-            
-            {technologiesDropdownOpen && (
-              <div className="pl-4 mt-2 space-y-2">
-                <Link 
-                  to="/technologies/enterprise-performance" 
-                  className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
-                >
-                  <BarChart className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  Enterprise Performance Management
+                  <Code className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                  Application Security & Compliance
                 </Link>
                 <Link 
-                  to="/technologies/enterprise-resource" 
+                  to="/services/data-engineering" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
                   <Database className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  Enterprise Resource Management
-                </Link>
-                <Link 
-                  to="/technologies/data-analytics" 
-                  className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
-                >
-                  <LineChart className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  Data Analytics
+                  Data Engineering & Security
                 </Link>
               </div>
             )}
@@ -363,6 +327,47 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
               </div>
             )}
           </div>
+          
+          {/* About Us Dropdown (Mobile) */}
+          <div className={cn(className)}>
+            <div 
+              onClick={toggleAboutDropdown}
+              onKeyDown={handleAboutKeyDown}
+              className="flex items-center w-full text-left cursor-pointer"
+              tabIndex={0}
+              role="button"
+              aria-haspopup="true"
+              aria-expanded={aboutDropdownOpen}
+            >
+              About Us <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
+            </div>
+            
+            {aboutDropdownOpen && (
+              <div className="pl-4 mt-2 space-y-2">
+                <Link 
+                  to="/#about" 
+                  className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
+                >
+                  <Building className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                  Company
+                </Link>
+                <Link 
+                  to="/#careers" 
+                  className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
+                >
+                  <Briefcase className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                  Careers
+                </Link>
+                <Link 
+                  to="/#locations" 
+                  className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
+                >
+                  <MapPin className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                  Locations
+                </Link>
+              </div>
+            )}
+          </div>
         </>
       ) : (
         <>
@@ -387,78 +392,32 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
               >
                 <div className="py-1">
                   <Link 
-                    to="/services/managed" 
+                    to="/services/ai-solutions" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <Settings className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Managed Services
+                    <Cpu className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                    AI Solutions & Security
                   </Link>
                   <Link 
-                    to="/services/professional" 
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <Users className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Professional Services
-                  </Link>
-                  <Link 
-                    to="/services/cloud" 
+                    to="/services/cloud-engineering" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <Cloud className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Cloud Services
+                    Cloud Engineering & Security
                   </Link>
                   <Link 
-                    to="/services/cybersecurity" 
+                    to="/services/application-security" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <Shield className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Cybersecurity Services
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Technologies Dropdown (Desktop) */}
-          <div className="relative inline-block" ref={technologiesDropdownRef}>
-            <div 
-              onClick={toggleTechnologiesDropdown}
-              onKeyDown={handleTechnologiesKeyDown}
-              className={cn(className, "flex items-center cursor-pointer")}
-              tabIndex={0}
-              role="button"
-              aria-haspopup="true"
-              aria-expanded={technologiesDropdownOpen}
-            >
-              Technologies <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
-            </div>
-            
-            {technologiesDropdownOpen && (
-              <div 
-                className="absolute z-50 mt-2 w-72 bg-white rounded-md shadow-lg"
-                role="menu"
-              >
-                <div className="py-1">
-                  <Link 
-                    to="/technologies/enterprise-performance" 
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <BarChart className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Enterprise Performance Management
+                    <Code className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                    Application Security & Compliance
                   </Link>
                   <Link 
-                    to="/technologies/enterprise-resource" 
+                    to="/services/data-engineering" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <Database className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Enterprise Resource Management
-                  </Link>
-                  <Link 
-                    to="/technologies/data-analytics" 
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <LineChart className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Data Analytics
+                    Data Engineering & Security
                   </Link>
                 </div>
               </div>
@@ -563,12 +522,54 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
               </div>
             )}
           </div>
+          
+          {/* About Us Dropdown (Desktop) */}
+          <div className="relative inline-block" ref={aboutDropdownRef}>
+            <div 
+              onClick={toggleAboutDropdown}
+              onKeyDown={handleAboutKeyDown}
+              className={cn(className, "flex items-center cursor-pointer")}
+              tabIndex={0}
+              role="button"
+              aria-haspopup="true"
+              aria-expanded={aboutDropdownOpen}
+            >
+              About Us <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
+            </div>
+            
+            {aboutDropdownOpen && (
+              <div 
+                className="absolute z-50 mt-2 w-48 bg-white rounded-md shadow-lg"
+                role="menu"
+              >
+                <div className="py-1">
+                  <Link 
+                    to="/#about" 
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <Building className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                    Company
+                  </Link>
+                  <Link 
+                    to="/#careers" 
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <Briefcase className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                    Careers
+                  </Link>
+                  <Link 
+                    to="/#locations" 
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <MapPin className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
+                    Locations
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
         </>
       )}
-      
-      <Link to="/#about" className={cn(className)}>About Us</Link>
-      <Link to="/#careers" className={cn(className)}>Careers</Link>
-      <Link to="/#locations" className={cn(className)}>Locations</Link>
     </>
   );
 }

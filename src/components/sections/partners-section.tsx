@@ -15,10 +15,10 @@ const partnerLogos = [
     name: "microsoft",
     logo: "/partners-logo/microsoft.png"
   },
-  {
-    name: "Oracle Gold",
-    logo: "/partners-logo/oracle_gold.png"
-  },
+  // {
+  //   name: "Oracle Gold",
+  //   logo: "/partners-logo/oracle_gold.png"
+  // },
   {
     name: "Oracle",
     logo: "/partners-logo/oracle.png"
@@ -154,7 +154,7 @@ export function PartnersSection() {
           variants={container}
           initial="hidden"
           animate={isVisible ? "show" : "hidden"}
-          className="flex flex-wrap justify-center items-center gap-6 md:gap-8"
+          className="flex flex-wrap justify-center items-center gap-8 md:gap-10"
         >
           {partnerLogos.map((partner, index) => {
             const tilt = calculateTilt(index);
@@ -176,15 +176,15 @@ export function PartnersSection() {
                   transform: activeIndex === index ? `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` : "none",
                   transition: "transform 0.2s ease-out"
                 }}
-                className="group flex flex-col items-center justify-center p-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#367ABB]/20 relative overflow-hidden"
+                className="group flex flex-col items-center justify-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#367ABB]/20 relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#367ABB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
-                <div className="relative z-10 h-14 flex items-center justify-center w-full">
+                <div className="relative z-10 h-20 flex items-center justify-center w-full">
                   <img 
                     src={partner.logo} 
-                    
-                    className="max-h-14 max-w-full object-contain filter transition-all duration-300 group-hover:scale-110"
+                    alt={partner.name} 
+                    className="max-h-24 max-w-full object-contain filter transition-all duration-300 group-hover:scale-110"
                   />
                 </div>
                 

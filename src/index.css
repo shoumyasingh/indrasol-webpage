@@ -90,6 +90,7 @@
 @layer base {
   * {
     @apply border-border;
+    font-family: Arial, sans-serif;
   }
 
   body {
@@ -98,7 +99,12 @@
     scroll-behavior: smooth;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
   }
 
@@ -165,4 +171,11 @@
   .bg-indrasol-orange {
     @apply bg-tertiary;
   }
+
+  @layer utilities {
+    .text-tertiary {
+      color: #999999;
+    }
+  }
+  
 }

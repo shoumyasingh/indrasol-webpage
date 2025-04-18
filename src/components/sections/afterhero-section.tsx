@@ -67,9 +67,7 @@ export function AfterHeroSection() {
             Comprehensive 
             <span className="text-indrasol-blue relative ml-2">
               <span className="relative z-10">Service Architecture</span>
-              <svg className="absolute -bottom-2 left-0 w-full z-0 text-indrasol-blue/10" viewBox="0 0 200 15" preserveAspectRatio="none">
-                <path d="M0,15 Q50,0 100,15 Q150,30 200,15 L200,0 L0,0 Z" fill="currentColor"/>
-              </svg>
+              
             </span>
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto text-lg md:text-xl leading-relaxed">
@@ -92,7 +90,7 @@ export function AfterHeroSection() {
             <div className="relative aspect-[16/12] w-full group">
               <div className="absolute inset-0 bg-gradient-to-tr from-[#367ABB]/10 to-transparent rounded-2xl opacity-50"></div>
               <img 
-                src="/lovable-uploads/indrasol-service-arch.png" 
+                src="/lovable-uploads/indrasol-sevice-architecture.png" 
                 alt="Indrasol's Service Architecture" 
                 className="w-full h-full object-contain relative z-10 transition-transform duration-500 group-hover:scale-[1.02]"
               />
@@ -103,9 +101,9 @@ export function AfterHeroSection() {
               <div className="absolute bottom-1/3 right-1/4 w-5 h-5 bg-[#9FA1A1]/30 rounded-full blur-sm animate-pulse" style={{animationDelay: "0.5s"}}></div>
             </div>
             
-            <div className="mt-6 text-center">
+            {/* <div className="mt-6 text-center">
               <span className="text-sm font-medium text-gray-500">Tap into our comprehensive service ecosystem</span>
-            </div>
+            </div> */}
           </div>
         </motion.div>
         

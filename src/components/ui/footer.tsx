@@ -10,7 +10,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-start mb-12">
           <div className="max-w-sm mb-8 md:mb-0">
             <img 
-              src="/lovable-uploads/a0767fd7-b418-4f1f-a6cd-9450ec946277.png" 
+              src="/lovable-uploads/Indrasol company logo_.png" 
               alt="Indrasol Logo" 
               className="h-12 mb-4"
             />
@@ -81,36 +81,6 @@ export function Footer() {
           </div>
         </div>
         
-        {/* Business Units section */}
-        <div className="border-t border-white/20 pt-8 pb-4">
-          <h3 className="text-lg font-semibold mb-4 text-white">Business Units</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <a 
-              href="https://www.hyperion.support" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center px-4 py-3 bg-white/10 rounded-lg hover:bg-[#D5844C]/20 transition-all group"
-            >
-              <span className="text-white group-hover:text-[#D5844C]">Hyperion Support</span>
-              <ExternalLink className="ml-2 h-4 w-4 text-white/60 group-hover:text-[#D5844C]" />
-            </a>
-            <a 
-              href="https://www.peoplesoft-support.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center px-4 py-3 bg-white/10 rounded-lg hover:bg-[#D5844C]/20 transition-all group"
-            >
-              <span className="text-white group-hover:text-[#D5844C]">PeopleSoft Support</span>
-              <ExternalLink className="ml-2 h-4 w-4 text-white/60 group-hover:text-[#D5844C]" />
-            </a>
-            <a 
-              href="#" 
-              className="flex items-center px-4 py-3 bg-white/10 rounded-lg hover:bg-[#D5844C]/20 transition-all group"
-            >
-              <span className="text-white group-hover:text-[#D5844C]">Cyber Security</span>
-            </a>
-          </div>
-        </div>
         
         {/* Bottom copyright section */}
         <div className="border-t border-white/20 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">

@@ -139,9 +139,9 @@ export function PartnersSection() {
             Powered by 
             <span className="text-indrasol-blue relative">
               <span className="relative z-10"> Global Technologies</span>
-              <svg className="absolute -bottom-2 left-0 w-full z-0 text-indrasol-blue/10" viewBox="0 0 200 15" preserveAspectRatio="none">
+              {/* <svg className="absolute -bottom-2 left-0 w-full z-0 text-indrasol-blue/10" viewBox="0 0 200 15" preserveAspectRatio="none">
                 <path d="M0,15 Q50,0 100,15 Q150,30 200,15 L200,0 L0,0 Z" fill="currentColor"/>
-              </svg>
+              </svg> */}
             </span>
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">

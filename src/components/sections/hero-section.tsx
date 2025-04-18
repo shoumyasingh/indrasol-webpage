@@ -15,7 +15,7 @@ export function HeroSection() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
               <span className="text-gray-900">We Build and Secure </span>
               <span className="text-indrasol-blue block mt-1">AI, Cloud and Data Systems</span>
             </h1>
@@ -43,7 +43,7 @@ export function HeroSection() {
               
               <div className="relative ">
                 <img 
-                  src="/lovable-uploads/indrasol-website - visual selection.png" 
+                  src="/lovable-uploads/keyoffers.png" 
                   alt="Business professionals working on technology solutions" 
                   className="w-full transition-transform duration-700 hover:scale-105"
                 />
@@ -52,11 +52,11 @@ export function HeroSection() {
               </div>
               
               {/* Floating accent element */}
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white rounded-xl shadow-xl flex items-center justify-center transform rotate-12">
+              {/* <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white rounded-xl shadow-xl flex items-center justify-center transform rotate-12">
                 <div className="w-16 h-16 bg-indrasol-blue/20 rounded-lg flex items-center justify-center">
                   <div className="w-8 h-8 bg-indrasol-blue rounded-md"></div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

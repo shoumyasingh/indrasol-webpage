@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Navbar } from "@/components/ui/navbar";
 import { HeroSection } from "@/components/sections/hero-section";
@@ -10,6 +9,9 @@ import { ContactSection } from "@/components/sections/contact-section";
 import { ClientsSection } from "@/components/sections/clients-section";
 import { Footer } from "@/components/ui/footer";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { ChatBot } from "../components/ui/chatbot"; // Update the import path to the correct location
+import PartnersSection from "@/components/sections/partners-section";
+import AfterHeroSection from "@/components/sections/afterhero-section";
 
 const Index = () => {
   return (
@@ -17,15 +19,18 @@ const Index = () => {
       <Navbar />
       <main className="flex-grow">
         <HeroSection />
+        <AfterHeroSection/>
         <ClientsSection />
         <ServicesSection />
         <AboutSection />
+        <PartnersSection />
         <BusinessUnitsSection />
         <LocationsSection />
         <ContactSection />
       </main>
       <Footer />
       <BackToTop />
+      <ChatBot /> {/* Add the ChatBot component here */}
     </div>
   );
 };

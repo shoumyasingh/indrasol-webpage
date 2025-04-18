@@ -1,30 +1,38 @@
-
 import React from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function HeroSection() {
   return (
-    <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-white to-indrasol-gray">
-      <div className="container mx-auto px-4">
+    <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+      {/* Modern background with gradient and blur effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-indrasol-gray opacity-80"></div>
+      
+      {/* Decorative shapes */}
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-indrasol-blue/10 rounded-full blur-3xl"></div>
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indrasol-blue/5 rounded-full blur-3xl"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-              Transforming Organizations with Cloud & Data Expertise
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <span className="text-gray-900">We Build and Secure </span>
+              <span className="text-indrasol-blue block mt-1">AI, Cloud and Data Systems</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-700 max-w-2xl">
-              Indrasol delivers consulting, implementation and support services for Oracle solutions, cloud platforms, and data analytics that drive business value.
+            From Development to Defense, Indrasol delivers end-to-end solutions for AI/LLM development, cloud-native engineering, data platforms, and security. We help you innovate faster, and safer.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
               <Link 
                 to="/contact" 
-                className="px-6 py-3 bg-indrasol-blue text-white rounded-md hover:bg-indrasol-darkblue transition-colors inline-flex items-center justify-center"
+                className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20"
               >
-                Request Consultation <ArrowRight className="ml-2 h-5 w-5" />
+                Request Consultation 
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
               </Link>
               <Link 
                 to="/#services" 
-                className="px-6 py-3 border border-indrasol-blue text-indrasol-blue rounded-md hover:bg-indrasol-gray transition-colors inline-flex items-center justify-center"
+                className="px-6 py-3 border-2 border-indrasol-blue text-indrasol-blue bg-white/80 backdrop-blur-sm rounded-lg hover:bg-indrasol-blue/10 transition-colors inline-flex items-center justify-center"
               >
                 Explore Services
               </Link>
@@ -32,12 +40,23 @@ export function HeroSection() {
           </div>
           <div className="hidden lg:block">
             <div className="relative">
-              <div className="absolute inset-0 bg-indrasol-blue/10 rounded-lg transform rotate-3"></div>
-              <img 
-                src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80" 
-                alt="Business professionals working on technology solutions" 
-                className="rounded-lg shadow-xl relative z-10 w-full"
-              />
+              
+              <div className="relative ">
+                <img 
+                  src="/lovable-uploads/indrasol-website - visual selection.png" 
+                  alt="Business professionals working on technology solutions" 
+                  className="w-full transition-transform duration-700 hover:scale-105"
+                />
+                
+                
+              </div>
+              
+              {/* Floating accent element */}
+              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white rounded-xl shadow-xl flex items-center justify-center transform rotate-12">
+                <div className="w-16 h-16 bg-indrasol-blue/20 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-indrasol-blue rounded-md"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -1,118 +1,32 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
-const clientLogos = [
+const partnerLogos = [
   // Row 1
   {
-    name: "Facebook",
-    logo: "/logos/facebook.png",
-    url: "https://www.facebook.com/"
+    name: "CSA",
+    logo: "/partners-logo/csa.png"
   },
   {
-    name: "Accuray",
-    logo: "/logos/accuray.png",
-    url: "https://www.accuray.com/"
+    name: "AWS",
+    logo: "/partners-logo/aws.png"
   },
   {
-    name: "Alorica",
-    logo: "/logos/alorica.png",
-    url: "https://www.alorica.com/"
+    name: "microsoft",
+    logo: "/partners-logo/microsoft.png"
   },
+  // {
+  //   name: "Oracle Gold",
+  //   logo: "/partners-logo/oracle_gold.png"
+  // },
   {
-    name: "TSTT",
-    logo: "/logos/tstt.png",
-    url: "https://www.tstt.co.tt/"
+    name: "Oracle",
+    logo: "/partners-logo/oracle.png"
   },
-  {
-    name: "Urban Development Corporation",
-    logo: "/logos/udc.png",
-    url: "https://udcja.com/"
-  },
-  {
-    name: "Guardian Group",
-    logo: "/logos/guardian-group.png",
-    url: "https://trinidad.myguardiangroup.com/"
-  },
-  {
-    name: "Complete Genomics",
-    logo: "/logos/complete-genomics.png",
-    url: "https://www.completegenomics.com/"
-  },
-  // Row 2
-  {
-    name: "Annapurna Studios",
-    logo: "/logos/annapurna-studios.png",
-    url: "https://annapurnastudios.com/"
-  },
-  {
-    name: "GAP",
-    logo: "/logos/gap.png",
-    url: "https://www.gap.com/"
-  },
-  {
-    name: "Essex Property Trust",
-    logo: "/logos/essex.png",
-    url: "https://www.essex.com/"
-  },
-  {
-    name: "SonicWall",
-    logo: "/logos/sonicwall.png",
-    url: "https://www.sonicwall.com/"
-  },
-  {
-    name: "YuMe",
-    logo: "/logos/yume.png",
-    url: "https://www.yume.com/"
-  },
-  {
-    name: "Mervyn's",
-    logo: "/logos/mervyns.png",
-    url: "https://www.mervyns.com/"
-  },
-  {
-    name: "Concerto Health",
-    logo: "/logos/concerto-health.png",
-    url: "https://www.concertohealth.com/"
-  },
-  // Row 3
-  {
-    name: "Charlotte Russe",
-    logo: "/logos/charlotte-russe.png",
-    url: "https://www.charlotterusse.com/"
-  },
-  {
-    name: "Palo Alto Networks",
-    logo: "/logos/palo-alto.png",
-    url: "https://www.paloaltonetworks.com/"
-  },
-  {
-    name: "Banana Republic",
-    logo: "/logos/banana-republic.png",
-    url: "https://www.bananarepublic.com/"
-  },
-  {
-    name: "Gigamon",
-    logo: "/logos/gigamon.png",
-    url: "https://www.gigamon.com/"
-  },
-  {
-    name: "Cisco",
-    logo: "/logos/cisco.png",
-    url: "https://www.cisco.com/"
-  },
-  {
-    name: "Planet",
-    logo: "/logos/planet.png",
-    url: "https://www.planet.com/"
-  },
-  {
-    name: "T&TEC",
-    logo: "/logos/ttec.png",
-    url: "https://ttec.co.tt/"
-  }
+  
 ];
 
-export function ClientsSection() {
+export function PartnersSection() {
   const [isVisible, setIsVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(null);
   const containerRef = useRef(null);
@@ -120,7 +34,7 @@ export function ClientsSection() {
   
   useEffect(() => {
     const handleScroll = () => {
-      const element = document.getElementById('clients-section');
+      const element = document.getElementById('partners-section');
       if (element) {
         const position = element.getBoundingClientRect();
         if (position.top < window.innerHeight * 0.75) {
@@ -199,14 +113,14 @@ export function ClientsSection() {
 
   return (
     <section 
-      id="clients-section"
-      className="py-20 md:py-32 relative overflow-hidden bg-gradient-to-b from-white to-gray-50"
+      id="partners-section"
+      className="py-20 md:py-32 relative overflow-hidden bg-gradient-to-b from-gray-50 to-white"
     >
       {/* 3D Accent Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-40 left-20 w-64 h-64 bg-[#367ABB]/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-40 right-20 w-96 h-96 bg-[#D5844C]/5 rounded-full blur-3xl"></div>
-        <div className="absolute top-60 right-60 w-40 h-40 bg-[#9FA1A1]/5 rounded-full blur-2xl"></div>
+        <div className="absolute top-40 right-20 w-64 h-64 bg-[#367ABB]/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-40 left-20 w-96 h-96 bg-[#D5844C]/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-60 left-60 w-40 h-40 bg-[#9FA1A1]/5 rounded-full blur-2xl"></div>
       </div>
       
       <div className="container mx-auto px-4 md:px-8 relative z-10">
@@ -218,20 +132,20 @@ export function ClientsSection() {
         >
           <div className="inline-block">
             <span className="inline-block text-indrasol-blue font-semibold mb-2 bg-indrasol-blue/10 px-4 py-1 rounded-full">
-              Our Clients
+              Our Partners
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-            Trusted by 
+            Powered by 
             <span className="text-indrasol-blue relative">
-              <span className="relative z-10"> Industry Leaders</span>
+              <span className="relative z-10"> Global Technologies</span>
               <svg className="absolute -bottom-2 left-0 w-full z-0 text-indrasol-blue/10" viewBox="0 0 200 15" preserveAspectRatio="none">
                 <path d="M0,15 Q50,0 100,15 Q150,30 200,15 L200,0 L0,0 Z" fill="currentColor"/>
               </svg>
             </span>
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
-            Our collaboration with diverse industry leaders demonstrates our adaptability and expertise across sectors
+            Strategic partnerships with leading technology providers enable us to deliver innovative solutions across industries
           </p>
         </motion.div>
         
@@ -240,13 +154,13 @@ export function ClientsSection() {
           variants={container}
           initial="hidden"
           animate={isVisible ? "show" : "hidden"}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4 md:gap-6"
+          className="flex flex-wrap justify-center items-center gap-8 md:gap-10"
         >
-          {clientLogos.map((client, index) => {
+          {partnerLogos.map((partner, index) => {
             const tilt = calculateTilt(index);
             return (
               <motion.a
-                href={client.url}
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
                 key={index}
@@ -262,21 +176,20 @@ export function ClientsSection() {
                   transform: activeIndex === index ? `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` : "none",
                   transition: "transform 0.2s ease-out"
                 }}
-                className="group flex flex-col items-center justify-center p-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#367ABB]/20 relative overflow-hidden"
+                className="group flex flex-col items-center justify-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#367ABB]/20 relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#367ABB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
-                <div className="relative z-10 h-14 flex items-center justify-center w-full">
+                <div className="relative z-10 h-20 flex items-center justify-center w-full">
                   <img 
-                    src={client.logo} 
-                    alt={`${client.name} logo`} 
-                    className="max-h-10 max-w-full object-contain filter transition-all duration-300 group-hover:scale-110"
+                    src={partner.logo} 
+                    alt={partner.name} 
+                    className="max-h-24 max-w-full object-contain filter transition-all duration-300 group-hover:scale-110"
                   />
                 </div>
                 
                 <div className="mt-3 text-center overflow-hidden h-0 group-hover:h-auto transition-all duration-300">
                   <span className="text-[#367ABB] text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 block">
-                    {client.name}
                   </span>
                 </div>
                 
@@ -305,10 +218,10 @@ export function ClientsSection() {
           className="mt-16 text-center"
         >
           <a 
-            href="#success-stories" 
+            href="#partnership-benefits" 
             className="inline-flex items-center justify-center px-8 py-4 bg-[#367ABB] text-white rounded-full hover:bg-[#367ABB]/90 transition-colors shadow-lg hover:shadow-xl group"
           >
-            <span className="font-medium mr-2">View Success Stories</span>
+            <span className="font-medium mr-2">Explore Partnership Benefits</span>
             <span className="relative w-6 h-6 bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white/30">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -334,4 +247,4 @@ export function ClientsSection() {
   );
 }
 
-export default ClientsSection;
+export default PartnersSection;

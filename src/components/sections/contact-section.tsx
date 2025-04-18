@@ -1,131 +1,236 @@
-
-import React from "react";
-import { Mail, Phone, Send } from "lucide-react";
+import React, { useState } from "react";
+import { Mail, Phone, Send, MapPin, ArrowRight, Linkedin, Twitter } from "lucide-react";
 
 export function ContactSection() {
+  const [formState, setFormState] = useState({
+    name: "",
+    email: "",
+    company: "",
+    message: ""
+  });
+  
+  const [formStatus, setFormStatus] = useState<null | "submitting" | "success" | "error">(null);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormState({
+      ...formState,
+      [e.target.name]: e.target.value
+    });
+  };
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormStatus("submitting");
+    
+    // Simulate form submission
+    setTimeout(() => {
+      setFormStatus("success");
+      setFormState({
+        name: "",
+        email: "",
+        company: "",
+        message: ""
+      });
+    }, 1500);
+  };
+
   return (
-    <section id="contact" className="py-16 md:py-24 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Get in Touch</h2>
-            <p className="text-lg text-gray-700 mb-8">
-              Ready to transform your business? Contact us today to discuss how our services can help you achieve your goals.
-            </p>
-            
-            <div className="space-y-6">
-              <div className="flex items-center">
-                <Mail className="h-6 w-6 text-indrasol-blue mr-4" />
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Email Us</h3>
-                  <a href="mailto:info@indrasol.com" className="text-indrasol-blue hover:underline">
-                    info@indrasol.com
-                  </a>
+    <section id="contact" className="py-24 md:py-32 relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-gradient-to-b from-indrasol-gray/20 to-white"></div>
+      
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-indrasol-blue/5 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-indrasol-orange/5 rounded-full blur-3xl -z-10"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center mb-16">
+          <span className="inline-block text-indrasol-blue font-semibold mb-2 bg-indrasol-blue/10 px-4 py-1 rounded-full">Contact Us</span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <span className="text-gray-900">Get in </span>
+            <span className="text-indrasol-blue">Touch</span>
+          </h2>
+          <p className="text-lg text-gray-700 max-w-3xl mx-auto">
+            Ready to transform your business? Contact us today to discuss how our services can help you achieve your goals.
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Contact Info Section */}
+          <div className="lg:col-span-5">
+            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 h-full">
+              <div className="space-y-8">
+                <div className="flex items-start">
+                  <div className="p-3 bg-indrasol-blue/10 rounded-xl mr-4">
+                    <Mail className="h-6 w-6 text-indrasol-blue" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Email Us</h3>
+                    <a href="mailto:info@indrasol.com" className="text-indrasol-blue hover:text-indrasol-blue/80 transition-colors mt-1 block">
+                      info@indrasol.com
+                    </a>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center">
-                <Phone className="h-6 w-6 text-indrasol-blue mr-4" />
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Call Us</h3>
-                  <a href="tel:+15101234567" className="text-indrasol-blue hover:underline">
-                    +1 (510) 123-4567
-                  </a>
+                
+                <div className="flex items-start">
+                  <div className="p-3 bg-indrasol-blue/10 rounded-xl mr-4">
+                    <Phone className="h-6 w-6 text-indrasol-blue" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Call Us</h3>
+                    <a href="tel:+15101234567" className="text-indrasol-blue hover:text-indrasol-blue/80 transition-colors mt-1 block">
+                      +1 (510) 123-4567
+                    </a>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            <div className="mt-12">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Connect With Us</h3>
-              <div className="flex space-x-4">
-                <a 
-                  href="https://www.linkedin.com/company/indrasol" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="bg-[#0077B5] text-white p-2 rounded-full hover:bg-[#00669c] transition-colors"
-                  aria-label="LinkedIn"
-                >
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                  </svg>
-                </a>
-                <a 
-                  href="https://twitter.com/indrasol" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="bg-[#1DA1F2] text-white p-2 rounded-full hover:bg-[#0d95e8] transition-colors"
-                  aria-label="Twitter"
-                >
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-                  </svg>
-                </a>
+                
+                <div className="flex items-start">
+                  <div className="p-3 bg-indrasol-blue/10 rounded-xl mr-4">
+                    <MapPin className="h-6 w-6 text-indrasol-blue" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Headquarters</h3>
+                    <p className="text-gray-700 mt-1">
+                      San Ramon, California, USA
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="pt-6 border-t border-gray-100">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Connect With Us</h3>
+                  <div className="flex space-x-4">
+                    <a 
+                      href="https://www.linkedin.com/company/indrasol" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-white text-indrasol-blue p-3 rounded-xl hover:bg-indrasol-blue/10 transition-colors border border-indrasol-blue/20 shadow-sm"
+                      aria-label="LinkedIn"
+                    >
+                      <Linkedin className="h-6 w-6" strokeWidth={2} />
+                    </a>
+                    <a 
+                      href="https://twitter.com/indrasol" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-white text-indrasol-blue p-3 rounded-xl hover:bg-indrasol-blue/10 transition-colors border border-indrasol-blue/20 shadow-sm"
+                      aria-label="Twitter"
+                    >
+                      <Twitter className="h-6 w-6" strokeWidth={2} />
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           
-          <div className="bg-indrasol-gray p-8 rounded-lg shadow-md">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-6">Send Us a Message</h3>
-            <form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indrasol-blue focus:border-indrasol-blue"
-                    required
-                  />
+          {/* Contact Form Section */}
+          <div className="lg:col-span-7">
+            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative overflow-hidden">
+              {/* Decorative shape */}
+              <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-indrasol-blue/5 rounded-full"></div>
+              
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 relative z-10">Send Us a Message</h3>
+              
+              {formStatus === "success" ? (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+                  <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h4 className="text-xl font-semibold text-gray-900 mb-2">Thank You!</h4>
+                  <p className="text-gray-700">Your message has been sent successfully. We'll get back to you soon.</p>
+                  <button 
+                    onClick={() => setFormStatus(null)}
+                    className="mt-4 px-6 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Send another message
+                  </button>
                 </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indrasol-blue focus:border-indrasol-blue"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Name
-                </label>
-                <input
-                  type="text"
-                  id="company"
-                  name="company"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indrasol-blue focus:border-indrasol-blue"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                  Your Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indrasol-blue focus:border-indrasol-blue"
-                  required
-                ></textarea>
-              </div>
-              
-              <button
-                type="submit"
-                className="w-full px-6 py-3 bg-indrasol-blue text-white rounded-md hover:bg-indrasol-darkblue transition-colors flex items-center justify-center"
-              >
-                Send Message <Send className="ml-2 h-5 w-5" />
-              </button>
-            </form>
+              ) : (
+                <form className="space-y-6 relative z-10" onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                        Your Name
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={formState.name}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indrasol-blue focus:border-indrasol-blue transition-all"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formState.email}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indrasol-blue focus:border-indrasol-blue transition-all"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="company" className="block text-sm font-medium text-gray-700">
+                      Company Name
+                    </label>
+                    <input
+                      type="text"
+                      id="company"
+                      name="company"
+                      value={formState.company}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indrasol-blue focus:border-indrasol-blue transition-all"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+                      Your Message
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      rows={5}
+                      value={formState.message}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indrasol-blue focus:border-indrasol-blue transition-all"
+                      required
+                    ></textarea>
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    disabled={formStatus === "submitting"}
+                    className="w-full px-6 py-4 bg-indrasol-blue text-white rounded-xl hover:bg-indrasol-blue/90 transition-colors flex items-center justify-center shadow-lg shadow-indrasol-blue/20 group"
+                  >
+                    {formStatus === "submitting" ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        Send Message <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </div>

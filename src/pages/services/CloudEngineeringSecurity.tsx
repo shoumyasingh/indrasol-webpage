@@ -68,28 +68,28 @@ export default function CloudEngineeringSecurity() {
     <div className="bg-gradient-to-br from-white to-indigo-50 min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:pt-32 md:pb-20">
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-indigo-100/60 to-indigo-200 opacity-70 pointer-events-none"></div>
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-100/40 rounded-full blur-3xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-indrasol-blue/10 to-indigo-200 opacity-70 pointer-events-none"></div>
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indrasol-blue/10 rounded-full blur-3xl"></div>
         <div className="container mx-auto max-w-5xl px-6 relative z-10">
           <div className="flex flex-col gap-8 md:flex-row md:items-center">
             <div className="flex-1 space-y-5">
-              <span className="inline-block text-indigo-700 font-semibold mb-2 bg-indigo-200/30 px-4 py-1 rounded-full text-base tracking-wide">
+              <span className="inline-block text-indrasol-blue font-semibold mb-2 bg-indrasol-blue/10 px-4 py-1 rounded-full text-base tracking-wide">
                 Services &gt; Cloud Engineering & Security
               </span>
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-3 leading-tight">
-                Modern <span className="text-indigo-700">Cloud Engineering</span> <br /> & <span className="text-indigo-700">Security</span> Services
+                Modern <span className="text-indrasol-blue">Cloud Engineering</span> <br /> & <span className="text-indrasol-blue">Security</span> Services
               </h1>
               <p className="text-lg text-gray-700 max-w-2xl">
-                Accelerate innovation with Indrasol’s enterprise-grade cloud consulting, migration, DevOps, and security services. Empower your business for secure, scalable, and cost-efficient transformation on AWS, Azure & Google Cloud.
+                Accelerate innovation with Indrasol's enterprise-grade cloud consulting, migration, DevOps, and security services. Empower your business for secure, scalable, and cost-efficient transformation on AWS, Azure & Google Cloud.
               </p>
               <div className="flex gap-4 pt-4">
                 <RouterLink to="/contact">
-                  <Button size="lg" className="bg-indrasol-blue hover:bg-indigo-800">
+                  <Button size="lg" className="bg-indrasol-blue hover:bg-indrasol-blue/90">
                     Start Your Cloud Journey
                   </Button>
                 </RouterLink>
                 <RouterLink to="/#services">
-                  <Button size="lg" variant="outline" className="border-indigo-700 text-indigo-700 hover:bg-indigo-100">
+                  <Button size="lg" variant="outline" className="border-indrasol-blue text-indrasol-blue hover:bg-indrasol-blue/10">
                     Explore All Services
                   </Button>
                 </RouterLink>
@@ -105,6 +105,7 @@ export default function CloudEngineeringSecurity() {
           </div>
         </div>
       </section>
+
       {/* Features/Services Grid */}
       <section className="container mx-auto px-6 py-8 md:py-16 max-w-6xl">
         <div className="mb-14 text-center max-w-xl mx-auto">
@@ -121,8 +122,8 @@ export default function CloudEngineeringSecurity() {
               key={feature.title}
               className="group rounded-2xl bg-white/90 border border-gray-100 shadow-lg px-6 py-8 flex flex-col items-start hover:shadow-indigo-100 hover:-translate-y-1 transition-all relative"
             >
-              <span className="inline-flex items-center justify-center rounded-xl bg-indigo-100 p-3 mb-4">
-                <feature.icon className="h-8 w-8 text-indigo-700" />
+              <span className="inline-flex items-center justify-center rounded-xl bg-indrasol-blue/10 p-3 mb-4">
+                <feature.icon className="h-8 w-8 text-indrasol-blue" />
               </span>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 {feature.title}
@@ -134,6 +135,7 @@ export default function CloudEngineeringSecurity() {
           ))}
         </div>
       </section>
+
       {/* Partners/Platforms */}
       <section className="container mx-auto px-6 py-6 md:py-12 max-w-4xl">
         <div className="bg-indigo-50/80 border border-indigo-100 px-4 py-8 rounded-xl text-center shadow">
@@ -155,9 +157,10 @@ export default function CloudEngineeringSecurity() {
           </div>
         </div>
       </section>
+
       {/* Why Indrasol */}
       <section className="container mx-auto px-6 py-8 md:py-16 max-w-5xl">
-        <div className="rounded-2xl bg-gradient-to-br from-indigo-600/90 to-indigo-400/70 px-6 py-10 md:px-12 md:py-14 text-white shadow-lg">
+        <div className="rounded-2xl bg-gradient-to-br from-indrasol-blue/90 to-indrasol-blue/70 px-6 py-10 md:px-12 md:py-14 text-white shadow-lg">
           <h3 className="text-2xl md:text-3xl font-bold mb-4">Why Choose Indrasol?</h3>
           <ul className="grid md:grid-cols-2 gap-6 font-medium">
             <li className="flex items-center gap-3">
@@ -181,7 +184,7 @@ export default function CloudEngineeringSecurity() {
             <RouterLink to="/contact">
               <Button
                 size="lg"
-                className="bg-white text-indigo-700 hover:bg-indigo-50 border-2 border-indigo-700 font-bold"
+                className="bg-white text-indrasol-blue hover:bg-indigo-50 border-2 border-indigo-700 font-bold"
               >
                 Request a Consultation
               </Button>
@@ -189,17 +192,18 @@ export default function CloudEngineeringSecurity() {
           </div>
         </div>
       </section>
+
       {/* Call to action */}
       <section className="container mx-auto px-6 py-12 max-w-3xl">
         <div className="rounded-2xl bg-white/90 border border-indigo-100 shadow-md flex flex-col md:flex-row items-center justify-between gap-6 px-6 py-8 md:px-10">
           <div>
-            <h4 className="text-xl font-bold mb-2 text-indigo-700">Ready for a secure and future-proof cloud?</h4>
+            <h4 className="text-xl font-bold mb-2 text-indrasol-blue">Ready for a secure and future-proof cloud?</h4>
             <p className="text-gray-800 mb-3">
               Schedule a complimentary cloud assessment with Indrasol's experts.
             </p>
           </div>
           <RouterLink to="/contact">
-            <Button size="lg" className="bg-indrasol-blue hover:bg-indigo-800">
+            <Button size="lg" className="bg-indrasol-blue hover:bg-indrasol-blue/90">
               Let's Talk
             </Button>
           </RouterLink>

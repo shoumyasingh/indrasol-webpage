@@ -1,7 +1,5 @@
-
 import React, { useState } from "react";
 import { MapPin, Phone, Mail, ExternalLink } from "lucide-react";
-import dynamic from "next/dynamic";
 import Map from "../ui/Map";
 
 const locations = [

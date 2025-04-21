@@ -68,7 +68,7 @@ export function AIHeroSection({
   // Breadcrumb items based on current route
   const breadcrumbItems = [
     { label: 'Services', link: '/services' },
-    { label: 'AI Solutions', link: null } // Current page has no link
+    { label: 'AI Solutions & Security', link: null } // Current page has no link
   ];
 
   // Configuration data for feature badges
@@ -82,6 +82,21 @@ export function AIHeroSection({
   const sectionPadding = compactMode 
     ? "pt-16 pb-12 md:pt-24 md:pb-16" 
     : "pt-24 pb-16 md:pt-32 md:pb-24";
+
+  // Format the title with specific words in black
+  const formatTitle = () => {
+    if (title === "Build smart. Secure smarter.") {
+      return (
+        <>
+          <span className="text-black">Build</span>
+          <span className="text-indrasol-blue"> smart. </span>
+          <span className="text-black">Secure</span>
+          <span className="text-indrasol-blue"> smarter.</span>
+        </>
+      );
+    }
+    return <span className="text-indrasol-blue">{title}</span>;
+  };
 
   return (
     <section 
@@ -104,9 +119,9 @@ export function AIHeroSection({
               <span className="text-indrasol-blue font-semibold text-sm">AI Solutions & Security</span>
             </div>
             
-            {/* Main headline */}
+            {/* Main headline with formatted title */}
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-              <span className="text-indrasol-blue">{title}</span>
+              {formatTitle()}
             </h1>
             
             {/* Description text with new content */}
@@ -134,7 +149,7 @@ export function AIHeroSection({
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
               </Link>
               <Link 
-                to="/services/ai-solutions" 
+                to="/services/aisolutions" 
                 className="group px-6 py-3 border-2 border-indrasol-blue text-indrasol-blue bg-white/80 backdrop-blur-sm rounded-lg hover:bg-indrasol-blue/10 transition-colors inline-flex items-center justify-center"
               >
                 Explore AI Services
@@ -203,103 +218,3 @@ export function AIHeroSection({
 }
 
 export default AIHeroSection;
-
-
-
-
-
-
-
-
-
-
-// import React from "react";
-// import { ArrowRight, Brain, Shield, Code } from "lucide-react";
-// import { Link } from "react-router-dom";
-
-// export function AIHeroSection() {
-//   return (
-//     <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
-//       {/* Modern background with gradient and blur effect */}
-//       <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-indrasol-gray opacity-80"></div>
-      
-//       {/* Decorative shapes */}
-//       <div className="absolute -top-24 -right-24 w-96 h-96 bg-indrasol-blue/10 rounded-full blur-3xl"></div>
-//       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indrasol-blue/5 rounded-full blur-3xl"></div>
-      
-//       <div className="container mx-auto px-4 relative z-10">
-//         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-//           <div className="space-y-6">
-//             <div className="inline-block bg-indrasol-blue/10 px-4 py-1 rounded-full mb-2">
-//               <span className="text-indrasol-blue font-semibold text-sm">AI Solutions & Security</span>
-//             </div>
-//             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-//               <span className="text-indrasol-blue">Build smart. Secure smarter. </span>
-//               {/* <span className="text-indrasol-blue block mt-1">Enterprise AI Solutions</span> */}
-//             </h1>
-//             <p className="text-lg md:text-xl text-gray-700 max-w-2xl">
-//             We develop AI and LLM-powered apps and ensure they're secure from prompt injection, misuse, and model leaks.
-
-//             </p>
-//             <div className="flex flex-col sm:flex-row gap-4 pt-6">
-//               <Link 
-//                 to="/contact" 
-//                 className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20"
-//               >
-//                 Request AI Consultation 
-//                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
-//               </Link>
-//               <Link 
-//                 to="/services/ai-solutions" 
-//                 className="px-6 py-3 border-2 border-indrasol-blue text-indrasol-blue bg-white/80 backdrop-blur-sm rounded-lg hover:bg-indrasol-blue/10 transition-colors inline-flex items-center justify-center"
-//               >
-//                 Explore AI Services
-//               </Link>
-//             </div>
-
-//             {/* Feature badges */}
-//             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-8">
-//               <div className="flex items-center p-3 bg-white rounded-lg shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-//                 <div className="p-2 bg-indrasol-blue/10 rounded-lg mr-3 group-hover:bg-indrasol-blue/20 transition-colors">
-//                   <Brain className="h-5 w-5 text-indrasol-blue" strokeWidth={2} />
-//                 </div>
-//                 <span className="text-sm font-medium text-gray-800">Custom LLM Solutions</span>
-//               </div>
-              
-//               <div className="flex items-center p-3 bg-white rounded-lg shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-//                 <div className="p-2 bg-indrasol-blue/10 rounded-lg mr-3 group-hover:bg-indrasol-blue/20 transition-colors">
-//                   <Code className="h-5 w-5 text-indrasol-blue" strokeWidth={2} />
-//                 </div>
-//                 <span className="text-sm font-medium text-gray-800">AI Integration</span>
-//               </div>
-              
-//               <div className="flex items-center p-3 bg-white rounded-lg shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-//                 <div className="p-2 bg-indrasol-blue/10 rounded-lg mr-3 group-hover:bg-indrasol-blue/20 transition-colors">
-//                   <Shield className="h-5 w-5 text-indrasol-blue" strokeWidth={2} />
-//                 </div>
-//                 <span className="text-sm font-medium text-gray-800">AI Security & Compliance</span>
-//               </div>
-//             </div>
-//           </div>
-//           <div className="hidden lg:block">
-//             <div className="relative">
-//               <div className="relative">
-//                 <img 
-//                   src="/lovable-uploads/ai-solutions.png" 
-//                   alt="Advanced AI solutions and visualization" 
-//                   className="w-full rounded-xl shadow-xl transition-transform duration-700 hover:scale-105"
-//                 />
-                
-//                 {/* Decorative floating elements */}
-//                 <div className="absolute -top-6 -left-6 w-16 h-16 bg-indrasol-blue/10 rounded-xl transform rotate-12 animate-pulse"></div>
-//                 <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-indrasol-orange/10 rounded-xl transform -rotate-12"></div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
-// export default AIHeroSection;

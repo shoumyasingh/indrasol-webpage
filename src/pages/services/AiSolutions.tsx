@@ -8,6 +8,7 @@ import { Footer } from "@/components/ui/footer";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { ChatBot } from "@/components/ui/chatbot";
 import PartnersSection from "@/components/sections/partners-section";
+import AIAfterHeroSection from "@/components/services-ai/ai-afterherosection";
 
 // Assuming we would create these AI-specific components
 // import { AICaseStudiesSection } from "@/components/sections/ai-case-studies-section";
@@ -21,6 +22,7 @@ const AISolutions = () => {
       <main className="flex-grow">
         {/* Hero section specifically for AI Solutions */}
         <AIHeroSection />
+        <AIAfterHeroSection />
         
         {/* Section showcasing AI capabilities */}
         {/* <AICapabilitiesSection />

@@ -215,7 +215,7 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                   AI Solutions & Security
                 </Link>
                 <Link 
-                  to="/services/cloud-engineering" 
+                  to="/services/cloud-engineering"
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
                   <Cloud className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
@@ -399,7 +399,7 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                     AI Solutions & Security
                   </Link>
                   <Link 
-                    to="/services/cloud-engineering" 
+                    to="/services/cloud-engineering"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <Cloud className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />

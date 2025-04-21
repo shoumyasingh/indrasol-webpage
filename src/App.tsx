@@ -8,6 +8,7 @@ import Contact from "./pages/Contact";
 import AiSolutions from "./pages/AiSolutions";
 import NotFound from "./pages/NotFound";
 import { LocationsSection } from "./components/sections/locations-section";
+import CloudEngineeringSecurity from "./pages/services/CloudEngineeringSecurity";
 
 const queryClient = new QueryClient();
 
@@ -21,8 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/location" element={<LocationsSection />} />
-          <Route path="/ai-solutions" element={<AiSolutions />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/services/cloud-engineering" element={<CloudEngineeringSecurity />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

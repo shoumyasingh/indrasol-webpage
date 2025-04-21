@@ -1,5 +1,8 @@
+
 import React, { useState } from "react";
-import { MapPin, Phone, Mail, Globe, ExternalLink } from "lucide-react";
+import { MapPin, Phone, Mail, ExternalLink } from "lucide-react";
+import dynamic from "next/dynamic";
+import Map from "../ui/Map";
 
 const locations = [
   {
@@ -70,14 +73,8 @@ export function LocationsSection() {
         </div>
         
         {/* World Map */}
-        <div className="max-w-4xl mx-auto mb-16">
-          <div className="relative">
-            <img 
-              src="/lovable-uploads/worldmap.png" 
-              alt="Indrasol Global Offices" 
-              className="w-full h-auto rounded-xl shadow-lg"
-            />
-          </div>
+        <div className="max-w-4xl mx-auto mb-16 flex items-center justify-center relative min-h-[24rem]">
+          <Map />
         </div>
         
         {/* Location Tabs */}
@@ -110,20 +107,8 @@ export function LocationsSection() {
               }`}
             >
               <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 h-full flex flex-col">
-                {/* Map Preview (Placeholder - would be replaced with actual map) */}
-                <div className="h-32 bg-indrasol-blue/10 relative">
-                  <div className="absolute inset-0 bg-indrasol-blue/5 flex items-center justify-center">
-                    <Globe className="h-12 w-12 text-indrasol-blue/30" strokeWidth={1} />
-                  </div>
-                  <a 
-                    href={location.mapLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="absolute bottom-2 right-2 bg-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                  >
-                    <ExternalLink className="h-4 w-4 text-indrasol-blue" />
-                  </a>
-                </div>
+                {/* Removed old map preview */}
+                <div className="h-10"></div>
                 
                 <div className="p-4 flex-grow flex flex-col">
                   <div className="flex items-start mb-4 justify-between">
@@ -187,4 +172,3 @@ export function LocationsSection() {
     </section>
   );
 }
-

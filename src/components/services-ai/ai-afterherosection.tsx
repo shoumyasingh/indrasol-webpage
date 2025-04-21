@@ -1,7 +1,7 @@
-import React from "react";
-import { CheckCircle, Shield, Brain, Code, Lock } from "lucide-react";
+import React, { useEffect, useRef } from "react";
+import { CheckCircle, Shield, Brain, Code, Lock, ArrowRight } from "lucide-react";
 
-// Feature section component for consistent styling
+// Modern Feature section component with enhanced styling and animations
 const FeatureSection = ({ 
   title, 
   subtitle, 
@@ -12,74 +12,105 @@ const FeatureSection = ({
   imageAlt = "Feature illustration",
   reversed = false,
   accentColor = "bg-indrasol-blue/10" 
-}) => (
-  <div className="py-16 border-b border-gray-100 last:border-b-0">
-    <div className={`container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center ${reversed ? 'lg:flex-row-reverse' : ''}`}>
-      {/* Content section */}
-      <div className="space-y-6">
-        {/* Section number badge */}
-        <div className="inline-block bg-indrasol-blue/10 px-4 py-1 rounded-full mb-1">
-          <span className="text-indrasol-blue font-semibold text-md">{title}</span>
+}) => {
+  const sectionRef = useRef(null);
+  
+  // Add intersection observer for scroll animations
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div 
+      ref={sectionRef} 
+      className="py-20 border-b border-gray-100 last:border-b-0 opacity-0 translate-y-8 transition-all duration-1000 ease-out"
+    >
+      <div className={`container mx-auto px-4 lg:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${reversed ? 'lg:flex-row-reverse' : ''}`}>
+        {/* Content section with improved hierarchy and spacing */}
+        <div className="space-y-8">
+          {/* Modern section number badge */}
+          <div className="inline-flex items-center bg-gradient-to-r from-indrasol-blue/20 to-indrasol-blue/5 backdrop-blur-sm px-5 py-2 rounded-full">
+            <span className="text-indrasol-blue font-semibold text-md">{title}</span>
+          </div>
+          
+          {/* Enhanced section headline with subtle color gradient */}
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">
+            {subtitle}
+          </h2>
+          
+          {/* Improved description with better readability */}
+          <p className="text-lg leading-relaxed text-gray-700 max-w-xl">
+            {description}
+          </p>
+          
+          {/* Modernized bullet points with improved animations */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-gray-800 text-lg">What we do:</h3>
+            <ul className="space-y-4 pt-2">
+              {bulletPoints.map((point, index) => (
+                <li key={index} className="flex items-start group">
+                  <div className="p-1 rounded-full bg-indrasol-blue/10 mr-3 group-hover:bg-indrasol-blue/20 transition-colors duration-300">
+                    <CheckCircle 
+                      className="h-5 w-5 text-indrasol-blue flex-shrink-0 group-hover:scale-110 transition-transform duration-300" 
+                      strokeWidth={2} 
+                    />
+                  </div>
+                  <span className="text-gray-700 group-hover:text-gray-900 transition-colors duration-300">{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          {/* Why it matters section with modern card styling */}
+          <div className="bg-gradient-to-br from-indrasol-blue/10 to-indrasol-blue/5 p-6 rounded-xl border border-indrasol-blue/10 hover:shadow-md transition-shadow duration-300">
+            <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+              <span className="bg-indrasol-blue/20 p-1 rounded-full mr-2">
+                <Shield className="h-4 w-4 text-indrasol-blue" strokeWidth={2} />
+              </span>
+              Why it matters:
+            </h3>
+            <p className="text-gray-700 leading-relaxed">{whyItMatters}</p>
+          </div>
         </div>
         
-        {/* Section headline */}
-        <h2 className="text-2xl md:text-3xl font-bold leading-tight">
-          {subtitle}
-        </h2>
-        
-        {/* Section description */}
-        <p className="text-lg text-gray-700">{description}</p>
-        
-        {/* Bullet points */}
-        <div className="space-y-1">
-          <h3 className="font-semibold text-gray-800">What we do:</h3>
-          <ul className="space-y-2 pl-1 pt-2">
-            {bulletPoints.map((point, index) => (
-              <li key={index} className="flex items-start space-x-2 mb-2 group">
-                <CheckCircle 
-                  className="h-5 w-5 text-indrasol-blue flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" 
-                  strokeWidth={2} 
-                />
-                <span className="text-gray-700 group-hover:text-gray-900 transition-colors">{point}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-        {/* Why it matters section - Now using the passed whyItMatters property */}
-        <div className="bg-indrasol-blue/5 p-4 rounded-lg border border-indrasol-blue/10">
-          <h3 className="font-semibold text-gray-800 mb-2">Why it matters:</h3>
-          <p className="text-gray-700">{whyItMatters}</p>
-        </div>
-      </div>
-      
-      {/* Image container with styling similar to hero section */}
-      <div className={`${reversed ? 'lg:order-first' : ''}`}>
-        <div className="relative">
-          <div className="relative ">
-            <img 
-              src={imageSrc} 
-              alt={imageAlt} 
-              className="w-full rounded-xl transition-all duration-700 group-hover:scale-105"
-              loading="lazy"
-            />
-            
-            {/* Decorative elements */}
-            {/* <div className={`absolute -top-6 -left-6 w-16 h-16 ${accentColor} rounded-xl transform rotate-12 animate-pulse`}></div>
-            <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-indrasol-orange/10 rounded-xl transform -rotate-12 animate-pulse animation-delay-200"></div> */}
-            
-            {/* Gradient overlay */}
-            {/* <div className="absolute inset-0 bg-gradient-to-tr from-indrasol-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div> */}
+        {/* Simplified image container without shadows, zoom, or decorative elements */}
+        <div className={`${reversed ? 'lg:order-first' : ''}`}>
+          <div className="relative">
+            <div className="relative overflow-hidden rounded-2xl">
+              <img 
+                src={imageSrc} 
+                alt={imageAlt} 
+                className="w-full rounded-2xl object-cover object-center"
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
-// Main component that includes all feature sections
+// Main component with modern styling
 const AIAfterHeroSection = () => {
-  // Feature section data with different "Why it matters" text for each section
+  // Feature section data remains unchanged
   const featureSections = [
     {
       title: "1. LLM & AI Application Development",
@@ -131,24 +162,64 @@ const AIAfterHeroSection = () => {
     }
   ];
 
+  const introRef = useRef(null);
+  const ctaRef = useRef(null);
+  
+  // Add scroll animations for intro and CTA sections
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    if (introRef.current) {
+      observer.observe(introRef.current);
+    }
+    
+    if (ctaRef.current) {
+      observer.observe(ctaRef.current);
+    }
+    
+    return () => {
+      if (introRef.current) {
+        observer.unobserve(introRef.current);
+      }
+      if (ctaRef.current) {
+        observer.unobserve(ctaRef.current);
+      }
+    };
+  }, []);
+
   return (
     <section className="bg-white relative overflow-hidden">
-      {/* Background elements */}
-      {/* <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-indrasol-gray/5 opacity-80"></div>
-      <div className="absolute top-1/4 -right-64 w-96 h-96 bg-indrasol-blue/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 -left-64 w-96 h-96 bg-indrasol-orange/5 rounded-full blur-3xl"></div> */}
+      {/* Modern background elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-indrasol-gray/5 opacity-80"></div>
+      <div className="absolute top-1/3 right-0 w-1/2 h-1/3 bg-indrasol-blue/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/3 left-0 w-1/2 h-1/3 bg-indrasol-orange/5 rounded-full blur-3xl"></div>
       
-      {/* Introduction section */}
-      <div className="relative pt-16 pb-8">
+      {/* Enhanced introduction section with animation */}
+      <div 
+        ref={introRef}
+        className="relative pt-24 pb-12 opacity-0 translate-y-8 transition-all duration-1000 ease-out"
+      >
         <div className="container mx-auto px-4 text-center max-w-3xl">
-          <h2 className="text-3xl font-bold mb-6">Our AI & Security Services</h2>
-          <p className="text-lg text-gray-700">
+          <span className="inline-block px-4 py-1 bg-indrasol-blue/10 text-indrasol-blue font-medium rounded-full text-sm mb-6">
+            Our Services
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">
+            Our AI & Security Services
+          </h2>
+          <p className="text-xl text-gray-700 leading-relaxed">
             We combine cutting-edge AI development with industry-leading security practices to help organizations build and deploy intelligent systems with confidence.
           </p>
         </div>
       </div>
       
-      {/* Feature sections - explicitly passing whyItMatters to each FeatureSection */}
+      {/* Feature sections rendered with modern styling */}
       <div className="relative">
         {featureSections.map((section, index) => (
           <FeatureSection 
@@ -166,13 +237,24 @@ const AIAfterHeroSection = () => {
         ))}
       </div>
       
-      {/* CTA section */}
-      <div className="relative py-16 bg-gradient-to-br from-indrasol-blue/5 to-white">
-        <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-6">Ready to enhance your AI capabilities?</h3>
-          <button className="px-8 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20">
-            Schedule a Consultation
-          </button>
+      {/* Modern CTA section with improved visual appeal */}
+      <div 
+        ref={ctaRef}
+        className="relative py-24 opacity-0 translate-y-8 transition-all duration-1000 ease-out"
+      >
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="bg-gradient-to-br from-indrasol-blue/10 to-white rounded-2xl p-12 text-center">
+            <h3 className="text-2xl md:text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">
+              Ready to enhance your AI capabilities?
+            </h3>
+            <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
+              Get in touch to discuss how our AI development and security expertise can help your organization innovate safely.
+            </p>
+            <button className="group px-8 py-4 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20">
+              Schedule a Consultation
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+            </button>
+          </div>
         </div>
       </div>
     </section>

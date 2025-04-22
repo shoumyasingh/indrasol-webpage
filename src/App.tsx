@@ -11,6 +11,7 @@ import { LocationsSection } from "./components/sections/locations-section";
 import CloudEngineeringSecurity from "./pages/services/CloudEngineeringSecurity";
 import ApplicationSecurity from "./pages/services/ApplicationSecurity";
 import DataEngineering from "./pages/services/DataEngineering";
+import Company from "./pages/Aboutus/company";
 
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/company" element={<Company />} />
           <Route path="/location" element={<LocationsSection />} />
           <Route path="/services/aisolutions" element={<AiSolutions />} />
           <Route path="/services/cloud-engineering" element={<CloudEngineeringSecurity />} />

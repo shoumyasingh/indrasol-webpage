@@ -296,13 +296,13 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                   <FileText className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   Blogs
                 </Link>
-                <Link 
+                {/* <Link 
                   to="/resources/case-studies" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
                   <ClipboardCheck className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   Case Studies
-                </Link>
+                </Link> */}
                 <Link 
                   to="/resources/white-papers" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
@@ -310,20 +310,20 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                   <File className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   White Papers
                 </Link>
-                <Link 
+                {/* <Link 
                   to="/resources/news" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
                   <Newspaper className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   News
-                </Link>
-                <Link 
+                </Link> */}
+                {/* <Link 
                   to="/resources/videos" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
                   <Video className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   Videos
-                </Link>
+                </Link> */}
               </div>
             )}
           </div>
@@ -345,14 +345,14 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
             {aboutDropdownOpen && (
               <div className="pl-4 mt-2 space-y-2">
                 <Link 
-                  to="/#about" 
+                  to="/company" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
                   <Building className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   Company
                 </Link>
                 <Link 
-                  to="/#careers" 
+                  to="https://www.linkedin.com/company/indrasol/" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
                   <Briefcase className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
@@ -490,13 +490,13 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                     <FileText className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     Blogs
                   </Link>
-                  <Link 
+                  {/* <Link 
                     to="/resources/case-studies" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <ClipboardCheck className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     Case Studies
-                  </Link>
+                  </Link> */}
                   <Link 
                     to="/resources/white-papers" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -504,20 +504,20 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                     <File className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     White Papers
                   </Link>
-                  <Link 
+                  {/* <Link 
                     to="/resources/news" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <Newspaper className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     News
-                  </Link>
-                  <Link 
+                  </Link> */}
+                  {/* <Link 
                     to="/resources/videos" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <Video className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     Videos
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             )}
@@ -544,14 +544,14 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
               >
                 <div className="py-1">
                   <Link 
-                    to="/#about" 
+                    to="/company" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <Building className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     Company
                   </Link>
                   <Link 
-                    to="/#careers" 
+                    to="https://www.linkedin.com/company/indrasol/" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <Briefcase className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />

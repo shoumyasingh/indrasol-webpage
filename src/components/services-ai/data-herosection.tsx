@@ -149,13 +149,7 @@ export function DataHeroSection({
                 Request Data Assessment 
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
               </Link>
-              <Link 
-                to="/services/dataengineering" 
-                className="group px-6 py-3 border-2 border-indrasol-blue text-indrasol-blue bg-white/80 backdrop-blur-sm rounded-lg hover:bg-indrasol-blue/10 transition-colors inline-flex items-center justify-center"
-              >
-                Explore Data Services
-                <ArrowUpRight className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-300" />
-              </Link>
+              
             </div>
 
             {/* Feature badges */}

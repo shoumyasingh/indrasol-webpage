@@ -10,6 +10,8 @@ import NotFound from "./pages/NotFound";
 import { LocationsSection } from "./components/sections/locations-section";
 import CloudEngineeringSecurity from "./pages/services/CloudEngineeringSecurity";
 import ApplicationSecurity from "./pages/services/ApplicationSecurity";
+import DataEngineering from "./pages/services/DataEngineering";
+
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,7 @@ const App = () => (
           <Route path="/services/aisolutions" element={<AiSolutions />} />
           <Route path="/services/cloud-engineering" element={<CloudEngineeringSecurity />} />
           <Route path="/services/application-security" element={<ApplicationSecurity />} />
+          <Route path="/services/data-engineering" element={<DataEngineering />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

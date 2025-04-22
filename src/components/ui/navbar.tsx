@@ -417,7 +417,7 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <Database className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Data Engineering & Security
+                    Data Engineering, Analytics & Security
                   </Link>
                 </div>
               </div>

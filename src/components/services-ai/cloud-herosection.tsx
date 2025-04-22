@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { ArrowRight, Brain, Shield, Code, CheckCircle, ChevronRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, Shield, BarChart, LineChart, CheckCircle, ChevronRight, ArrowUpRight, Cloud, CloudAlertIcon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 // Feature badge component with enhanced hover effects
@@ -42,9 +42,9 @@ const Breadcrumb = ({ items = [] }) => (
   </div>
 );
 
-export function AIHeroSection({ 
+export function CloudHeroSection({ 
   // Configurable props with defaults
-  title = "Build smart. Secure smarter.",
+  title = "Modern cloud. Built to scale. Secured to last.",
   showBreadcrumbs = true,
   compactMode = false,
   animateOnLoad = true,
@@ -67,15 +67,15 @@ export function AIHeroSection({
   
   // Breadcrumb items based on current route
   const breadcrumbItems = [
-    { label: 'Services', link: '/services' },
-    { label: 'AI Solutions & Security', link: null } // Current page has no link
+    { label: 'Services', link: null },
+    { label: 'Cloud Engineering & Security', link: null } // Current page has no link
   ];
 
   // Configuration data for feature badges
   const featureBadges = [
-    { icon: Brain, text: "Custom LLM Solutions" },
-    { icon: Code, text: "AI Integration" },
-    { icon: Shield, text: "AI Security & Compliance" }
+    { icon: Shield, text: "Cloud Security" },
+    { icon: Cloud, text: "Cloud Compliance" },
+    { icon: CloudAlertIcon, text: "Cloud Management" }
   ];
 
   // Calculate padding based on compact mode
@@ -85,13 +85,15 @@ export function AIHeroSection({
 
   // Format the title with specific words in black
   const formatTitle = () => {
-    if (title === "Build smart. Secure smarter.") {
+    if (title === "Modern cloud. Built to scale. Secured to last.") {
       return (
         <>
-          <span className="text-black">Build</span>
-          <span className="text-indrasol-blue"> smart. </span>
-          <span className="text-black">Secure</span>
-          <span className="text-indrasol-blue"> smarter.</span>
+          <span className="text-black">Modern </span>
+          <span className="text-indrasol-blue"> Cloud. </span>
+          <span className="text-black">Built to </span>
+          <span className="text-indrasol-blue"> Scale.</span>
+          <span className="text-black">Secured to </span>
+          <span className="text-indrasol-blue"> last.</span>
         </>
       );
     }
@@ -116,7 +118,7 @@ export function AIHeroSection({
           <div className="space-y-5">
             {/* Category badge */}
             <div className="inline-block bg-indrasol-blue/10 px-4 py-1 rounded-full mb-1">
-              <span className="text-indrasol-blue font-semibold text-sm">AI Solutions & Security</span>
+              <span className="text-indrasol-blue font-semibold text-sm">Cloud Engineering & Security</span>
             </div>
             
             {/* Main headline with formatted title */}
@@ -127,15 +129,16 @@ export function AIHeroSection({
             {/* Description text with new content */}
             <div className="space-y-4">
               <p className="text-lg text-gray-700">
-                We develop AI and LLM-powered apps and ensure they're secure from prompt injection, misuse, and model leaks.
+              We build cloud-native applications, ensure they meet compliance, and keep your cloud infrastructure secure, optimized, and always running.
               </p>
               
               {/* New bullet points with improved spacing */}
               <ul className="space-y-2 pl-1">
-                <BulletPoint>LLM & AI App Development</BulletPoint>
-                <BulletPoint>GenAI Security Reviews, Threat Modeling, MLSecOps</BulletPoint>
-                <BulletPoint>Ethical AI Model Governance</BulletPoint>
-                <BulletPoint>AI Security Posture Management (AI-SPM)</BulletPoint>
+                <BulletPoint>Cloud-Native App Development & DevSecOps</BulletPoint>
+                <BulletPoint>Managed Cloud Services (MSP)</BulletPoint>
+                <BulletPoint>Cloud Compliance (SOC 2, ISO, HIPAA, etc.)</BulletPoint>
+                <BulletPoint>Cloud Security Posture Management (CSPM)</BulletPoint>
+                
               </ul>
             </div>
             
@@ -145,14 +148,14 @@ export function AIHeroSection({
                 to="/contact" 
                 className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20"
               >
-                Request AI Consultation 
+                Request Cloud Assessment 
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
               </Link>
               {/* <Link 
-                to="/services/aisolutions" 
+                to="/services/cloud-engineering" 
                 className="group px-6 py-3 border-2 border-indrasol-blue text-indrasol-blue bg-white/80 backdrop-blur-sm rounded-lg hover:bg-indrasol-blue/10 transition-colors inline-flex items-center justify-center"
               >
-                Explore AI Services
+                Explore Cloud Services
                 <ArrowUpRight className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-300" />
               </Link> */}
             </div>
@@ -176,19 +179,19 @@ export function AIHeroSection({
                     muted 
                     playsInline
                     className="w-full rounded-xl shadow-xl"
-                    poster="/services-ai/image-for-hero-section.png"
+                    poster="/services-data/image-for-hero-section.png"
                   >
                     <source src={videoSrc} type="video/mp4" />
                     <img 
-                      src="/services-ai/image-for-hero-section.png" 
-                      alt="Advanced AI solutions and visualization" 
+                      src="/services-data/image-for-hero-section.png" 
+                      alt="Data engineering and analytics visualization" 
                       className="w-full rounded-xl shadow-xl"
                     />
                   </video>
                 ) : (
                   <img 
-                    src="/services-ai/image-for-hero-section.png" 
-                    alt="Advanced AI solutions and visualization" 
+                    src="/lovable-uploads/service2 - herosection.png" 
+                    alt="Cloud engineering and security visualization" 
                     className="w-full rounded-xl shadow-xl transition-all duration-700 group-hover:scale-105 group-hover:rotate-1"
                     loading="eager"
                   />
@@ -217,4 +220,4 @@ export function AIHeroSection({
   );
 }
 
-export default AIHeroSection;
+export default CloudHeroSection;

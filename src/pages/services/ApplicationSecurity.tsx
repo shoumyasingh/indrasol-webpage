@@ -1,21 +1,20 @@
 import React from "react";
 import { Navbar } from "@/components/ui/navbar";
-import { AIHeroSection } from "@/components/services-ai/ai-herosection";
+import { AppHeroSection } from "@/components/services-ai/app-herosection";
 import { Footer } from "@/components/ui/footer";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { ChatBot } from "@/components/ui/chatbot";
-import AIAfterHeroSection from "@/components/services-ai/ai-afterherosection";
+import AppAfterHeroSection from "@/components/services-ai/app-afterherosection";
 
-const AISolutions = () => {
+const ApplicationSecurity = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
-        {/* Hero section specifically for AI Solutions */}
-        <AIHeroSection />
-         {/* Section showcasing AI capabilities */}
-        <AIAfterHeroSection />
-        
+        {/* Hero section specifically for Application Security */}
+        <AppHeroSection />
+        {/* Section showcasing Application Security capabilities */}
+        <AppAfterHeroSection /> 
       </main>
       <Footer />
       <BackToTop />
@@ -24,4 +23,4 @@ const AISolutions = () => {
   );
 };
 
-export default AISolutions;
+export default ApplicationSecurity;

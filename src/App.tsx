@@ -12,6 +12,8 @@ import CloudEngineeringSecurity from "./pages/services/CloudEngineeringSecurity"
 import ApplicationSecurity from "./pages/services/ApplicationSecurity";
 import DataEngineering from "./pages/services/DataEngineering";
 import Company from "./pages/Aboutus/company";
+import BizRadarProductPage from "./pages/Products/BizRadarProductPage";
+import SecureTrackProductPage from "./pages/Products/SecureTrackProductPage";
 
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/services/cloud-engineering" element={<CloudEngineeringSecurity />} />
           <Route path="/services/application-security" element={<ApplicationSecurity />} />
           <Route path="/services/data-engineering" element={<DataEngineering />} />
+          <Route path="/Products/Bizradar" element={<BizRadarProductPage />} />
+          <Route path="/Products/Securetrack" element={<SecureTrackProductPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

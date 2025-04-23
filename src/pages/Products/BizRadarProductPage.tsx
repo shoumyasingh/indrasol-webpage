@@ -61,9 +61,15 @@ const BizRadarHero = () => {
             <div className="relative">
               <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100">
                 {/* Placeholder for dashboard screenshot */}
-                <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">Dashboard Preview Image</span>
-                </div>
+                <div className="relative ">
+                <img 
+                  src="/product-images/biz.png" 
+                  alt="Business professionals working on technology solutions" 
+                  className="w-full transition-transform duration-700 hover:scale-105"
+                />
+                
+                
+              </div>
 
                 {/* Stats preview cards */}
                 <div className="grid grid-cols-2 gap-4 mt-4">
@@ -82,8 +88,8 @@ const BizRadarHero = () => {
                 </div>
 
                 {/* Decorative elements */}
-                <div className="absolute -top-6 -left-6 w-16 h-16 bg-indrasol-blue/10 rounded-xl transform rotate-12 animate-pulse"></div>
-                <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-indrasol-orange/10 rounded-xl transform -rotate-12"></div>
+                {/* <div className="absolute -top-6 -left-6 w-16 h-16 bg-indrasol-blue/10 rounded-xl transform rotate-12 animate-pulse"></div>
+                <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-indrasol-orange/10 rounded-xl transform -rotate-12"></div> */}
               </div>
             </div>
           </div>
@@ -809,7 +815,7 @@ export function BizRadarProductPage() {
       <BizRadarHero />
       <DataSourcesSection />
       <TechnologySection />
-      <FeaturesSection />
+      {/* <FeaturesSection /> */}
       {/* <PricingSection /> */}
       <FAQSection />
       {/* <CTASection /> */}

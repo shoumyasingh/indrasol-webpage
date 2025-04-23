@@ -64,12 +64,15 @@ const SecureTrackHero = () => {
             <div className="relative">
               <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100">
                 {/* Placeholder for app interface screenshot */}
-                <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indrasol-blue/5 to-indrasol-blue/20"></div>
-                  <span className="text-gray-500 z-10 font-medium">
-                    Security Architecture Analysis Dashboard
-                  </span>
-                </div>
+                <div className="relative ">
+                <img 
+                  src="/product-images/Securetrack.png" 
+                  alt="Business professionals working on technology solutions" 
+                  className="w-full transition-transform duration-700 hover:scale-105"
+                />
+                
+                
+              </div>
 
                 {/* Stats preview cards */}
                 <div className="grid grid-cols-2 gap-4 mt-4">
@@ -90,8 +93,8 @@ const SecureTrackHero = () => {
                 </div>
 
                 {/* Decorative elements */}
-                <div className="absolute -top-6 -left-6 w-16 h-16 bg-indrasol-blue/10 rounded-xl transform rotate-12 animate-pulse"></div>
-                <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-indrasol-orange/10 rounded-xl transform -rotate-12"></div>
+                {/* <div className="absolute -top-6 -left-6 w-16 h-16 bg-indrasol-blue/10 rounded-xl transform rotate-12 animate-pulse"></div>
+                <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-indrasol-orange/10 rounded-xl transform -rotate-12"></div> */}
               </div>
             </div>
           </div>

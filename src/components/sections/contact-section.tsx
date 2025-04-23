@@ -79,7 +79,7 @@ export function ContactSection() {
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">Call Us</h3>
                     <a href="tel:+15101234567" className="text-indrasol-blue hover:text-indrasol-blue/80 transition-colors mt-1 block">
-                      +1 (510) 123-4567
+                      +1 (510) 754 2001
                     </a>
                   </div>
                 </div>

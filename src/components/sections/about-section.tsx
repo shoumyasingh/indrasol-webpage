@@ -70,7 +70,7 @@ export function AboutSection() {
           
           <div className="mt-12 text-center">
             <a 
-              href="/about" 
+              href="/" 
               className="inline-flex items-center bg-indrasol-blue text-white font-medium px-8 py-3 rounded-xl shadow-lg shadow-indrasol-blue/20 hover:bg-indrasol-blue/90 transition-colors group"
             >
               Learn more about our journey 

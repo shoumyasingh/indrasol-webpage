@@ -7,7 +7,7 @@ const locations = [
     country: "USA",
     address: "6101 Bollinger canyon Rd, suite 335 C, San Ramon, California 94583",
     isHeadquarters: true,
-    phone: "+1 (510) 123-4567",
+    phone: "+1 (510) 754 2001",
     email: "info@indrasol.com",
     mapLink: "https://maps.google.com/?q=San+Ramon,+California",
     flag: "🇺🇸"
@@ -17,8 +17,8 @@ const locations = [
     country: "Singapore",
     address: "The Adelphi,1 Coleman Street, #05-14, Singapore 179803",
     isHeadquarters: false,
-    phone: "+65 1234 5678",
-    email: "singapore@indrasol.com",
+    // phone: "+65 1234 5678",
+    // email: "singapore@indrasol.com",
     mapLink: "https://maps.google.com/?q=Singapore+Business+District",
     flag: "🇸🇬"
   },
@@ -27,8 +27,8 @@ const locations = [
     country: "India",
     address: "814, Manjeera Trinity Corporate, JNTU Road, Kukatpally, Hyderabad, TS, 500 075",
     isHeadquarters: false,
-    phone: "+91 1234 567890",
-    email: "india@indrasol.com",
+    // phone: "+91 1234 567890",
+    // email: "india@indrasol.com",
     mapLink: "https://www.google.com/maps/place/Indrasol/@17.4893133,78.3901066,936m/data=!3m2!1e3!4b1!4m6!3m5!1s0x3bcb91f27b5c1195:0xc97b9e2d12234798!8m2!3d17.4893082!4d78.3926815!16s%2Fg%2F11fkw7t_9g?entry=ttu&g_ep=EgoyMDI1MDQxNC4xIKXMDSoASAFQAw%3D%3Dhttps://www.google.com/maps/search/814,+Manjeera+Trinity+Corporate,+JNTU+Road,+Kukatpally,+Hyderabad,+TS,+500+075/@17.4911278,78.3908007,468m/data=!3m2!1e3!4b1?entry=ttu&g_ep=EgoyMDI1MDQxNC4xIKXMDSoASAFQAw%3D%3D",
     flag: "🇮🇳"
   },
@@ -37,8 +37,8 @@ const locations = [
     country: "Mexico",
     address: "Av. Paseo de la Reforma 222, Juárez, Cuauhtémoc, 06600 Ciudad de México, CDMX",
     isHeadquarters: false,
-    phone: "+52 55 1234 5678",
-    email: "mexico@indrasol.com",
+    // phone: "+52 55 1234 5678",
+    // email: "mexico@indrasol.com",
     mapLink: "https://maps.google.com/?q=Paseo+de+la+Reforma+222+Mexico+City",
     flag: "🇲🇽"
   }

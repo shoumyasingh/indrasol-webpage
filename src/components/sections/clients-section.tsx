@@ -5,7 +5,7 @@ const clientLogos = [
   // Row 1
   {
     name: "Facebook",
-    logo: "/lovable-uploads/metalogo.png",
+    logo: "/logos/metalogo.png",
     url: "https://www.facebook.com/"
   },
   {

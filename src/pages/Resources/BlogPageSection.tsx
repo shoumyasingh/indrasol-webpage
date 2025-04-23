@@ -39,7 +39,7 @@ const sampleBlogs: BlogPost[] = [
     category: "Cybersecurity",
     author: "Satish Govindappa",
     authorRole: "",
-    authorAvatar: "",
+    authorAvatar: "/blog-images/SatishGovindappa.png",
     publishDate: "April 18, 2025",
     readTime: "8 min read",
     slug: "cyber-risk-management",

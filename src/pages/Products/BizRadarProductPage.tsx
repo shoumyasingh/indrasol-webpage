@@ -59,7 +59,7 @@ const BizRadarHero = () => {
           </div>
           <div className="hidden lg:block">
             <div className="relative">
-              <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100">
+              {/* <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100"> */}
                 {/* Placeholder for dashboard screenshot */}
                 <div className="relative ">
                 <img 
@@ -90,7 +90,7 @@ const BizRadarHero = () => {
                 {/* Decorative elements */}
                 {/* <div className="absolute -top-6 -left-6 w-16 h-16 bg-indrasol-blue/10 rounded-xl transform rotate-12 animate-pulse"></div>
                 <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-indrasol-orange/10 rounded-xl transform -rotate-12"></div> */}
-              </div>
+              {/* </div> */}
             </div>
           </div>
         </div>

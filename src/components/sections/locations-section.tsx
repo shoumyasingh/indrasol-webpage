@@ -35,7 +35,7 @@ const locations = [
   {
     city: "Mexico City",
     country: "Mexico",
-    address: "Av. Paseo de la Reforma 222, Juárez, Cuauhtémoc, 06600 Ciudad de México, CDMX",
+    address: "Av Independencia 89-7 col. Amomolulco Lerma Estado de Mèxico c.p. 52005",
     isHeadquarters: false,
     // phone: "+52 55 1234 5678",
     // email: "mexico@indrasol.com",

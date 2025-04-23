@@ -62,7 +62,7 @@ const SecureTrackHero = () => {
           </div>
           <div className="hidden lg:block">
             <div className="relative">
-              <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100">
+              {/* <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100"> */}
                 {/* Placeholder for app interface screenshot */}
                 <div className="relative ">
                 <img 
@@ -89,7 +89,7 @@ const SecureTrackHero = () => {
                       76%
                     </div>
                     <div className="text-gray-600 text-sm">Time Saved</div>
-                  </div>
+                  {/* </div> */}
                 </div>
 
                 {/* Decorative elements */}

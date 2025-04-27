@@ -122,15 +122,15 @@ export function AfterHeroSection() {
           </div>
           
           <div className="mt-10">
-            <a 
+            {/* <a 
               href="#services" 
               className="inline-flex items-center justify-center px-8 py-4 bg-[#367ABB] text-white rounded-full hover:bg-[#367ABB]/90 transition-colors shadow-lg hover:shadow-xl group relative overflow-hidden"
-            >
+            > */}
               {/* Button background effect */}
-              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-[#367ABB]/0 via-white/20 to-[#367ABB]/0 -translate-x-full group-hover:animate-shine"></span>
+              {/* <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-[#367ABB]/0 via-white/20 to-[#367ABB]/0 -translate-x-full group-hover:animate-shine"></span> */}
               
-              <span className="font-medium mr-2 relative z-10">Explore Our Services</span>
-              <span className="relative w-6 h-6 bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white/30 z-10">
+              {/* <span className="font-medium mr-2 relative z-10">Explore Our Services</span> */}
+              {/* <span className="relative w-6 h-6 bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white/30 z-10">
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
                   className="h-4 w-4 transition-transform duration-300 transform group-hover:translate-x-1" 
@@ -140,8 +140,8 @@ export function AfterHeroSection() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5-5 5M7 7l5 5-5 5" />
                 </svg>
-              </span>
-            </a>
+              </span> */}
+            {/* </a> */}
           </div>
         </motion.div>
       </div>

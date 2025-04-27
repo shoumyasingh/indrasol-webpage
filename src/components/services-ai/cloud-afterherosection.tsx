@@ -10,6 +10,7 @@ import {
   Bug,
   Key,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Modern Feature section component with enhanced styling and animations
 const FeatureSection = ({
@@ -150,15 +151,14 @@ const CloudAfterHeroSection = () => {
       whyItMatters:
         "You get enterprise-grade applications that are secure, scalable, and built to support critical business functions—without the tech debt.",
       imageSrc: "/lovable-uploads/s2-1.png",
-      imageAlt: " Full Stack SaaS EPM, ERP Cloud-Native application development",
+      imageAlt:
+        " Full Stack SaaS EPM, ERP Cloud-Native application development",
       reversed: false,
       accentColor: "bg-indrasol-blue/10",
     },
     {
-      title:
-        "2. Cloud Security Posture Management (CSPM)",
-      subtitle:
-        "Secure your cloud, continuously.",
+      title: "2. Cloud Security Posture Management (CSPM)",
+      subtitle: "Secure your cloud, continuously.",
       description:
         "Cloud Security Posture Management (CSPM) continuously monitors and analyzes cloud environments to identify misconfigurations, enforce security policies, and ensure compliance with industry standards.",
       bulletPoints: [
@@ -201,8 +201,7 @@ const CloudAfterHeroSection = () => {
         "Manage cloud infrastructure across AWS, Azure, GCP",
         "Provide 24/7 monitoring, patching, and cost optimization",
         "Ensure backup, disaster recovery, and high availability",
-        "Support ongoing improvements and scaling"
-
+        "Support ongoing improvements and scaling",
       ],
       whyItMatters:
         "You stay focused on growth—we handle the complexity of keeping your cloud secure, stable, and efficient.",
@@ -265,10 +264,12 @@ const CloudAfterHeroSection = () => {
             Our Services
           </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">
-          Cloud Engineering & Security
+            Cloud Engineering & Security
           </h2>
           <p className="text-xl text-gray-700 leading-relaxed">
-          We help organizations build, test, and deploy secure cloud-native solutions with confidence—protecting both your data and your reputation.
+            We help organizations build, test, and deploy secure cloud-native
+            solutions with confidence—protecting both your data and your
+            reputation.
           </p>
         </div>
       </div>
@@ -302,13 +303,16 @@ const CloudAfterHeroSection = () => {
               Ready to secure your applications?
             </h3>
             <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
-              Get in touch to discuss how our Cloud security expertise can
-              help protect your software from emerging threats.
+              Get in touch to discuss how our Cloud security expertise can help
+              protect your software from emerging threats.
             </p>
-            <button className="group px-8 py-4 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20">
-              Schedule a Cloud Assessment
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-            </button>
+            <Link
+              to="/contact"
+              className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20"
+            >
+              Schedule a Consultation
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
+            </Link>
           </div>
         </div>
       </div>

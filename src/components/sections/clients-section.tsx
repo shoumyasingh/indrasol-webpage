@@ -304,7 +304,7 @@ export function ClientsSection() {
           transition={{ delay: 0.5, duration: 0.7 }}
           className="mt-16 text-center"
         >
-          <a 
+          {/* <a 
             href="#success-stories" 
             className="inline-flex items-center justify-center px-8 py-4 bg-[#367ABB] text-white rounded-full hover:bg-[#367ABB]/90 transition-colors shadow-lg hover:shadow-xl group"
           >
@@ -320,7 +320,7 @@ export function ClientsSection() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5-5 5M7 7l5 5-5 5" />
               </svg>
             </span>
-          </a>
+          </a> */}
         </motion.div>
       </div>
       

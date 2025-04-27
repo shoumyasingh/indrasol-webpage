@@ -10,6 +10,7 @@ import {
   Bug,
   Key,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Modern Feature section component with enhanced styling and animations
 const FeatureSection = ({
@@ -304,10 +305,13 @@ const AppAfterHeroSection = () => {
               Get in touch to discuss how our application security expertise can
               help protect your software from emerging threats.
             </p>
-            <button className="group px-8 py-4 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20">
-              Schedule a Security Assessment
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-            </button>
+            <Link
+              to="/contact"
+              className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20"
+            >
+              Schedule a Consultation
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
+            </Link>
           </div>
         </div>
       </div>

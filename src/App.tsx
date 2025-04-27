@@ -48,7 +48,7 @@ const App = () => (
           <Route path="/services/data-engineering" element={<DataEngineering />} />
           <Route path="/Products/Bizradar" element={<BizRadarProductPage />} />
           <Route path="/Products/Securetrack" element={<SecureTrackProductPage />} />
-          <Route path="/Resources/blogs" element={<BlogPage />} />
+          {/* <Route path="/Resources/blogs" element={<BlogPage />} /> */}
           <Route path="/Resources/blogs2" element={<BlogPageSection />} />
           <Route path="/blog/:slug" element={<BlogDetailWrapper />} />
           {/* <Route path="/Resources/whitepaper" element={<WhitePaperSection />} /> */}

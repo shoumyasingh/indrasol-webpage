@@ -19,6 +19,7 @@ import {
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { Link } from "react-router-dom";
 
 // Hero section for BizRadar product
 const BizRadarHero = () => {
@@ -39,7 +40,7 @@ const BizRadarHero = () => {
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-              <span className="text-indrasol-blue">BizRadar</span>
+              <span className="text-indrasol-blue">Bizradar</span>
               <span className="block mt-1">Discover. Analyze. Win.</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-700 max-w-2xl">
@@ -48,51 +49,111 @@ const BizRadarHero = () => {
               across government and freelance marketplaces.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-6">
-              <button className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20">
+              <Link
+                to="/contact"
+                className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20"
+              >
                 Request Demo
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
-              </button>
-              <button className="px-6 py-3 border-2 border-indrasol-blue text-indrasol-blue bg-white/80 backdrop-blur-sm rounded-lg hover:bg-indrasol-blue/10 transition-colors inline-flex items-center justify-center">
+              </Link>
+              {/* <button className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20">
+                Request Demo
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
+              </button> */}
+              {/* <button className="px-6 py-3 border-2 border-indrasol-blue text-indrasol-blue bg-white/80 backdrop-blur-sm rounded-lg hover:bg-indrasol-blue/10 transition-colors inline-flex items-center justify-center">
                 View Features
-              </button>
+              </button> */}
             </div>
           </div>
           <div className="hidden lg:block">
             <div className="relative">
               {/* <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100"> */}
-                {/* Placeholder for dashboard screenshot */}
-                <div className="relative ">
-                <img 
-                  src="/product-images/biz.png" 
-                  alt="Business professionals working on technology solutions" 
+              {/* Placeholder for dashboard screenshot */}
+              <div className="relative ">
+                <img
+                  src="/product-images/bizimage.png"
+                  alt="Business professionals working on technology solutions"
                   className="w-full transition-transform duration-700 hover:scale-105"
                 />
-                
-                
               </div>
 
-                {/* Stats preview cards */}
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div className="bg-indrasol-blue/5 rounded-lg p-4">
-                    <div className="text-indrasol-blue font-bold text-2xl">
-                      2.5K+
-                    </div>
-                    <div className="text-gray-600 text-sm">Daily Contracts</div>
+              {/* Stats preview cards */}
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="bg-indrasol-blue/5 rounded-lg p-4">
+                  <div className="text-indrasol-blue font-bold text-2xl">
+                    2.5K+
                   </div>
-                  <div className="bg-indrasol-orange/5 rounded-lg p-4">
-                    <div className="text-indrasol-orange font-bold text-2xl">
-                      98%
-                    </div>
-                    <div className="text-gray-600 text-sm">Match Accuracy</div>
-                  </div>
+                  <div className="text-gray-600 text-sm">Daily Contracts</div>
                 </div>
+                <div className="bg-indrasol-orange/5 rounded-lg p-4">
+                  <div className="text-indrasol-orange font-bold text-2xl">
+                    98%
+                  </div>
+                  <div className="text-gray-600 text-sm">Match Accuracy</div>
+                </div>
+              </div>
 
-                {/* Decorative elements */}
-                {/* <div className="absolute -top-6 -left-6 w-16 h-16 bg-indrasol-blue/10 rounded-xl transform rotate-12 animate-pulse"></div>
+              {/* Decorative elements */}
+              {/* <div className="absolute -top-6 -left-6 w-16 h-16 bg-indrasol-blue/10 rounded-xl transform rotate-12 animate-pulse"></div>
                 <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-indrasol-orange/10 rounded-xl transform -rotate-12"></div> */}
               {/* </div> */}
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// What is Bizradar section
+const WhatisSection = () => {
+  return (
+    <section className="py-16 bg-gradient-to-b from-white via-indrasol-blue/5 to-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-block bg-indrasol-blue/10 px-4 py-1 rounded-full mb-4">
+            <span className="text-indrasol-blue font-semibold text-sm">
+              What is Bizradar?
+            </span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Discover Contract Opportunities with Bizradar
+          </h2>
+          <p className="text-lg text-gray-700">
+            Bizradar is a platform for tracking contracts powered by AI that
+            streamlines the process of finding and evaluating cybersecurity, AI,
+            and data engineering projects in both government and freelance
+            markets.
+          </p>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl overflow-hidden p-6 md:p-8 border border-gray-100">
+          {/* Decorative elements */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#367ABB]/5 rounded-full blur-xl"></div>
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-[#D5844C]/5 rounded-full blur-xl"></div>
+
+          <div className="relative aspect-[16/12] w-full group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#367ABB]/10 to-transparent rounded-2xl opacity-50"></div>
+            <img
+              src="/product-images/biz.png"
+              alt="Indrasol's Service Architecture"
+              className="w-full h-full object-contain relative z-10 transition-transform duration-500 group-hover:scale-[1.02]"
+            />
+
+            {/* Highlight spots */}
+            <div className="absolute top-1/3 left-1/4 w-4 h-4 bg-[#367ABB]/30 rounded-full blur-sm animate-pulse"></div>
+            <div
+              className="absolute top-1/4 right-1/3 w-3 h-3 bg-[#D5844C]/30 rounded-full blur-sm animate-pulse"
+              style={{ animationDelay: "1s" }}
+            ></div>
+            <div
+              className="absolute bottom-1/3 right-1/4 w-5 h-5 bg-[#9FA1A1]/30 rounded-full blur-sm animate-pulse"
+              style={{ animationDelay: "0.5s" }}
+            ></div>
+          </div>
+
+          {/* <div className="mt-6 text-center">
+              <span className="text-sm font-medium text-gray-500">Tap into our comprehensive service ecosystem</span>
+            </div> */}
         </div>
       </div>
     </section>
@@ -114,7 +175,7 @@ const DataSourcesSection = () => {
             Multiple Data Sources, One Platform
           </h2>
           <p className="text-lg text-gray-700">
-            BizRadar aggregates contract opportunities from across the digital
+            Bizradar aggregates contract opportunities from across the digital
             landscape, ensuring you never miss a relevant opportunity.
           </p>
         </div>
@@ -297,6 +358,22 @@ const TechnologySection = () => {
               </p>
             </div>
           </div>
+
+          {/* LLM-Powered Search */}
+          <div className="relative mt-10 md:mt-5">
+            <div className="absolute inset-0 bg-gradient-to-r from-indrasol-orange/15 to-indrasol-orange/5 rounded-xl transform rotate-1"></div>
+            <div className="relative bg-white p-8 rounded-xl shadow-lg border border-gray-100 z-10">
+              <div className="p-3 bg-indrasol-orange/10 rounded-full w-14 h-14 flex items-center justify-center mb-6">
+                <Search className="h-6 w-6 text-indrasol-orange" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">RFP Genration</h3>
+              <p className="text-gray-600">
+                Access to thousands of Request For Proposals from corporations,
+                and helps to generate and also provides templates to build RFP
+                and download RFPs for your business.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -317,7 +394,7 @@ const FeaturesSection = () => {
             </span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            How BizRadar Works
+            How Bizradar Works
           </h2>
           <p className="text-lg text-gray-700">
             Our intelligent platform streamlines the entire contract discovery
@@ -379,7 +456,7 @@ const FeaturesSection = () => {
                   Automated Discovery
                 </h3>
                 <p className="text-lg text-gray-700">
-                  BizRadar continuously scans multiple data sources to discover
+                  Bizradar continuously scans multiple data sources to discover
                   relevant contract opportunities in cybersecurity, AI, and data
                   engineering domains.
                 </p>
@@ -452,7 +529,7 @@ const FeaturesSection = () => {
                   Precision Matching
                 </h3>
                 <p className="text-lg text-gray-700">
-                  BizRadar matches contract opportunities with your company's
+                  Bizradar matches contract opportunities with your company's
                   capabilities, experience, and growth objectives to find the
                   perfect fit.
                 </p>
@@ -697,29 +774,29 @@ const FAQSection = () => {
 
   const faqs = [
     {
-      question: "How does BizRadar find contract opportunities?",
+      question: "How does Bizradar find contract opportunities?",
       answer:
-        "BizRadar uses automated ETL pipelines to continuously scan government procurement platforms (SAM.gov, GovWin, GovTribe) and freelance marketplaces (Upwork, Fiverr, Freelancer). Our system extracts relevant data, transforms it into a standardized format, and loads it into our centralized database for analysis and matching.",
+        "Bizradar uses automated ETL pipelines to continuously scan government procurement platforms (SAM.gov, GovWin, GovTribe) and freelance marketplaces (Upwork, Fiverr, Freelancer). Our system extracts relevant data, transforms it into a standardized format, and loads it into our centralized database for analysis and matching.",
     },
     {
-      question: "What industries does BizRadar focus on?",
+      question: "What industries does Bizradar focus on?",
       answer:
-        "BizRadar specializes in cybersecurity, AI, and data engineering contract opportunities. These focus areas allow us to provide deep, specialized coverage of these high-growth technical domains.",
+        "Bizradar specializes in cybersecurity, AI, and data engineering contract opportunities. These focus areas allow us to provide deep, specialized coverage of these high-growth technical domains.",
     },
     {
       question: "How accurate are the contract matches?",
       answer:
-        "BizRadar uses advanced vector database technology and LLM-powered search to understand the semantic meaning behind contract requirements. This allows us to achieve a 98% accuracy rate in matching relevant opportunities to your business capabilities.",
+        "Bizradar uses advanced vector database technology and LLM-powered search to understand the semantic meaning behind contract requirements. This allows us to achieve a 98% accuracy rate in matching relevant opportunities to your business capabilities.",
     },
     {
       question: "Can I customize the types of contracts I want to see?",
       answer:
-        "Yes, BizRadar offers extensive customization options. You can filter by contract value, duration, location, required certifications, agency type, and many other parameters to focus on exactly the types of opportunities you're most interested in.",
+        "Yes, Bizradar offers extensive customization options. You can filter by contract value, duration, location, required certifications, agency type, and many other parameters to focus on exactly the types of opportunities you're most interested in.",
     },
     {
       question: "How often is the database updated?",
       answer:
-        "Our ETL pipelines run continuously, with most data sources being updated multiple times per day. Government procurement platforms are typically updated every 1-2 hours, while freelance marketplace opportunities are tracked in near real-time.",
+        "Our ETL pipelines run continuously, with most data sources being updated multiple times per day. Government procurement platforms are typically updated every 24 hours, while freelance marketplace opportunities are tracked in near real-time.",
     },
   ];
 
@@ -736,7 +813,7 @@ const FAQSection = () => {
             Frequently Asked Questions
           </h2>
           <p className="text-lg text-gray-700">
-            Everything you need to know about BizRadar
+            Everything you need to know about Bizradar
           </p>
         </div>
 
@@ -813,6 +890,7 @@ export function BizRadarProductPage() {
   return (
     <div className="bg-white">
       <BizRadarHero />
+      <WhatisSection />
       <DataSourcesSection />
       <TechnologySection />
       {/* <FeaturesSection /> */}

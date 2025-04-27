@@ -22,6 +22,7 @@ import {
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { Link } from "react-router-dom";
 
 // Hero section for SecureTrack product
 const SecureTrackHero = () => {
@@ -51,44 +52,45 @@ const SecureTrackHero = () => {
               recommendations using AI-driven insights.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-6">
-              <button className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20">
-                Try SecureTrack Free
+              <Link
+                to="/contact"
+                className="group px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-all duration-300 inline-flex items-center justify-center shadow-lg shadow-indrasol-blue/20"
+              >
+                Request Demo
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 stroke-2" />
-              </button>
-              <button className="px-6 py-3 border-2 border-indrasol-blue text-indrasol-blue bg-white/80 backdrop-blur-sm rounded-lg hover:bg-indrasol-blue/10 transition-colors inline-flex items-center justify-center">
+              </Link>
+              {/* <button className="px-6 py-3 border-2 border-indrasol-blue text-indrasol-blue bg-white/80 backdrop-blur-sm rounded-lg hover:bg-indrasol-blue/10 transition-colors inline-flex items-center justify-center">
                 View Demo
-              </button>
+              </button> */}
             </div>
           </div>
           <div className="hidden lg:block">
             <div className="relative">
               {/* <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100"> */}
-                {/* Placeholder for app interface screenshot */}
-                <div className="relative ">
-                <img 
-                  src="/product-images/Securetrack.png" 
-                  alt="Business professionals working on technology solutions" 
+              {/* Placeholder for app interface screenshot */}
+              <div className="relative ">
+                <img
+                  src="/product-images/Securetrack.png"
+                  alt="Business professionals working on technology solutions"
                   className="w-full transition-transform duration-700 hover:scale-105"
                 />
-                
-                
               </div>
 
-                {/* Stats preview cards */}
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div className="bg-indrasol-blue/5 rounded-lg p-4">
-                    <div className="text-indrasol-blue font-bold text-2xl">
-                      95%
-                    </div>
-                    <div className="text-gray-600 text-sm">
-                      Threat Detection Rate
-                    </div>
+              {/* Stats preview cards */}
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="bg-indrasol-blue/5 rounded-lg p-4">
+                  <div className="text-indrasol-blue font-bold text-2xl">
+                    95%
                   </div>
-                  <div className="bg-indrasol-orange/5 rounded-lg p-4">
-                    <div className="text-indrasol-orange font-bold text-2xl">
-                      76%
-                    </div>
-                    <div className="text-gray-600 text-sm">Time Saved</div>
+                  <div className="text-gray-600 text-sm">
+                    Threat Detection Rate
+                  </div>
+                </div>
+                <div className="bg-indrasol-orange/5 rounded-lg p-4">
+                  <div className="text-indrasol-orange font-bold text-2xl">
+                    76%
+                  </div>
+                  <div className="text-gray-600 text-sm">Time Saved</div>
                   {/* </div> */}
                 </div>
 
@@ -524,7 +526,7 @@ const HowItWorksSection = () => {
           </div>
 
           {/* Step visualization */}
-          <div className="bg-white rounded-xl shadow-lg p-6 mt-8">
+          {/* <div className="bg-white rounded-xl shadow-lg p-6 mt-8">
             <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
               {activeStep === 1 && (
                 <div className="text-center p-8">
@@ -555,7 +557,7 @@ const HowItWorksSection = () => {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>
@@ -1073,7 +1075,7 @@ export function SecureTrackProductPage() {
       <KeyFeaturesSection />
       <TechnologySection />
       <HowItWorksSection />
-      <UseCasesSection />
+      {/* <UseCasesSection /> */}
       {/* <PricingSection /> */}
       <FAQSection />
       {/* <CTASection /> */}

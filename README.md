@@ -1,7 +1,7 @@
 
 ## Project info
 
-**URL**: https://indrasol.netlify.app
+**URL**: https://indrasol.com/
 
 ## What technologies are used for this project?
 

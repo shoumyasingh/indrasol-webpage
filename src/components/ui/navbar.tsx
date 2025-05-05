@@ -303,13 +303,13 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                   <ClipboardCheck className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   Case Studies
                 </Link> */}
-                {/* <Link 
+                <Link 
                   to="/Resources/whitepaper" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
                 >
                   <File className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   White Papers
-                </Link> */}
+                </Link>
                 {/* <Link 
                   to="/resources/news" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
@@ -497,13 +497,13 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                     <ClipboardCheck className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     Case Studies
                   </Link> */}
-                  {/* <Link 
+                  <Link 
                     to="/Resources/whitepaper" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <File className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     White Papers
-                  </Link> */}
+                  </Link>
                   {/* <Link 
                     to="/resources/news" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

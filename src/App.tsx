@@ -20,14 +20,35 @@ import BlogPageSection from "./pages/Resources/BlogPageSection";
 import CyberBlogDetailPage from "./pages/Resources/BlogPageSection";
 // import { BlogPost } from "./cyber-risk-management/BlogPageSection";
 import BlogDetailPage from "./components/blog/cyber-risk-management";
+// Import the whitepaper detail component
+import WhitePaper1 from "./components/whitepaper/ai-augmented-pen-testing";
+// Import WhitePaperDetailPage component from WhitePaperSection
+import { WhitePaperDetailPage } from "./pages/Resources/WhitePaperSection";
 
-
-// Create a wrapper component that gets the slug parameter
+// Create a wrapper component that gets the slug parameter for blog
 function BlogDetailWrapper() {
   const { slug } = useParams();
   return <BlogDetailPage slug={slug} />;
 }
 
+// Create a wrapper component for whitepaper detail page
+function WhitePaperDetailWrapper() {
+  const { slug } = useParams();
+  return <WhitePaperDetailPage slug={slug} />;
+}
+
+// Create a wrapper to handle specific whitepaper routes
+function WhitePaperRouter() {
+  const { slug } = useParams();
+  
+  // You can create a mapping of slugs to specific components if needed
+  if (slug === "ai-augmented-penetration-testing") {
+    return <WhitePaper1 />;
+  }
+  
+  // Default to the generic detail page
+  return <WhitePaperDetailPage slug={slug} />;
+}
 
 const queryClient = new QueryClient();
 
@@ -51,7 +72,11 @@ const App = () => (
           {/* <Route path="/Resources/blogs" element={<BlogPage />} /> */}
           <Route path="/Resources/blogs2" element={<BlogPageSection />} />
           <Route path="/blog/:slug" element={<BlogDetailWrapper />} />
-          {/* <Route path="/Resources/whitepaper" element={<WhitePaperSection />} /> */}
+          
+          {/* Whitepaper routes */}
+          <Route path="/Resources/whitepaper" element={<WhitePaperSection />} />
+          <Route path="/components/whitepaper/:slug" element={<WhitePaperRouter />} />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

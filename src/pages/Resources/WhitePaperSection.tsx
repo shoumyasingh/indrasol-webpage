@@ -13,7 +13,7 @@ import {
   Cpu,
   Bookmark,
   Shield,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/ui/navbar";
@@ -30,9 +30,6 @@ interface WhitePaper {
   authors: string[];
   publishDate: string;
   readTime: string;
-  pageCount: number;
-  fileSize: string;
-  downloadUrl: string;
   slug: string;
   featured?: boolean;
 }
@@ -41,96 +38,78 @@ interface WhitePaper {
 const sampleWhitePapers: WhitePaper[] = [
   {
     id: "1",
-    title: "Securing Large Language Models: Enterprise Implementation Guide",
+    title: "AI-Augmented Penetration Testing: The Future of Offensive Security",
     excerpt:
-      "A comprehensive guide to implementing security controls for LLMs in enterprise environments, covering prompt injection, data leakage, and compliance requirements.",
-    coverImage: "/whitepaper-images/llm-security.jpg",
+      "As cyber threats become more sophisticated, organizations face a widening gap between traditional security assessments and the evolving nature of modern attacks. Manual penetration testing has long identified vulnerabilities through targeted techniques and human expertise, but it can be time‑intensive, narrow in scope, and less effective against AI‑driven threats that adapt rapidly.",
+    coverImage: "/whitepaperImage/scope.png",
     category: "AI Security",
-    authors: ["Dr. Alex Chen", "Maya Patel"],
-    publishDate: "April 2025",
+    authors: ["Lakshmi Medasani"],
+    publishDate: "May 2025",
     readTime: "25 min read",
-    pageCount: 42,
-    fileSize: "3.2 MB",
-    downloadUrl: "/whitepapers/securing-large-language-models.pdf",
-    slug: "securing-large-language-models",
+    slug: "ai-augmented-penetration-testing",
     featured: true,
   },
-  {
-    id: "2",
-    title: "RAG System Architecture: Best Practices for Security and Scale",
-    excerpt:
-      "An architectural overview of secure Retrieval-Augmented Generation systems, with implementation patterns for ensuring data security throughout the knowledge lifecycle.",
-    coverImage: "/whitepaper-images/rag-architecture.jpg",
-    category: "Machine Learning",
-    authors: ["Maya Patel", "James Wilson"],
-    publishDate: "March 2025",
-    readTime: "35 min read",
-    pageCount: 56,
-    fileSize: "4.8 MB",
-    downloadUrl: "/whitepapers/rag-system-architecture.pdf",
-    slug: "rag-system-architecture",
-    featured: true,
-  },
-  {
-    id: "3",
-    title: "Zero Trust Implementation for AI Systems",
-    excerpt:
-      "A practical framework for implementing Zero Trust security principles in AI/ML infrastructure, with specific focus on model serving and inference pipelines.",
-    coverImage: "/whitepaper-images/zero-trust-ai.jpg",
-    category: "Security Architecture",
-    authors: ["James Wilson", "Sarah Johnson"],
-    publishDate: "February 2025",
-    readTime: "30 min read",
-    pageCount: 48,
-    fileSize: "3.6 MB",
-    downloadUrl: "/whitepapers/zero-trust-implementation-ai.pdf",
-    slug: "zero-trust-implementation-ai",
-  },
-  {
-    id: "4",
-    title: "Prompt Injection: Attack Vectors and Defenses",
-    excerpt:
-      "A technical analysis of prompt injection attack patterns, their impact on enterprise systems, and defensive strategies including context boundaries and input sanitization.",
-    coverImage: "/whitepaper-images/prompt-injection.jpg",
-    category: "AI Security",
-    authors: ["Dr. Alex Chen", "Robert Davis"],
-    publishDate: "February 2025",
-    readTime: "20 min read",
-    pageCount: 32,
-    fileSize: "2.7 MB",
-    downloadUrl: "/whitepapers/prompt-injection-defenses.pdf",
-    slug: "prompt-injection-defenses",
-  },
-  {
-    id: "5",
-    title: "MLSecOps: Integrating Security into the ML Lifecycle",
-    excerpt:
-      "A comprehensive guide to incorporating security practices into every phase of the machine learning operations lifecycle, from data collection to deployment.",
-    coverImage: "/whitepaper-images/mlsecops.jpg",
-    category: "MLSecOps",
-    authors: ["Maya Patel", "Dr. Michael Lopez"],
-    publishDate: "January 2025",
-    readTime: "40 min read",
-    pageCount: 64,
-    fileSize: "5.1 MB",
-    downloadUrl: "/whitepapers/mlsecops-guide.pdf",
-    slug: "mlsecops-guide",
-  },
-  {
-    id: "6",
-    title: "Model Governance Framework for Enterprise AI",
-    excerpt:
-      "Establishing effective governance protocols for AI models in regulated industries, including versioning, access controls, audit trails, and compliance documentation.",
-    coverImage: "/whitepaper-images/model-governance.jpg",
-    category: "AI Ethics",
-    authors: ["Sarah Johnson", "James Wilson"],
-    publishDate: "January 2025",
-    readTime: "30 min read",
-    pageCount: 46,
-    fileSize: "3.9 MB",
-    downloadUrl: "/whitepapers/model-governance-framework.pdf",
-    slug: "model-governance-framework",
-  },
+  // {
+  //   id: "2",
+  //   title: "RAG System Architecture: Best Practices for Security and Scale",
+  //   excerpt:
+  //     "An architectural overview of secure Retrieval-Augmented Generation systems, with implementation patterns for ensuring data security throughout the knowledge lifecycle.",
+  //   coverImage: "/whitepaper-images/rag-architecture.jpg",
+  //   category: "Machine Learning",
+  //   authors: ["Maya Patel", "James Wilson"],
+  //   publishDate: "March 2025",
+  //   readTime: "35 min read",
+  //   slug: "rag-system-architecture",
+  //   featured: true,
+  // },
+  // {
+  //   id: "3",
+  //   title: "Zero Trust Implementation for AI Systems",
+  //   excerpt:
+  //     "A practical framework for implementing Zero Trust security principles in AI/ML infrastructure, with specific focus on model serving and inference pipelines.",
+  //   coverImage: "/whitepaper-images/zero-trust-ai.jpg",
+  //   category: "Security Architecture",
+  //   authors: ["James Wilson", "Sarah Johnson"],
+  //   publishDate: "February 2025",
+  //   readTime: "30 min read",
+  //   slug: "zero-trust-implementation-ai",
+  // },
+  // {
+  //   id: "4",
+  //   title: "Prompt Injection: Attack Vectors and Defenses",
+  //   excerpt:
+  //     "A technical analysis of prompt injection attack patterns, their impact on enterprise systems, and defensive strategies including context boundaries and input sanitization.",
+  //   coverImage: "/whitepaper-images/prompt-injection.jpg",
+  //   category: "AI Security",
+  //   authors: ["Dr. Alex Chen", "Robert Davis"],
+  //   publishDate: "February 2025",
+  //   readTime: "20 min read",
+  //   slug: "prompt-injection-defenses",
+  // },
+  // {
+  //   id: "5",
+  //   title: "MLSecOps: Integrating Security into the ML Lifecycle",
+  //   excerpt:
+  //     "A comprehensive guide to incorporating security practices into every phase of the machine learning operations lifecycle, from data collection to deployment.",
+  //   coverImage: "/whitepaper-images/mlsecops.jpg",
+  //   category: "MLSecOps",
+  //   authors: ["Maya Patel", "Dr. Michael Lopez"],
+  //   publishDate: "January 2025",
+  //   readTime: "40 min read",
+  //   slug: "mlsecops-guide",
+  // },
+  // {
+  //   id: "6",
+  //   title: "Model Governance Framework for Enterprise AI",
+  //   excerpt:
+  //     "Establishing effective governance protocols for AI models in regulated industries, including versioning, access controls, audit trails, and compliance documentation.",
+  //   coverImage: "/whitepaper-images/model-governance.jpg",
+  //   category: "AI Ethics",
+  //   authors: ["Sarah Johnson", "James Wilson"],
+  //   publishDate: "January 2025",
+  //   readTime: "30 min read",
+  //   slug: "model-governance-framework",
+  // },
 ];
 
 // Categories for filtering
@@ -144,12 +123,14 @@ const categories = [
 ];
 
 // Featured white paper card component
-const FeaturedWhitePaperCard: React.FC<{ whitePaper: WhitePaper }> = ({ whitePaper }) => {
+const FeaturedWhitePaperCard: React.FC<{ whitePaper: WhitePaper }> = ({
+  whitePaper,
+}) => {
   const navigate = useNavigate();
 
   // Handle card click to navigate to whitepaper detail page
   const handleCardClick = () => {
-    navigate(`/resources/whitepapers/${whitePaper.slug}`);
+    navigate(`/components/whitepaper/${whitePaper.slug}`);
   };
 
   return (
@@ -161,14 +142,7 @@ const FeaturedWhitePaperCard: React.FC<{ whitePaper: WhitePaper }> = ({ whitePap
         <span className="absolute top-4 left-4 bg-indrasol-blue/90 text-white text-xs font-bold px-3 py-1 rounded-full z-10">
           FEATURED
         </span>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
-          <div className="absolute bottom-4 right-4">
-            <span className="flex items-center text-white text-sm bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm">
-              <FileText className="h-4 w-4 mr-2" />
-              {whitePaper.pageCount} pages
-            </span>
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
         <img
           src={whitePaper.coverImage}
           alt={whitePaper.title}
@@ -201,13 +175,9 @@ const FeaturedWhitePaperCard: React.FC<{ whitePaper: WhitePaper }> = ({ whitePap
                 <BookOpen className="h-3 w-3 mr-1" />
                 {whitePaper.readTime}
               </div>
-              <a 
-                href={whitePaper.downloadUrl}
-                onClick={(e) => e.stopPropagation()}
-                className="text-indrasol-blue text-sm font-medium flex items-center group-hover:underline"
-              >
-                Download <Download className="ml-1 h-4 w-4" />
-              </a>
+              <span className="text-indrasol-blue text-sm font-medium flex items-center group-hover:underline">
+                Read More <ArrowRight className="ml-1 h-4 w-4" />
+              </span>
             </div>
           </div>
         </div>
@@ -217,12 +187,14 @@ const FeaturedWhitePaperCard: React.FC<{ whitePaper: WhitePaper }> = ({ whitePap
 };
 
 // Regular white paper card component
-const WhitePaperCard: React.FC<{ whitePaper: WhitePaper }> = ({ whitePaper }) => {
+const WhitePaperCard: React.FC<{ whitePaper: WhitePaper }> = ({
+  whitePaper,
+}) => {
   const navigate = useNavigate();
 
   // Handle card click to navigate to whitepaper detail page
   const handleCardClick = () => {
-    navigate(`/resources/whitepapers/${whitePaper.slug}`);
+    navigate(`/components/whitepaper/${whitePaper.slug}`);
   };
 
   return (
@@ -231,14 +203,7 @@ const WhitePaperCard: React.FC<{ whitePaper: WhitePaper }> = ({ whitePaper }) =>
       onClick={handleCardClick}
     >
       <div className="relative h-48 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent">
-          <div className="absolute bottom-3 right-3">
-            <span className="flex items-center text-white text-xs bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">
-              <FileText className="h-3 w-3 mr-1" />
-              {whitePaper.pageCount}p
-            </span>
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
         <img
           src={whitePaper.coverImage}
           alt={whitePaper.title}
@@ -265,13 +230,9 @@ const WhitePaperCard: React.FC<{ whitePaper: WhitePaper }> = ({ whitePaper }) =>
           <div className="text-xs text-gray-600 line-clamp-1">
             By {whitePaper.authors.join(", ")}
           </div>
-          <a 
-            href={whitePaper.downloadUrl}
-            onClick={(e) => e.stopPropagation()}
-            className="text-indrasol-blue text-xs font-medium flex items-center hover:underline"
-          >
-            Download <Download className="ml-1 h-3 w-3" />
-          </a>
+          <span className="text-indrasol-blue text-xs font-medium flex items-center hover:underline">
+            Read More <ArrowRight className="ml-1 h-3 w-3" />
+          </span>
         </div>
       </div>
     </div>
@@ -336,7 +297,8 @@ const SearchAndFilter: React.FC = () => {
 // White paper detail page component
 const WhitePaperDetailPage: React.FC<{ slug: string }> = ({ slug }) => {
   // In a real implementation, you would fetch the white paper data based on the slug
-  const whitePaper = sampleWhitePapers.find((wp) => wp.slug === slug) || sampleWhitePapers[0];
+  const whitePaper =
+    sampleWhitePapers.find((wp) => wp.slug === slug) || sampleWhitePapers[0];
 
   return (
     <>
@@ -354,7 +316,10 @@ const WhitePaperDetailPage: React.FC<{ slug: string }> = ({ slug }) => {
                 Resources
               </Link>
               <ChevronRight className="h-4 w-4 mx-2" />
-              <Link to="/resources/whitepapers" className="hover:text-indrasol-blue">
+              <Link
+                to="/resources/whitepapers"
+                className="hover:text-indrasol-blue"
+              >
                 White Papers
               </Link>
               <ChevronRight className="h-4 w-4 mx-2" />
@@ -372,8 +337,8 @@ const WhitePaperDetailPage: React.FC<{ slug: string }> = ({ slug }) => {
                   {whitePaper.publishDate}
                 </div>
                 <div className="flex items-center text-gray-500 text-sm">
-                  <FileText className="h-4 w-4 mr-1" />
-                  {whitePaper.pageCount} pages
+                  <BookOpen className="h-4 w-4 mr-1" />
+                  {whitePaper.readTime}
                 </div>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
@@ -404,44 +369,42 @@ const WhitePaperDetailPage: React.FC<{ slug: string }> = ({ slug }) => {
               </div>
               <div className="md:w-1/3">
                 <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                  <h3 className="text-xl font-bold mb-4">White Paper Details</h3>
+                  <h3 className="text-xl font-bold mb-4">
+                    White Paper Details
+                  </h3>
                   <div className="space-y-4 mb-6">
                     <div className="flex items-start">
                       <Calendar className="h-5 w-5 text-indrasol-blue mr-3 flex-shrink-0 mt-0.5" />
                       <div>
                         <div className="text-sm font-medium">Published</div>
-                        <div className="text-gray-600">{whitePaper.publishDate}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <FileText className="h-5 w-5 text-indrasol-blue mr-3 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="text-sm font-medium">Length</div>
-                        <div className="text-gray-600">{whitePaper.pageCount} pages ({whitePaper.fileSize})</div>
+                        <div className="text-gray-600">
+                          {whitePaper.publishDate}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <BookOpen className="h-5 w-5 text-indrasol-blue mr-3 flex-shrink-0 mt-0.5" />
                       <div>
                         <div className="text-sm font-medium">Reading Time</div>
-                        <div className="text-gray-600">{whitePaper.readTime}</div>
+                        <div className="text-gray-600">
+                          {whitePaper.readTime}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <Bookmark className="h-5 w-5 text-indrasol-blue mr-3 flex-shrink-0 mt-0.5" />
                       <div>
                         <div className="text-sm font-medium">Category</div>
-                        <div className="text-gray-600">{whitePaper.category}</div>
+                        <div className="text-gray-600">
+                          {whitePaper.category}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <a 
-                    href={whitePaper.downloadUrl}
-                    className="w-full bg-indrasol-blue text-white px-4 py-3 rounded-lg hover:bg-indrasol-blue/90 transition-colors flex items-center justify-center font-medium shadow-lg shadow-indrasol-blue/20"
-                  >
-                    <Download className="mr-2 h-5 w-5" />
-                    Download White Paper
-                  </a>
+                  <button className="w-full bg-indrasol-blue text-white px-4 py-3 rounded-lg hover:bg-indrasol-blue/90 transition-colors flex items-center justify-center font-medium shadow-lg shadow-indrasol-blue/20">
+                    <FileText className="mr-2 h-5 w-5" />
+                    View Full White Paper
+                  </button>
                 </div>
               </div>
             </div>
@@ -454,51 +417,118 @@ const WhitePaperDetailPage: React.FC<{ slug: string }> = ({ slug }) => {
               </p>
 
               <p className="mb-4">
-                This white paper provides a comprehensive analysis of {whitePaper.title.toLowerCase()}. It explores the current challenges, proven methodologies, and strategic approaches that organizations can implement to enhance their security posture.
+                This white paper provides a comprehensive analysis of{" "}
+                {whitePaper.title.toLowerCase()}. It explores the current
+                challenges, proven methodologies, and strategic approaches that
+                organizations can implement to enhance their security posture.
               </p>
 
               <h2>Key Topics Covered</h2>
-              
+
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <div className="bg-indrasol-blue/10 rounded-full p-1 mt-1 mr-3">
-                    <svg className="h-3 w-3 text-indrasol-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="h-3 w-3 text-indrasol-blue"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   </div>
-                  <span>Current challenges and emerging threats in the {whitePaper.category} landscape</span>
+                  <span>
+                    Current challenges and emerging threats in the{" "}
+                    {whitePaper.category} landscape
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <div className="bg-indrasol-blue/10 rounded-full p-1 mt-1 mr-3">
-                    <svg className="h-3 w-3 text-indrasol-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="h-3 w-3 text-indrasol-blue"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   </div>
-                  <span>Proven methodologies for implementing robust security controls</span>
+                  <span>
+                    Proven methodologies for implementing robust security
+                    controls
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <div className="bg-indrasol-blue/10 rounded-full p-1 mt-1 mr-3">
-                    <svg className="h-3 w-3 text-indrasol-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="h-3 w-3 text-indrasol-blue"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   </div>
-                  <span>Case studies from real-world implementations across industries</span>
+                  <span>
+                    Case studies from real-world implementations across
+                    industries
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <div className="bg-indrasol-blue/10 rounded-full p-1 mt-1 mr-3">
-                    <svg className="h-3 w-3 text-indrasol-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="h-3 w-3 text-indrasol-blue"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   </div>
-                  <span>Strategic approaches to integrating security into existing workflows</span>
+                  <span>
+                    Strategic approaches to integrating security into existing
+                    workflows
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <div className="bg-indrasol-blue/10 rounded-full p-1 mt-1 mr-3">
-                    <svg className="h-3 w-3 text-indrasol-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="h-3 w-3 text-indrasol-blue"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   </div>
-                  <span>Actionable recommendations and implementation guidelines</span>
+                  <span>
+                    Actionable recommendations and implementation guidelines
+                  </span>
                 </li>
               </ul>
             </div>
@@ -517,7 +547,10 @@ const WhitePaperDetailPage: React.FC<{ slug: string }> = ({ slug }) => {
                   )
                   .slice(0, 3)
                   .map((relatedPaper) => (
-                    <WhitePaperCard key={relatedPaper.id} whitePaper={relatedPaper} />
+                    <WhitePaperCard
+                      key={relatedPaper.id}
+                      whitePaper={relatedPaper}
+                    />
                   ))}
               </div>
             </div>
@@ -557,7 +590,7 @@ const WhitePaperSection: React.FC = () => {
   return (
     <>
       <Navbar />
-      <section className="pt-8 pb-16 bg-gradient-to-b from-white via-indrasol-blue/5 to-white">
+      <section className="pt-40 pb-16 bg-gradient-to-b from-white via-indrasol-blue/5 to-white">
         <div className="container mx-auto px-4">
           {/* Section header */}
           <div className="text-center max-w-3xl mx-auto mb-12">
@@ -567,11 +600,13 @@ const WhitePaperSection: React.FC = () => {
               </span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              <span className="text-indrasol-blue">White Papers</span> & Research
+              <span className="text-indrasol-blue">White Papers</span> &
+              Research
             </h2>
             <p className="text-lg text-gray-600">
-              In-depth technical analysis, research findings, and best practices for AI security,
-              cybersecurity, and data engineering from our experts.
+              In-depth technical analysis, research findings, and best practices
+              for AI security, cybersecurity, and data engineering from our
+              experts.
             </p>
           </div>
 
@@ -592,7 +627,7 @@ const WhitePaperSection: React.FC = () => {
                   Featured White Papers
                 </h3>
                 <Link
-                  to="/resources/whitepapers"
+                  to="/Resources/whitepaper"
                   className="text-indrasol-blue font-medium text-sm flex items-center hover:underline"
                 >
                   View all <ChevronRight className="ml-1 h-4 w-4" />
@@ -600,7 +635,10 @@ const WhitePaperSection: React.FC = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {featuredWhitePapers.slice(0, 2).map((whitePaper) => (
-                  <FeaturedWhitePaperCard key={whitePaper.id} whitePaper={whitePaper} />
+                  <FeaturedWhitePaperCard
+                    key={whitePaper.id}
+                    whitePaper={whitePaper}
+                  />
                 ))}
               </div>
             </div>
@@ -609,9 +647,12 @@ const WhitePaperSection: React.FC = () => {
           {/* Regular white papers grid */}
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900">All White Papers</h3>
+              <h3 className="text-xl font-bold text-gray-900">
+                All White Papers
+              </h3>
               <div className="text-sm text-gray-500">
-                Showing {regularWhitePapers.length} of {sampleWhitePapers.length} resources
+                Showing {regularWhitePapers.length} of{" "}
+                {sampleWhitePapers.length} resources
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -628,8 +669,9 @@ const WhitePaperSection: React.FC = () => {
                     Looking for specific research?
                   </h3>
                   <p className="text-white/90">
-                    Our team can provide custom research and white papers on AI security,
-                    cybersecurity, and data engineering topics relevant to your organization.
+                    Our team can provide custom research and white papers on AI
+                    security, cybersecurity, and data engineering topics
+                    relevant to your organization.
                   </p>
                 </div>
                 <div className="md:col-span-2 flex flex-col sm:flex-row gap-4">
@@ -639,12 +681,7 @@ const WhitePaperSection: React.FC = () => {
                   >
                     Request Custom Research
                   </Link>
-                  <Link
-                    to="/resources"
-                    className="px-6 py-3 border-2 border-white text-white rounded-lg hover:bg-white/10 transition-colors font-medium flex-1 text-center"
-                  >
-                    Explore Resources
-                  </Link>
+                  
                 </div>
               </div>
             </div>
@@ -663,28 +700,30 @@ const WhitePaperCategories: React.FC = () => {
     {
       category: "AI Security",
       icon: <LockKeyhole className="h-8 w-8 text-indrasol-blue" />,
-      description: "Securing AI systems from attacks, vulnerabilities, and misuse"
+      description:
+        "Securing AI systems from attacks, vulnerabilities, and misuse",
     },
     {
       category: "Machine Learning",
       icon: <Cpu className="h-8 w-8 text-indrasol-blue" />,
-      description: "Architecture, algorithms, and implementation best practices"
+      description:
+        "Architecture, algorithms, and implementation best practices",
     },
     {
       category: "Security Architecture",
       icon: <Shield className="h-8 w-8 text-indrasol-blue" />,
-      description: "Designing secure systems and implementing robust controls"
+      description: "Designing secure systems and implementing robust controls",
     },
     {
       category: "MLSecOps",
       icon: <RefreshCw className="h-8 w-8 text-indrasol-blue" />,
-      description: "Integrating security into the ML development lifecycle"
+      description: "Integrating security into the ML development lifecycle",
     },
     {
       category: "AI Ethics",
       icon: <Database className="h-8 w-8 text-indrasol-blue" />,
-      description: "Governance, compliance, and ethical considerations for AI"
-    }
+      description: "Governance, compliance, and ethical considerations for AI",
+    },
   ];
 
   return (
@@ -700,20 +739,26 @@ const WhitePaperCategories: React.FC = () => {
             Our White Paper Categories
           </h2>
           <p className="text-lg text-gray-600">
-            Explore our research across key areas of AI security and modern system architectures
+            Explore our research across key areas of AI security and modern
+            system architectures
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {categoryIcons.map((item) => (
-            <div key={item.category} className="bg-white rounded-xl shadow-md p-8 border border-gray-100 hover:shadow-lg transition-all text-center">
+            <div
+              key={item.category}
+              className="bg-white rounded-xl shadow-md p-8 border border-gray-100 hover:shadow-lg transition-all text-center"
+            >
               <div className="mx-auto w-16 h-16 bg-indrasol-blue/10 rounded-full flex items-center justify-center mb-4">
                 {item.icon}
               </div>
               <h3 className="text-xl font-bold mb-2">{item.category}</h3>
               <p className="text-gray-600 mb-4">{item.description}</p>
               <Link
-                to={`/resources/whitepapers?category=${encodeURIComponent(item.category)}`}
+                to={`/resources/whitepapers?category=${encodeURIComponent(
+                  item.category
+                )}`}
                 className="text-indrasol-blue font-medium hover:underline flex items-center justify-center"
               >
                 View Papers <ChevronRight className="ml-1 h-4 w-4" />

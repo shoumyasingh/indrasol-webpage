@@ -40,7 +40,7 @@ const WhitePaper1 = () => {
     { id: "introduction", title: "Introduction" },
     { id: "decoding", title: "Decoding AI-Augmented Penetration Testing" },
     { id: "promise", title: "The Promise of Intelligent Offense" },
-    // { id: "navigating", title: "Navigating the Labyrinth" },
+    { id: "navigating", title: "Navigating the Labyrinth" },
     { id: "tools", title: "AI-Powered Tools and Techniques" },
     { id: "roadmap", title: "Roadmap Ahead" },
     { id: "conclusion", title: "Conclusion" },
@@ -178,7 +178,6 @@ const WhitePaper1 = () => {
                 <div className="p-6 md:p-10">
                   {/* Share and Bookmark Bar */}
                   <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
-                    
                     <div className="flex items-center">
                       <span className="text-sm text-gray-500">
                         {whitepaper.readTime}
@@ -581,6 +580,7 @@ const WhitePaper1 = () => {
                         and strategy, resulting in a more efficient and thorough
                         assessment process [1], [7].
                       </p>
+
                       <div className="relative overflow-hidden rounded-xl shadow-lg mb-8 group">
                         <img
                           src="/whitepaperImage/comparison.png"
@@ -594,6 +594,7 @@ const WhitePaper1 = () => {
                           </p>
                         </div>
                       </div>
+
                       <p className="text-gray-700 leading-relaxed text-lg">
                         Testing the security of AI systems presents challenges
                         that differ from traditional application security, as
@@ -618,6 +619,7 @@ const WhitePaper1 = () => {
                         a more thorough understanding of a system’s security
                         posture.
                       </p>
+
                       <p className="text-gray-700 leading-relaxed text-lg">
                         AI-driven tools simulate realistic attack scenarios,
                         replicating real-world tactics, techniques, and
@@ -842,21 +844,21 @@ const WhitePaper1 = () => {
                         undermining trust in the testing process and potentially
                         exposing organizations to undetected threats [13].
                       </p>
+                    </div>
+                  </div>
 
-                      <div className="relative overflow-hidden rounded-xl shadow-lg mb-8 group">
-                        <img
-                          src="/whitepaperImage/limitations.png"
-                          alt="Challenges and Limitations of AI in Offensive Security"
-                          className="w-full h-auto rounded-xl transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                          <p className="text-white p-4 text-sm italic">
-                            Figure 8: Challenges and Limitations of AI in
-                            Offensive Security.
-                          </p>
-                        </div>
+                  {/* Navigating the Labyrinth */}
+                  <div id="navigating" className="scroll-mt-24 mb-16">
+                    <div className="flex items-center mb-6">
+                      <div className="w-12 h-12 rounded-full bg-indrasol-blue/10 flex items-center justify-center text-indrasol-blue mr-5 flex-shrink-0">
+                        <Shield className="h-6 w-6" />
                       </div>
+                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                        Navigating the Labyrinth:
+                      </h2>
+                    </div>
 
+                    <div className="pl-0 md:pl-16">
                       <p className="text-gray-700 leading-relaxed mb-6 text-lg">
                         Another significant limitation is AI’s lack of nuanced
                         contextual understanding [13], [15]. While ML models
@@ -892,6 +894,20 @@ const WhitePaper1 = () => {
                         diverse, up-to-date threat intelligence to ensure fair
                         and comprehensive coverage [4].
                       </p>
+
+                      <div className="relative overflow-hidden rounded-xl shadow-lg mb-8 group">
+                        <img
+                          src="/whitepaperImage/limitations.png"
+                          alt="Challenges and Limitations of AI in Offensive Security"
+                          className="w-full h-auto rounded-xl transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                          <p className="text-white p-4 text-sm italic">
+                            Figure 8: Challenges and Limitations of AI in
+                            Offensive Security.
+                          </p>
+                        </div>
+                      </div>
 
                       <p className="text-gray-700 leading-relaxed mb-6 text-lg">
                         Developing, acquiring, and deploying AI-powered
@@ -964,88 +980,6 @@ const WhitePaper1 = () => {
                       </p>
                     </div>
                   </div>
-
-                  {/* Navigating the Labyrinth */}
-                  {/* <div id="navigating" className="scroll-mt-24 mb-16">
-                    <div className="flex items-center mb-6">
-                      <div className="w-12 h-12 rounded-full bg-indrasol-blue/10 flex items-center justify-center text-indrasol-blue mr-5 flex-shrink-0">
-                        <Shield className="h-6 w-6" />
-                      </div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                        Navigating the Labyrinth: Challenges and Limitations
-                      </h2>
-                    </div>
-
-                    <div className="pl-0 md:pl-16">
-                      <p className="text-gray-700 leading-relaxed mb-6 text-lg">
-                        Despite its promise, AI-augmented penetration testing
-                        faces several significant challenges that must be
-                        addressed for successful implementation. Organizations
-                        considering these advanced approaches should be aware of
-                        both technical and operational limitations.
-                      </p>
-
-                      <div className="bg-gradient-to-r from-indrasol-blue to-indrasol-blue/80 rounded-xl overflow-hidden mb-8">
-                        <div className="p-8 text-white">
-                          <h3 className="text-xl font-bold mb-4">
-                            Implementation Challenges
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5">
-                              <h4 className="font-bold mb-2">
-                                Data Quality Issues
-                              </h4>
-                              <p className="text-white/90">
-                                AI systems require high-quality training data
-                                that accurately represents modern attack
-                                techniques and vulnerabilities.
-                              </p>
-                            </div>
-                            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5">
-                              <h4 className="font-bold mb-2">
-                                Model Explainability
-                              </h4>
-                              <p className="text-white/90">
-                                The "black box" nature of some AI algorithms can
-                                complicate understanding and communicating
-                                findings.
-                              </p>
-                            </div>
-                            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5">
-                              <h4 className="font-bold mb-2">
-                                False Positives
-                              </h4>
-                              <p className="text-white/90">
-                                Even sophisticated AI systems can generate false
-                                positives that require human verification.
-                              </p>
-                            </div>
-                            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5">
-                              <h4 className="font-bold mb-2">
-                                Ethical Considerations
-                              </h4>
-                              <p className="text-white/90">
-                                Organizations must establish clear boundaries
-                                for autonomous AI operations in security
-                                contexts.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <p className="text-gray-700 leading-relaxed text-lg">
-                        Successfully navigating these challenges requires a
-                        thoughtful approach that balances technological
-                        capabilities with organizational needs and constraints.
-                        By establishing clear governance frameworks, investing
-                        in high-quality data, and maintaining appropriate human
-                        oversight, organizations can maximize the benefits of
-                        AI-augmented penetration testing while mitigating
-                        potential risks.
-                      </p>
-                    </div>
-                  </div> */}
 
                   {/* AI-Powered Tools and Techniques */}
                   <div id="tools" className="scroll-mt-24 mb-16">
@@ -1708,7 +1642,6 @@ const WhitePaper1 = () => {
                       </div>
                     </div>
                   </div>
-
                 </div>
               </div>
 

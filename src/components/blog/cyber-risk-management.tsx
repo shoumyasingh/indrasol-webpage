@@ -11,6 +11,8 @@ import {
   Heart,
   MessageCircle,
 } from "lucide-react";
+import { Navbar } from "../ui/navbar";
+import { Footer } from "../ui/footer";
 
 // Types for blog posts
 interface BlogPost {
@@ -170,6 +172,9 @@ const CyberBlogDetailPage = () => {
   const [blog] = useState(sampleBlogs[0]); // Using the first blog as an example
 
   return (
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50 to-white">
+      {/* Add Navbar at the top of the component */}
+      <Navbar />
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-50 to-white">
       {/* Hero Section with Featured Image */}
       <div className="relative h-80 overflow-hidden bg-gray-900">
@@ -1372,6 +1377,8 @@ const CyberBlogDetailPage = () => {
           Back to Blog
         </a>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 };

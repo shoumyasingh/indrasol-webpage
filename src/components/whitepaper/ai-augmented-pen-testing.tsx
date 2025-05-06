@@ -17,6 +17,10 @@ import {
   User,
   Clock,
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Navbar } from "../ui/navbar";
+import { Footer } from "../ui/footer";
+
 
 const WhitePaper1 = () => {
   // State for sticky TOC
@@ -96,6 +100,9 @@ const WhitePaper1 = () => {
   }, [tableOfContents]);
 
   return (
+    <div className="min-h-screen bg-gradient-to-b from-white via-indrasol-blue/5 to-white">
+      {/* Add Navbar at the top of the component */}
+      <Navbar />
     <div className="min-h-screen bg-gradient-to-b from-white via-indrasol-blue/5 to-white">
       {/* Hero section with image background */}
       <div className="w-full h-64 md:h-96 relative bg-gradient-to-r from-indrasol-blue to-indrasol-blue/80 overflow-hidden">
@@ -221,33 +228,62 @@ const WhitePaper1 = () => {
                           learning (ML) and advanced analytics into every phase
                           of the testing lifecycle. Beyond automating routine
                           tasks such as scanning and data collection, it
-                          enables: (1) Scalable Assessment, for processing large
-                          volumes of logs and system metrics to identify
-                          patterns beyond manual review; (2) Adaptive Attack
-                          Simulation, to model complex attack chains that mimic
-                          sophisticated adversaries in real time; (3) Risk
-                          Prioritization to score vulnerabilities based on
-                          business impact, compliance requirements, and
-                          exploitability. Augmenting human expertise and AI’s
-                          capabilities equips organizations to achieve
-                          comprehensive coverage, faster testing cycles, and
-                          prioritized remediation plans that align with
-                          corporate risk appetites. This approach not only
-                          improves efficiency but also deepens the real-world
-                          adoption in security evaluations. From an executive
-                          standpoint, AI‑augmented testing delivers clear
-                          business value in several critical areas. Shortened
-                          testing cycles drive faster patching, reducing
-                          exposure windows and limiting operational disruption.
-                          Automated analysis optimizes resource allocation,
-                          freeing teams to focus on high‑impact initiatives
-                          rather than repetitive tasks. Interactive dashboards
-                          supply metrics for budget allocation, resource
-                          planning, and board‑level risk discussions. Enhanced
-                          visibility into attack surfaces supports proactive
-                          decision‑making and strengthens stakeholder confidence
-                          in the organization’s security posture. Moreover,
-                          advanced analytics can uncover hidden dependencies and
+                          enables:
+                        </p>
+
+                        <ul className="space-y-4 mb-6">
+                          <li className="flex items-start">
+                            <div className="min-w-6 h-6 mr-2 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                              1
+                            </div>
+                            <p className="text-gray-700 leading-relaxed text-lg">
+                              Scalable Assessment, for processing large volumes
+                              of logs and system metrics to identify patterns
+                              beyond manual review
+                            </p>
+                          </li>
+                          <li className="flex items-start">
+                            <div className="min-w-6 h-6 mr-2 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                              2
+                            </div>
+                            <p className="text-gray-700 leading-relaxed text-lg">
+                              Traditional Adaptive Attack Simulation, to model
+                              complex attack chains that mimic sophisticated
+                              adversaries in real time
+                            </p>
+                          </li>
+                          <li className="flex items-start">
+                            <div className="min-w-6 h-6 mr-2 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                              3
+                            </div>
+                            <p className="text-gray-700 leading-relaxed text-lg">
+                              Risk Prioritization to score vulnerabilities based
+                              on business impact, compliance requirements, and
+                              exploitability.
+                            </p>
+                          </li>
+                        </ul>
+                        <p className="text-gray-700 leading-relaxed text-lg">
+                          Augmenting human expertise and AI’s capabilities
+                          equips organizations to achieve comprehensive
+                          coverage, faster testing cycles, and prioritized
+                          remediation plans that align with corporate risk
+                          appetites. This approach not only improves efficiency
+                          but also deepens the real-world adoption in security
+                          evaluations. From an executive standpoint,
+                          AI‑augmented testing delivers clear business value in
+                          several critical areas. Shortened testing cycles drive
+                          faster patching, reducing exposure windows and
+                          limiting operational disruption. Automated analysis
+                          optimizes resource allocation, freeing teams to focus
+                          on high‑impact initiatives rather than repetitive
+                          tasks. Interactive dashboards supply metrics for
+                          budget allocation, resource planning, and board‑level
+                          risk discussions. Enhanced visibility into attack
+                          surfaces supports proactive decision‑making and
+                          strengthens stakeholder confidence in the
+                          organization’s security posture. Moreover, advanced
+                          analytics can uncover hidden dependencies and
                           configuration weaknesses before they escalate,
                           delivering a compelling return on investment and
                           demonstrating a commitment to operational resilience.
@@ -1568,18 +1604,19 @@ const WhitePaper1 = () => {
                         </p>
                       </div>
                       <div className="md:col-span-2 flex flex-col sm:flex-row gap-4">
-                        <a
-                          href="/contact"
+                        <Link
+                          to="/contact"
                           className="px-6 py-3 bg-white text-indrasol-blue rounded-lg hover:bg-gray-100 transition-colors font-medium flex-1 text-center shadow-lg"
                         >
                           Request a Consultation
-                        </a>
-                        <a
-                          href="/Resources/whitepaper"
+                        </Link>
+
+                        <Link
+                          to="/Resources/whitepaper"
                           className="px-6 py-3 border-2 border-white text-white rounded-lg hover:bg-white/10 transition-colors font-medium flex-1 text-center"
                         >
                           Explore Resources
-                        </a>
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -1758,6 +1795,8 @@ const WhitePaper1 = () => {
           </div>
         </div>
       </div>
+    </div>
+    <Footer />
     </div>
   );
 };

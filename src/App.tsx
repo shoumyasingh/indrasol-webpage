@@ -25,6 +25,10 @@ import WhitePaper1 from "./components/whitepaper/ai-augmented-pen-testing";
 // Import WhitePaperDetailPage component from WhitePaperSection
 import { WhitePaperDetailPage } from "./pages/Resources/WhitePaperSection";
 
+// Import Admin component and Protected Route component
+import Admin from "./pages/Admin";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+
 // Create a wrapper component that gets the slug parameter for blog
 function BlogDetailWrapper() {
   const { slug } = useParams();
@@ -76,6 +80,16 @@ const App = () => (
           {/* Whitepaper routes */}
           <Route path="/Resources/whitepaper" element={<WhitePaperSection />} />
           <Route path="/components/whitepaper/:slug" element={<WhitePaperRouter />} />
+          
+          {/* Protected Admin Route */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedAdminRoute>
+                <Admin />
+              </ProtectedAdminRoute>
+            } 
+          />
           
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -25,7 +25,7 @@ import WhitePaper1 from "./components/whitepaper/ai-augmented-pen-testing";
 // Import WhitePaperDetailPage component from WhitePaperSection
 import { WhitePaperDetailPage } from "./pages/Resources/WhitePaperSection";
 
-// Admin component and Protected Route component
+// Import Admin component and Protected Route component
 import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 

@@ -1,18 +1,18 @@
 // src/supabase.ts
 
-// import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
-// const supabaseUrl = import.meta.env.VITE_SUPABASE_URL_IND;
-// const supabaseKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY_IND;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL_IND;
+const supabaseKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY_IND;
 
-// // Debug environment variables
-// console.log('Supabase URL:', supabaseUrl);
-// console.log('Supabase Key:', supabaseKey ? 'Key exists' : 'Key is missing');
+// Debug environment variables
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Key:', supabaseKey ? 'Key exists' : 'Key is missing');
 
-// export const supabase = createClient(
-//   supabaseUrl || '',
-//   supabaseKey || ''
-// );
+export const supabase = createClient(
+  supabaseUrl || '',
+  supabaseKey || ''
+);
 
 
 

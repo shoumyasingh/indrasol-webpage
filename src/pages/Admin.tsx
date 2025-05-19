@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-// import { supabase } from '../supabase';
+import { supabase } from '../supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,6 @@ import {
   CheckCircle,
   ArrowRight
 } from 'lucide-react';
-import { supabase } from '@/supabase';
 
 const Admin = () => {
   const [file, setFile] = useState<File | null>(null);

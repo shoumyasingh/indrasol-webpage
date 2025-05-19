@@ -1,0 +1,19 @@
+
+langchain-community==0.0.38 
+faiss-cpu==1.7.4 
+transformers==4.35.2 
+torch==2.1.0 
+#fastapi
+fastapi==0.115.0
+uvicorn==0.32.0
+#full text
+requests==2.31.0
+beautifulsoup4==4.12.3
+sentence-transformers==2.7.0
+chromadb==0.4.24
+easyocr==1.7.1
+Pillow==10.3.0
+numpy==1.26.4
+selenium==4.17.2
+markdown==3.6
+openai==1.79.0

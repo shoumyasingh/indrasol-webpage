@@ -1,0 +1,11 @@
+import os
+
+
+OPENAI_API_KEY = os.getenv("OPENAIIND")
+PINECONE_API_KEY = os.getenv("PINECONEIND")
+
+print(f"PINECONE_API_KEY: {PINECONE_API_KEY}")
+print(f"OPENAI_API_KEY: {OPENAI_API_KEY}")
+
+
+

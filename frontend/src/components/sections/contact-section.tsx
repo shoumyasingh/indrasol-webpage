@@ -109,7 +109,7 @@ export function ContactSection() {
                       <Linkedin className="h-6 w-6" strokeWidth={2} />
                     </a>
                     <a 
-                      href="https://twitter.com/indrasol" 
+                      href="https://x.com/theindrasol" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="bg-white text-indrasol-blue p-3 rounded-xl hover:bg-indrasol-blue/10 transition-colors border border-indrasol-blue/20 shadow-sm"

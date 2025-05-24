@@ -17,28 +17,22 @@ import SecureTrackProductPage from "./pages/Products/SecureTrackProductPage";
 import BlogPage from "./pages/Resources/BlogPage";
 import WhitePaperSection from "./pages/Resources/WhitePaperSection";
 import BlogPageSection from "./pages/Resources/BlogPageSection";
-import CyberBlogDetailPage from "./pages/Resources/BlogPageSection";
-// import { BlogPost } from "./cyber-risk-management/BlogPageSection";
-import BlogDetailPage from "./components/blog/cyber-risk-management";
+import BlogDetailPage from "./pages/Resources/BlogDetailPage";
 // Import the whitepaper detail component
 import WhitePaper1 from "./components/whitepaper/ai-augmented-pen-testing";
 // Import WhitePaperDetailPage component from WhitePaperSection
 import { WhitePaperDetailPage } from "./pages/Resources/WhitePaperSection";
+// Import the new standalone WhitepaperDetailPage component
+import WhitepaperDetailPage from "./pages/Resources/WhitepaperDetailPage";
 
 // Import Admin component and Protected Route component
 import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
-// Create a wrapper component that gets the slug parameter for blog
-function BlogDetailWrapper() {
-  const { slug } = useParams();
-  return <BlogDetailPage slug={slug} />;
-}
-
-// Create a wrapper component for whitepaper detail page
+// Create a wrapper component for whitepaper detail page (using the new component)
 function WhitePaperDetailWrapper() {
   const { slug } = useParams();
-  return <WhitePaperDetailPage slug={slug} />;
+  return <WhitepaperDetailPage />;
 }
 
 // Create a wrapper to handle specific whitepaper routes
@@ -50,8 +44,8 @@ function WhitePaperRouter() {
     return <WhitePaper1 />;
   }
   
-  // Default to the generic detail page
-  return <WhitePaperDetailPage slug={slug} />;
+  // Use the new standalone WhitepaperDetailPage instead of the one from WhitePaperSection
+  return <WhitepaperDetailPage />;
 }
 
 const queryClient = new QueryClient();
@@ -75,7 +69,7 @@ const App = () => (
           <Route path="/Products/Securetrack" element={<SecureTrackProductPage />} />
           {/* <Route path="/Resources/blogs" element={<BlogPage />} /> */}
           <Route path="/Resources/blogs2" element={<BlogPageSection />} />
-          <Route path="/blog/:slug" element={<BlogDetailWrapper />} />
+          <Route path="/Resources/blog/:slug" element={<BlogDetailPage />} />
           
           {/* Whitepaper routes */}
           <Route path="/Resources/whitepaper" element={<WhitePaperSection />} />

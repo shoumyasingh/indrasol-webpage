@@ -5,13 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import * as pdfjsLib from 'pdfjs-dist';
-import mammoth from 'mammoth';
-import { GlobalWorkerOptions } from 'pdfjs-dist';
-import { generateBlogTemplate } from '../utils/BlogTemplateGenerator';
+import { slugify } from '../utils/docxConverter';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { PreviewModal } from './PreviewModal'; // ADD THIS IMPORT
 import { 
   LogOut, 
   Upload, 
@@ -25,8 +23,17 @@ import {
   FileCheck, 
   AlertCircle,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  Pencil,
+  Trash2,
+  Search,
+  Calendar,
+  RefreshCw,
+  FileInput,
+  Download,
+  XCircle
 } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const Admin = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -35,33 +42,50 @@ const Admin = () => {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [category, setCategory] = useState('');
+  const [debugMode, setDebugMode] = useState(false);
   const { toast } = useToast();
 
-  // Preview state
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState('');
-  const [processedData, setProcessedData] = useState<{
-    content: string;
-    title: string;
-    author: string;
-    category: string;
-    excerpt: string;
-    fileName: string;
-    images: any[];
-  } | null>(null);
+  // State for managing existing blogs
+  const [blogs, setBlogs] = useState<any[]>([]);
+  const [loadingBlogs, setLoadingBlogs] = useState(false);
+  const [confirmDeleteDialog, setConfirmDeleteDialog] = useState(false);
+  const [selectedBlog, setSelectedBlog] = useState<any>(null);
+  const [viewBlogDialog, setViewBlogDialog] = useState(false);
+  const [viewBlogContent, setViewBlogContent] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Set up PDF.js worker
+  // Upload workflow state for blogs
+  const [uploadedBlogPath, setUploadedBlogPath] = useState<string>('');
+  const [canPreviewBlog, setCanPreviewBlog] = useState(false);
+  const [canPublishBlog, setCanPublishBlog] = useState(false);
+  const [previewingBlog, setPreviewingBlog] = useState(false);
+
+  // Whitepaper state
+  const [wpFile, setWpFile] = useState<File | null>(null);
+  const [wpUploading, setWpUploading] = useState(false);
+  const [wpTitle, setWpTitle] = useState('');
+  const [wpAuthor, setWpAuthor] = useState('');
+  const [wpCategory, setWpCategory] = useState('');
+  const [whitepapers, setWhitepapers] = useState<any[]>([]);
+  const [loadingWhitepapers, setLoadingWhitepapers] = useState(false);
+  const [selectedWhitepaper, setSelectedWhitepaper] = useState<any>(null);
+  const [confirmDeleteWhitepaperDialog, setConfirmDeleteWhitepaperDialog] = useState(false);
+  const [wpSearchQuery, setWpSearchQuery] = useState('');
+  const [wpProcessing, setWpProcessing] = useState(false);
+
+  // Upload workflow state for whitepapers
+  const [uploadedWpPath, setUploadedWpPath] = useState<string>('');
+  const [canPreviewWp, setCanPreviewWp] = useState(false);
+  const [canPublishWp, setCanPublishWp] = useState(false);
+  const [previewingWp, setPreviewingWp] = useState(false);
+
+  // ADD THESE NEW STATE VARIABLES FOR PREVIEW
+  const [previewDocument, setPreviewDocument] = useState<any>(null);
+  const [previewType, setPreviewType] = useState<'blog' | 'whitepaper'>('blog');
+  const [showPreview, setShowPreview] = useState(false);
+
   useEffect(() => {
     try {
-      // Configure PDF.js worker (this is crucial for PDF processing)
-      // Use a CDN-hosted worker file for reliability
-      const pdfjsVersion = pdfjsLib.version;
-      console.log("PDF.js version:", pdfjsVersion);
-      GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`;
-      
-      console.log("PDF.js worker configured successfully");
-      
-      // Log current user for debugging authentication state
       const checkAuth = async () => {
         const { data } = await supabase.auth.getUser();
         console.log("Current user:", data.user);
@@ -69,7 +93,7 @@ const Admin = () => {
       };
       checkAuth();
     } catch (err) {
-      console.error("Error configuring PDF.js worker:", err);
+      console.error("Error during authentication check:", err);
     }
   }, []);
 
@@ -81,7 +105,8 @@ const Admin = () => {
     await supabase.auth.signOut();
   };
 
-  const handleProcess = async () => {
+  // Blog Upload Function
+  const handleBlogUpload = async () => {
     if (!file || !title || !author || !category) {
       toast({
         title: "Missing Information",
@@ -91,77 +116,10 @@ const Admin = () => {
       return;
     }
 
-    // Check file type
-    if (!file.name.match(/\.(pdf|docx)$/)) {
+    if (!file.name.match(/\.docx$/)) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a PDF or Word document",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setProcessing(true);
-
-    try {
-      // Skip bucket verification and try to upload directly
-      console.log("Starting direct upload to blogs bucket");
-      
-      // Upload to Supabase Storage - using 'blogs' bucket consistently
-      const fileName = `${Date.now()}-${file.name}`;
-      const { data, error } = await supabase.storage
-        .from('blogs')
-        .upload(`public/${fileName}`, file);
-
-      if (error) {
-        console.error("Upload error:", error);
-        throw new Error(`Storage upload failed: ${error.message}`);
-      }
-
-      console.log("File uploaded successfully:", data);
-
-      // Process the file but don't save to database yet
-      const processedResult = await processFile(fileName, title, author, category);
-      
-      // Store the processed data for later use
-      setProcessedData(processedResult);
-      
-      // Generate preview HTML
-      const previewHtml = generateBlogTemplate(
-        processedResult.content,
-        processedResult.title,
-        processedResult.author,
-        processedResult.category,
-        processedResult.excerpt,
-        processedResult.images
-      );
-      
-      // Set the preview HTML and open the preview dialog
-      setPreviewHtml(previewHtml);
-      setPreviewOpen(true);
-      
-      toast({
-        title: "Processing successful",
-        description: "Preview is ready for review. Confirm to save blog.",
-        variant: "default",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Processing Failed",
-        description: error.message || "An error occurred during processing",
-        variant: "destructive",
-      });
-      console.error("Processing error details:", error);
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!processedData) {
-      toast({
-        title: "Error",
-        description: "No processed data available. Please process the file first.",
+        description: "Please upload a Word document (.docx)",
         variant: "destructive",
       });
       return;
@@ -170,283 +128,901 @@ const Admin = () => {
     setUploading(true);
 
     try {
-      // Save the processed data to the database
-      await saveToDatabase(
-        processedData.content,
-        processedData.title,
-        processedData.author,
-        processedData.category,
-        processedData.excerpt,
-        processedData.fileName,
-        processedData.images
-      );
+      // First, check if the bucket exists and is accessible
+      console.log("Checking bucket access...");
+      const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+      
+      if (bucketError) {
+        console.error("Bucket access error:", bucketError);
+        throw new Error(`Storage access issue: ${bucketError.message}`);
+      }
+      
+      const blogsBucket = buckets?.find(bucket => bucket.name === 'blogs');
+      if (!blogsBucket) {
+        console.error("Available buckets:", buckets?.map(b => b.name));
+        throw new Error("Blogs bucket not found. Please contact administrator.");
+      }
+      
+      console.log("Bucket access confirmed:", blogsBucket);
 
+      const slug = slugify(title);
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const originalPath = `${slug}/${sanitizedFileName}`;
+      
+      console.log("Uploading to path:", originalPath);
+      console.log("File size:", file.size, "bytes");
+      
+      // Try upload with minimal options first
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('blogs')
+        .upload(originalPath, file, { 
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error("Detailed upload error:", {
+          error: uploadError,
+          path: originalPath,
+          fileSize: file.size,
+          fileName: file.name
+        });
+        
+        // Try alternative approach if database error
+        if (uploadError.message?.includes('DatabaseError') || uploadError.message?.includes('unrecognized configuration')) {
+          console.log("Attempting alternative upload method...");
+          
+          // Try with different path structure
+          const simplePath = `${slug}-${Date.now()}.docx`;
+          const { data: retryData, error: retryError } = await supabase.storage
+            .from('blogs')
+            .upload(simplePath, file);
+            
+          if (retryError) {
+            throw new Error(`Upload failed (retry): ${retryError.message}. This appears to be a Supabase configuration issue. Please check your project settings.`);
+          }
+          
+          console.log("Alternative upload successful:", retryData);
+          setUploadedBlogPath(simplePath);
+        } else {
+          throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+      } else {
+        console.log("File uploaded successfully:", uploadData);
+        setUploadedBlogPath(originalPath);
+      }
+      
+      setCanPreviewBlog(true);
+      setCanPublishBlog(true);
+      
       toast({
-        title: "Blog Published Successfully!",
-        description: "Your content is now live on the Indrasol website",
+        title: "File Uploaded Successfully!",
+        description: "Your file is ready for preview. Click Preview to see how it will look.",
         variant: "default",
       });
 
-      // Reset form and state
-      setFile(null);
-      setTitle('');
-      setAuthor('');
-      setCategory('');
-      setProcessedData(null);
-      setPreviewHtml('');
-      setPreviewOpen(false);
-      
-      if (document.getElementById('file-upload') as HTMLInputElement) {
-        (document.getElementById('file-upload') as HTMLInputElement).value = '';
-      }
     } catch (error: any) {
+      console.error("Complete upload error:", error);
+      
+      let errorMessage = error.message || "An error occurred during upload";
+      
+      // Provide specific guidance for common issues
+      if (error.message?.includes('DatabaseError') || error.message?.includes('unrecognized configuration')) {
+        errorMessage = "Supabase configuration issue detected. Please check your project settings or contact support.";
+      } else if (error.message?.includes('not found')) {
+        errorMessage = "Storage bucket not found. Please verify your Supabase project setup.";
+      } else if (error.message?.includes('permission')) {
+        errorMessage = "Permission denied. Please check your storage policies.";
+      }
+      
       toast({
-        title: "Save Failed",
-        description: error.message || "An error occurred during save",
+        title: "Upload Failed",
+        description: errorMessage,
         variant: "destructive",
       });
-      console.error("Save error details:", error);
     } finally {
       setUploading(false);
     }
   };
 
-  const processFile = async (fileName: string, title: string, author: string, category: string) => {
-    console.log(`Processing file: ${fileName}`);
-    
-    try {
-      // Generate signed URL from the blogs bucket
-      const { data, error } = await supabase.storage
-        .from('blogs')
-        .createSignedUrl(`public/${fileName}`, 3600); // 1-hour expiration
-
-      if (error) {
-        console.error("Signed URL error:", error);
-        throw new Error(`Failed to generate signed URL: ${error.message}`);
-      }
-
-      if (!data?.signedUrl) {
-        throw new Error("No signed URL returned from Supabase");
-      }
-
-      console.log("Successfully generated signed URL");
-      const signedUrl = data.signedUrl;
-      
-      let content = '';
-      let images = [];
-      
-      try {
-        if (fileName.endsWith('.pdf')) {
-          console.log("Processing PDF document");
-          // Extract text and images from PDF
-          const result = await extractFromPdf(signedUrl);
-          content = result.text;
-          images = result.images;
-        } else if (fileName.endsWith('.docx')) {
-          console.log("Processing DOCX document");
-          // Extract text and images from DOCX
-          const result = await extractFromDocx(signedUrl);
-          content = result.text;
-          images = result.images;
-        }
-        
-        console.log(`Extracted content length: ${content.length} characters`);
-        console.log(`Extracted ${images.length} images`);
-      } catch (err) {
-        console.error("Document processing error:", err);
-        throw new Error("Failed to process document: " + (err as Error).message);
-      }
-
-      // Create an excerpt from the content (first 200 characters)
-      const excerpt = content.substring(0, 200).trim() + '...';
-
-      // Return the processed data
-      return {
-        content,
-        title,
-        author, 
-        category,
-        excerpt,
-        fileName,
-        images
-      };
-    } catch (err) {
-      console.error("Process file error:", err);
-      throw err;
-    }
-  };
-
-  // PDF extraction function that handles both text and images
-  const extractFromPdf = async (url: string): Promise<{ text: string, images: any[] }> => {
-    const loadingTask = pdfjsLib.getDocument(url);
-    const pdf = await loadingTask.promise;
-    let fullText = '';
-    const images = [];
-    
-    // Process each page
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      
-      // Extract text
-      const textContent = await page.getTextContent();
-      fullText += textContent.items.map((item: any) => item.str).join(' ');
-      
-      // Try to extract images (simplified approach)
-      try {
-        const operatorList = await page.getOperatorList();
-        for (let j = 0; j < operatorList.fnArray.length; j++) {
-          if (operatorList.fnArray[j] === pdfjsLib.OPS.paintImageXObject) {
-            const imgIndex = operatorList.argsArray[j][0];
-            // Store image reference for later use
-            images.push({
-              pageNum: i,
-              imgIndex: imgIndex,
-              placeholder: `/api/placeholder/800/400` // Use placeholder for now
-            });
-          }
-        }
-      } catch (err) {
-        console.log(`Error extracting images from page ${i}:`, err);
-      }
-    }
-    
-    return { text: fullText, images };
-  };
-
-  // DOCX extraction function that handles both text and images
-  const extractFromDocx = async (url: string): Promise<{ text: string, images: any[] }> => {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    
-    // Extract text and references to images
-    const options = {
-      convertImage: mammoth.images.imgElement(function(image) {
-        // Return a Promise that resolves to the image attributes
-        return Promise.resolve({
-          src: `/api/placeholder/800/400` // Use placeholder for now
-        });
-      })
-    };
-    
-    const result = await mammoth.convertToHtml({ arrayBuffer }, options);
-    const htmlContent = result.value;
-    
-    // Extract text from the HTML
-    const text = htmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    
-    // Find image references in the HTML
-    const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g;
-    const images = [];
-    let match;
-    
-    while ((match = imgRegex.exec(htmlContent)) !== null) {
-      images.push({
-        src: match[1],
-        placeholder: match[1]
+  // Blog Preview Function
+  const handleBlogPreview = async () => {
+    if (!uploadedBlogPath) {
+      toast({
+        title: "No File Uploaded",
+        description: "Please upload a file first",
+        variant: "destructive",
       });
+      return;
     }
-    
-    return { text, images };
-  };
 
-  const saveToDatabase = async (
-    content: string, 
-    title: string, 
-    author: string, 
-    category: string, 
-    excerpt: string, 
-    fileName: string, 
-    images: any[]
-  ) => {
-    // Create a slug from the title
-    const slug = title
-      .toLowerCase()
-      .replace(/[^\w\s]/gi, '')
-      .replace(/\s+/g, '-');
+    setPreviewingBlog(true);
 
     try {
-      // Log what we're trying to insert (for debugging)
-      console.log("Attempting to insert blog with data:", {
+      // Create a temporary preview document
+      const previewDoc = {
         title,
-        slug,
-        excerpt: excerpt.substring(0, 30) + "...", // Truncate for readability
         author,
         category,
-        source_file: fileName
+        excerpt: `An insightful article about ${title} by ${author}.`,
+        slug: slugify(title),
+        created_at: new Date().toISOString(),
+        content: `
+          <div class="preview-notice bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
+            <h3 class="text-yellow-800 font-semibold mb-2">🔍 Preview Mode</h3>
+            <p class="text-yellow-700 text-sm">This is a preview of your uploaded document. The actual content will be processed when you click Publish.</p>
+          </div>
+          <h1>${title}</h1>
+          <p><strong>Author:</strong> ${author}</p>
+          <p><strong>Category:</strong> ${category}</p>
+          <p><strong>File:</strong> ${file?.name}</p>
+          <p>Your DOCX content will be converted to rich HTML format with images and formatting preserved.</p>
+        `
+      };
+
+      setPreviewDocument(previewDoc);
+      setPreviewType('blog');
+      setShowPreview(true);
+      
+    } catch (error: any) {
+      toast({
+        title: "Preview Failed",
+        description: error.message || "An error occurred during preview",
+        variant: "destructive",
       });
-
-      // Generate formatted blog content using the imported utility
-      const styledContent = generateBlogTemplate(content, title, author, category, excerpt, images);
-
-      // Save to Supabase database
-      const { data, error } = await supabase
-        .from('blogs')
-        .insert({ 
-          title: title,
-          content: styledContent,
-          slug: slug,
-          excerpt: excerpt,
-          author: author,
-          category: category,
-          source_file: fileName,
-          created_at: new Date().toISOString()
-        })
-        .select();
-
-      if (error) {
-        console.error("Database insert error:", {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
-        throw new Error(`Database error: ${error.message || error.details || 'Unknown error'}`);
-      }
-
-      console.log("Blog saved successfully:", data);
-    } catch (err: any) {
-      console.error("Save error:", {
-        name: err.name,
-        message: err.message,
-        stack: err.stack
-      });
-      throw new Error("Failed to save blog: " + (err.message || "Unknown error"));
+    } finally {
+      setPreviewingBlog(false);
     }
   };
 
-  // Add a test function to verify Supabase connection
-  const testSupabaseConnection = async () => {
+  // Blog Publish Function
+  const handleBlogPublish = async () => {
+    if (!uploadedBlogPath) {
+      toast({
+        title: "No File Uploaded",
+        description: "Please upload a file first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setProcessing(true);
+
     try {
-      console.log("Testing Supabase connection...");
-      
-      // Test authentication
-      const { data: authData, error: authError } = await supabase.auth.getSession();
-      console.log("Auth session:", authData);
-      if (authError) console.error("Auth error:", authError);
-      
-      // Test storage
-      const { data: storageData, error: storageError } = await supabase.storage.listBuckets();
-      console.log("Storage buckets:", storageData);
-      if (storageError) console.error("Storage error:", storageError);
-      
-      // Test database
-      const { data: dbData, error: dbError } = await supabase.from('blogs').select('count').limit(1);
-      console.log("Database response:", dbData);
-      if (dbError) console.error("Database error:", dbError);
+      console.log("Calling edge function to publish...");
+      const slug = slugify(title);
+      const { data: functionData, error: functionError } = await supabase.functions.invoke(
+        'process-document',
+        {
+          body: {
+            bucket: 'blogs',
+            name: uploadedBlogPath,
+            supabase: supabase,
+            metadata: { 
+              slug, 
+              author, 
+              category
+              // excerpt: `An insightful article about ${title} by ${author}.`
+            }
+          },
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+
+    
+
+      if (functionError) {
+        console.error("Edge function error:", functionError);
+        throw new Error(`Publishing failed: ${functionError.message}`);
+      }
+
+      console.log("Blog published successfully:", functionData);
       
       toast({
-        title: "Connection Test",
-        description: "Check console for results",
+        title: "Blog Published Successfully!",
+        description: "Your blog post is being processed and will be available shortly.",
         variant: "default",
       });
+
+      // Reset form and workflow state
+      resetBlogForm();
+      setUploadedBlogPath('');
+      setCanPreviewBlog(false);
+      setCanPublishBlog(false);
+
+      // Refresh the blogs list
+      setTimeout(() => {
+        refreshBlogs();
+      }, 2000);
+
+    } catch (error: any) {
+      toast({
+        title: "Publish Failed",
+        description: error.message || "An error occurred during publishing",
+        variant: "destructive",
+      });
+      console.error("Publishing error details:", error);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Whitepaper Upload Function
+  const handleWpUpload = async () => {
+    if (!wpFile || !wpTitle || !wpAuthor || !wpCategory) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide title, author, category and a file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!wpFile.name.match(/\.docx$/)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a Word document (.docx)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setWpUploading(true);
+
+    try {
+      // Check if whitepapers bucket exists
+      console.log("Checking whitepaper bucket access...");
+      const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+      
+      if (bucketError) {
+        console.error("Bucket access error:", bucketError);
+        throw new Error(`Storage access issue: ${bucketError.message}`);
+      }
+      
+      const wpBucket = buckets?.find(bucket => bucket.name === 'whitepapers');
+      if (!wpBucket) {
+        console.error("Available buckets:", buckets?.map(b => b.name));
+        throw new Error("Whitepapers bucket not found. Please contact administrator.");
+      }
+      
+      console.log("Whitepaper bucket access confirmed:", wpBucket);
+
+      const slug = slugify(wpTitle);
+      const sanitizedFileName = wpFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const originalPath = `raw-docs/${slug}/${sanitizedFileName}`;
+      
+      console.log("Uploading whitepaper to path:", originalPath);
+      console.log("File size:", wpFile.size, "bytes");
+      
+      // Try upload with minimal options first
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('whitepapers')
+        .upload(originalPath, wpFile, { 
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error("Detailed whitepaper upload error:", {
+          error: uploadError,
+          path: originalPath,
+          fileSize: wpFile.size,
+          fileName: wpFile.name
+        });
+        
+        // Try alternative approach if database error
+        if (uploadError.message?.includes('DatabaseError') || uploadError.message?.includes('unrecognized configuration')) {
+          console.log("Attempting alternative whitepaper upload method...");
+          
+          // Try with different path structure
+          const simplePath = `wp-${slug}-${Date.now()}.docx`;
+          const { data: retryData, error: retryError } = await supabase.storage
+            .from('whitepapers')
+            .upload(simplePath, wpFile);
+            
+          if (retryError) {
+            throw new Error(`Whitepaper upload failed (retry): ${retryError.message}. This appears to be a Supabase configuration issue.`);
+          }
+          
+          console.log("Alternative whitepaper upload successful:", retryData);
+          setUploadedWpPath(simplePath);
+        } else {
+          throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+      } else {
+        console.log("Whitepaper uploaded successfully:", uploadData);
+        setUploadedWpPath(originalPath);
+      }
+      
+      setCanPreviewWp(true);
+      setCanPublishWp(true);
+      
+      toast({
+        title: "Whitepaper Uploaded Successfully!",
+        description: "Your whitepaper is ready for preview. Click Preview to see how it will look.",
+        variant: "default",
+      });
+
+    } catch (error: any) {
+      console.error("Complete whitepaper upload error:", error);
+      
+      let errorMessage = error.message || "An error occurred during upload";
+      
+      // Provide specific guidance for common issues
+      if (error.message?.includes('DatabaseError') || error.message?.includes('unrecognized configuration')) {
+        errorMessage = "Supabase configuration issue detected. Please check your project settings or contact support.";
+      } else if (error.message?.includes('not found')) {
+        errorMessage = "Storage bucket not found. Please verify your Supabase project setup.";
+      } else if (error.message?.includes('permission')) {
+        errorMessage = "Permission denied. Please check your storage policies.";
+      }
+      
+      toast({
+        title: "Upload Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setWpUploading(false);
+    }
+  };
+
+  // Whitepaper Preview Function
+  const handleWpPreview = async () => {
+    if (!uploadedWpPath) {
+      toast({
+        title: "No File Uploaded",
+        description: "Please upload a file first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPreviewingWp(true);
+
+    try {
+      // Create a temporary preview document
+      const previewDoc = {
+        title: wpTitle,
+        author: wpAuthor,
+        category: wpCategory,
+        excerpt: `A comprehensive whitepaper on ${wpTitle} by ${wpAuthor}.`,
+        slug: slugify(wpTitle),
+        created_at: new Date().toISOString(),
+        content: `
+          <div class="preview-notice bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
+            <h3 class="text-yellow-800 font-semibold mb-2">🔍 Preview Mode</h3>
+            <p class="text-yellow-700 text-sm">This is a preview of your uploaded whitepaper. The actual content will be processed when you click Publish.</p>
+          </div>
+          <h1>${wpTitle}</h1>
+          <p><strong>Author:</strong> ${wpAuthor}</p>
+          <p><strong>Category:</strong> ${wpCategory}</p>
+          <p><strong>File:</strong> ${wpFile?.name}</p>
+          <p>Your DOCX content will be converted to rich HTML format with images and formatting preserved in professional whitepaper styling.</p>
+        `
+      };
+
+      setPreviewDocument(previewDoc);
+      setPreviewType('whitepaper');
+      setShowPreview(true);
+      
+    } catch (error: any) {
+      toast({
+        title: "Preview Failed",
+        description: error.message || "An error occurred during preview",
+        variant: "destructive",
+      });
+    } finally {
+      setPreviewingWp(false);
+    }
+  };
+
+  // Whitepaper Publish Function
+  const handleWpPublish = async () => {
+    if (!uploadedWpPath) {
+      toast({
+        title: "No File Uploaded",
+        description: "Please upload a file first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setWpProcessing(true);
+
+    try {
+      console.log("Calling edge function to publish whitepaper...");
+      
+      const { data: functionData, error: functionError } = await supabase.functions.invoke(
+        'process-document',
+        {
+          body: {
+            bucket: 'whitepapers',
+            name: uploadedWpPath,
+            metadata: { 
+              title: wpTitle, 
+              author: wpAuthor, 
+              category: wpCategory,
+              excerpt: `A comprehensive whitepaper on ${wpTitle} by ${wpAuthor}.`
+            }
+          }
+        }
+      );
+
+      if (functionError) {
+        console.error("Edge function error:", functionError);
+        throw new Error(`Publishing failed: ${functionError.message}`);
+      }
+
+      console.log("Whitepaper published successfully:", functionData);
+      
+      toast({
+        title: "Whitepaper Published Successfully!",
+        description: "Your whitepaper is being processed and will be available shortly.",
+        variant: "default",
+      });
+
+      // Reset form and workflow state
+      resetWhitepaperForm();
+      setUploadedWpPath('');
+      setCanPreviewWp(false);
+      setCanPublishWp(false);
+
+      // Refresh the whitepapers list
+      setTimeout(() => {
+        refreshWhitepapers();
+      }, 2000);
+
+    } catch (error: any) {
+      toast({
+        title: "Publish Failed",
+        description: error.message || "An error occurred during publishing",
+        variant: "destructive",
+      });
+      console.error("Publishing error details:", error);
+    } finally {
+      setWpProcessing(false);
+    }
+  };
+
+  // ADD THESE NEW HANDLER FUNCTIONS
+  const handlePreviewBlog = (blog: any) => {
+    setPreviewDocument(blog);
+    setPreviewType('blog');
+    setShowPreview(true);
+  };
+
+  const handlePreviewWhitepaper = (whitepaper: any) => {
+    setPreviewDocument(whitepaper);
+    setPreviewType('whitepaper');
+    setShowPreview(true);
+  };
+
+  const handlePublishFromPreview = () => {
+    // Refresh the appropriate list after publishing
+    if (previewType === 'blog') {
+      refreshBlogs();
+    } else {
+      refreshWhitepapers();
+    }
+  };
+
+  // Reset functions
+  const resetBlogForm = () => {
+    setFile(null);
+    setTitle('');
+    setAuthor('');
+    setCategory('');
+    setUploadedBlogPath('');
+    setCanPreviewBlog(false);
+    setCanPublishBlog(false);
+    
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const resetWhitepaperForm = () => {
+    setWpFile(null);
+    setWpTitle('');
+    setWpAuthor('');
+    setWpCategory('');
+    setUploadedWpPath('');
+    setCanPreviewWp(false);
+    setCanPublishWp(false);
+    
+    const fileInput = document.getElementById('wp-file-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const testSupabaseConnection = async () => {
+    try {
+      console.log("=== COMPREHENSIVE SUPABASE CONNECTION TEST ===");
+      
+      // 1. Test Auth
+      console.log("1. Testing Authentication...");
+      const { data: authData, error: authError } = await supabase.auth.getSession();
+      if (authError) {
+        console.error("❌ Auth error:", authError);
+      } else {
+        console.log("✅ Auth session:", authData?.session ? "Active" : "No session");
+        console.log("User:", authData?.session?.user?.email || "Not logged in");
+      }
+      
+      // 2. Test Storage Access
+      console.log("\n2. Testing Storage Access...");
+      const { data: storageData, error: storageError } = await supabase.storage.listBuckets();
+      if (storageError) {
+        console.error("❌ Storage error:", storageError);
+      } else {
+        console.log("✅ Available buckets:", storageData?.map(b => b.name) || []);
+        
+        // If no buckets visible, test bucket access directly
+        if (!storageData || storageData.length === 0) {
+          console.log("⚠️ No buckets visible - testing direct bucket access...");
+          
+          // Test direct bucket access
+          const requiredBuckets = ['blogs', 'whitepapers'];
+          for (const bucketName of requiredBuckets) {
+            try {
+              const { data: listData, error: listError } = await supabase.storage
+                .from(bucketName)
+                .list('', { limit: 1 });
+                
+              if (listError) {
+                console.log(`❌ ${bucketName} bucket: ${listError.message}`);
+              } else {
+                console.log(`✅ ${bucketName} bucket: Accessible (${listData?.length || 0} items)`);
+              }
+            } catch (err) {
+              console.log(`❌ ${bucketName} bucket: Error accessing`);
+            }
+          }
+        } else {
+          // Check specific buckets normally
+          const requiredBuckets = ['blogs', 'whitepapers'];
+          requiredBuckets.forEach(bucketName => {
+            const exists = storageData?.find(b => b.name === bucketName);
+            console.log(`${exists ? '✅' : '❌'} ${bucketName} bucket:`, exists ? 'Found' : 'NOT FOUND');
+          });
+        }
+      }
+      
+      // 3. Test Database
+      console.log("\n3. Testing Database Access...");
+      const { data: dbData, error: dbError } = await supabase.from('blogs').select('count').limit(1);
+      if (dbError) {
+        console.error("❌ Database error:", dbError);
+      } else {
+        console.log("✅ Database access: Working");
+      }
+      
+      // 4. Test Storage Upload (small test file)
+      console.log("\n4. Testing Storage Upload...");
+      try {
+        const testBlob = new Blob(['test'], { type: 'text/plain' });
+        const testFile = new File([testBlob], 'connection-test.txt', { type: 'text/plain' });
+        
+        const { data: uploadTest, error: uploadTestError } = await supabase.storage
+          .from('blogs')
+          .upload(`test/connection-test-${Date.now()}.txt`, testFile);
+          
+                 if (uploadTestError) {
+           console.error("❌ Upload test failed:", uploadTestError);
+           console.error("Upload error details:", {
+             message: uploadTestError.message,
+             fullError: uploadTestError
+           });
+        } else {
+          console.log("✅ Upload test: Success");
+          
+          // Clean up test file
+          await supabase.storage.from('blogs').remove([uploadTest.path]);
+        }
+      } catch (uploadErr) {
+        console.error("❌ Upload test exception:", uploadErr);
+      }
+      
+      // 5. Test Edge Functions
+      console.log("\n5. Testing Edge Functions...");
+      const { data: functionsData, error: functionsError } = await supabase.functions.invoke('process-document', {
+        body: { test: true }
+      });
+      if (functionsError) {
+        console.error("❌ Edge function error:", functionsError);
+      } else {
+        console.log("✅ Edge functions: Available");
+      }
+      
+      console.log("\n=== CONNECTION TEST COMPLETE ===");
+      
+      // Summary
+      const issues = [];
+      if (authError) issues.push("Authentication");
+      if (storageError) issues.push("Storage Access");
+      if (dbError) issues.push("Database");
+      if (functionsError) issues.push("Edge Functions");
+      
+      toast({
+        title: issues.length === 0 ? "All Tests Passed!" : "Issues Detected",
+        description: issues.length === 0 
+          ? "All Supabase services are working correctly" 
+          : `Issues found with: ${issues.join(', ')}. Check console for details.`,
+        variant: issues.length === 0 ? "default" : "destructive",
+      });
+      
     } catch (err) {
-      console.error("Test failed:", err);
+      console.error("❌ Connection test failed:", err);
       toast({
         title: "Connection Test Failed",
-        description: "See console for details",
+        description: "See console for detailed error information",
         variant: "destructive"
       });
     }
+  };
+
+  // Fetch blogs and whitepapers
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoadingBlogs(true);
+        const { data, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          console.error("Error fetching blogs:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load blogs",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        setBlogs(data || []);
+      } catch (err) {
+        console.error("Failed to fetch blogs:", err);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingBlogs(false);
+      }
+    };
+    
+    fetchBlogs();
+  }, []);
+
+  useEffect(() => {
+    const fetchWhitepapers = async () => {
+      try {
+        setLoadingWhitepapers(true);
+        const { data, error } = await supabase
+          .from('whitepapers')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          console.error("Error fetching whitepapers:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load whitepapers",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        setWhitepapers(data || []);
+      } catch (err) {
+        console.error("Failed to fetch whitepapers:", err);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingWhitepapers(false);
+      }
+    };
+    
+    fetchWhitepapers();
+  }, []);
+
+  const handleWpFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) setWpFile(e.target.files[0]);
+  };
+
+  // Management functions
+  const handleViewBlog = (blog) => {
+    setSelectedBlog(blog);
+    setViewBlogContent(blog.content);
+    setViewBlogDialog(true);
+  };
+  
+  const handleDeleteClick = (blog) => {
+    setSelectedBlog(blog);
+    setConfirmDeleteDialog(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!selectedBlog) return;
+    
+    try {
+      const { error } = await supabase
+        .from('blogs')
+        .delete()
+        .eq('id', selectedBlog.id);
+        
+      if (error) {
+        console.error("Error deleting blog:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete blog",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setBlogs(blogs.filter(blog => blog.id !== selectedBlog.id));
+      
+      toast({
+        title: "Success",
+        description: "Blog deleted successfully",
+        variant: "default",
+      });
+      
+      setConfirmDeleteDialog(false);
+    } catch (err) {
+      console.error("Delete operation failed:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteWhitepaperClick = (whitepaper) => {
+    setSelectedWhitepaper(whitepaper);
+    setConfirmDeleteWhitepaperDialog(true);
+  };
+  
+  const confirmDeleteWhitepaper = async () => {
+    if (!selectedWhitepaper) return;
+    
+    try {
+      const { error } = await supabase
+        .from('whitepapers')
+        .delete()
+        .eq('id', selectedWhitepaper.id);
+        
+      if (error) {
+        console.error("Error deleting whitepaper:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete whitepaper",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setWhitepapers(whitepapers.filter(wp => wp.id !== selectedWhitepaper.id));
+      
+      toast({
+        title: "Success",
+        description: "Whitepaper deleted successfully",
+        variant: "default",
+      });
+      
+      setConfirmDeleteWhitepaperDialog(false);
+    } catch (err) {
+      console.error("Delete operation failed:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const refreshBlogs = async () => {
+    try {
+      setLoadingBlogs(true);
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error("Error refreshing blogs:", error);
+        toast({
+          title: "Error",
+          description: "Failed to refresh blogs",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setBlogs(data || []);
+      
+      toast({
+        title: "Refreshed",
+        description: "Blog list updated",
+        variant: "default",
+      });
+    } catch (err) {
+      console.error("Failed to refresh blogs:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingBlogs(false);
+    }
+  };
+
+  const refreshWhitepapers = async () => {
+    try {
+      setLoadingWhitepapers(true);
+      const { data, error } = await supabase
+        .from('whitepapers')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error("Error refreshing whitepapers:", error);
+        toast({
+          title: "Error",
+          description: "Failed to refresh whitepapers",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setWhitepapers(data || []);
+      
+      toast({
+        title: "Refreshed",
+        description: "Whitepaper list updated",
+        variant: "default",
+      });
+    } catch (err) {
+      console.error("Failed to refresh whitepapers:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingWhitepapers(false);
+    }
+  };
+  
+  const filteredBlogs = blogs.filter(blog => 
+    blog.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    blog.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    blog.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredWhitepapers = whitepapers.filter(wp => 
+    wp.title.toLowerCase().includes(wpSearchQuery.toLowerCase()) || 
+    wp.author.toLowerCase().includes(wpSearchQuery.toLowerCase()) ||
+    wp.category.toLowerCase().includes(wpSearchQuery.toLowerCase())
+  );
+  
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   return (
@@ -495,9 +1071,25 @@ const Admin = () => {
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Content Management</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Upload and manage blog content for the Indrasol website
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-gray-600 dark:text-gray-400">
+              Upload and manage content for the Indrasol website
+            </p>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="debug-mode" className="text-sm font-medium text-gray-600">
+                Debug Mode
+              </Label>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="debug-mode"
+                  checked={debugMode}
+                  onChange={(e) => setDebugMode(e.target.checked)}
+                  className="h-4 w-4 text-indrasol-blue focus:ring-indrasol-blue border-gray-300 rounded"
+                />
+              </div>
+            </div>
+          </div>
           <Separator className="mt-4 bg-gray-200 dark:bg-gray-700" />
         </div>
         
@@ -505,11 +1097,19 @@ const Admin = () => {
           <TabsList className="bg-indrasol-blue-100 dark:bg-indrasol-darkblue-800 p-1">
             <TabsTrigger value="upload" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900">
               <Upload className="h-4 w-4 mr-2 text-indrasol-blue dark:text-indrasol-darkblue" />
-              Upload Content
+              Upload Blogs
             </TabsTrigger>
             <TabsTrigger value="manage" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900">
               <FileText className="h-4 w-4 mr-2 text-indrasol-blue dark:text-indrasol-darkblue" />
               Manage Blogs
+            </TabsTrigger>
+            <TabsTrigger value="wp-upload" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900">
+              <FileInput className="h-4 w-4 mr-2 text-indrasol-blue dark:text-indrasol-darkblue" />
+              Upload Whitepapers
+            </TabsTrigger>
+            <TabsTrigger value="wp-manage" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900">
+              <FileCheck className="h-4 w-4 mr-2 text-indrasol-blue dark:text-indrasol-darkblue" />
+              Manage Whitepapers
             </TabsTrigger>
           </TabsList>
           
@@ -521,7 +1121,7 @@ const Admin = () => {
                   New Blog Post
                 </CardTitle>
                 <CardDescription>
-                  Upload PDF or Word documents to create blog posts for the Indrasol website
+                  Upload Word documents (DOCX) to create blog posts. The document will be automatically processed and converted.
                 </CardDescription>
               </CardHeader>
               
@@ -575,7 +1175,7 @@ const Admin = () => {
                     <div className="space-y-2">
                       <Label htmlFor="file-upload" className="text-sm font-medium flex items-center">
                         <Upload className="h-4 w-4 mr-2 text-gray-500" />
-                        Document (PDF or DOCX)
+                        Document (DOCX)
                       </Label>
                       <div className="flex items-center justify-center w-full">
                         <label
@@ -587,12 +1187,12 @@ const Admin = () => {
                             <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                               {file ? file.name : <span>Click to upload or drag and drop</span>}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">PDF or DOCX (MAX. 10MB)</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">DOCX files only (MAX. 10MB)</p>
                           </div>
                           <Input
                             id="file-upload"
                             type="file"
-                            accept=".pdf,.docx"
+                            accept=".docx"
                             onChange={handleFileChange}
                             className="hidden"
                           />
@@ -603,49 +1203,84 @@ const Admin = () => {
                 </div>
               </CardContent>
               
-              <CardFooter className="flex justify-between pt-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-                <Button 
-                  variant="outline"
-                  onClick={handleProcess} 
-                  disabled={processing || !file || !title || !author || !category}
-                  className="flex items-center gap-2"
-                >
-                  {processing ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 text-indrasol-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="h-4 w-4" />
-                      Process & Preview
-                    </>
+              <CardFooter className="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                <div className="flex flex-col">
+                  <p className="text-sm text-gray-500">
+                    {debugMode && "Debug mode enabled - Check console for details"}
+                  </p>
+                  {uploadedBlogPath && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ File uploaded successfully - Ready for preview
+                    </p>
                   )}
-                </Button>
+                </div>
                 
-                <Button 
-                  onClick={handleUpload} 
-                  disabled={uploading || !processedData}
-                  className="bg-indrasol-blue hover:bg-indrasol-darkblue text-white flex items-center gap-2"
-                >
-                  {uploading ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4" />
-                      Publish Blog
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    onClick={handleBlogUpload} 
+                    disabled={uploading || !file || !title || !author || !category || !!uploadedBlogPath}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    {uploading ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        Upload
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleBlogPreview} 
+                    disabled={!canPreviewBlog || previewingBlog}
+                    variant="outline"
+                    className="flex items-center gap-2 text-indrasol-blue border-indrasol-blue/20"
+                  >
+                    {previewingBlog ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Previewing...
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-4 w-4" />
+                        Preview
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleBlogPublish} 
+                    disabled={!canPublishBlog || processing}
+                    className="bg-indrasol-blue hover:bg-indrasol-darkblue text-white flex items-center gap-2"
+                  >
+                    {processing ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        Publish
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardFooter>
             </Card>
             
@@ -656,21 +1291,21 @@ const Admin = () => {
               </CardHeader>
               <CardContent className="pt-0 text-xs text-indrasol-blue-700 dark:text-indrasol-darkblue-400">
                 <ul className="space-y-1">
-                <li className="flex items-start">
+                  <li className="flex items-start">
                     <ArrowRight className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
-                    <span>Only upload PDF or DOCX files</span>
+                    <span>Only upload DOCX (Word) files</span>
                   </li>
                   <li className="flex items-start">
                     <ArrowRight className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
-                    <span>Use well-formatted documents with clear headings and sections</span>
+                    <span>Documents are automatically converted to markdown and processed</span>
                   </li>
                   <li className="flex items-start">
                     <ArrowRight className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
-                    <span>Ensure images in documents are high quality (min. 800×400px)</span>
+                    <span>Images are extracted and optimized automatically</span>
                   </li>
                   <li className="flex items-start">
                     <ArrowRight className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
-                    <span>Review the preview carefully before publishing to ensure proper formatting</span>
+                    <span>Processing happens in the background - your content will appear shortly</span>
                   </li>
                 </ul>
               </CardContent>
@@ -678,52 +1313,667 @@ const Admin = () => {
           </TabsContent>
           
           <TabsContent value="manage">
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-md p-6">
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">Blog Management</h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-4">Coming soon in the next update</p>
-                <Button variant="outline" disabled className="mx-auto">
-                  Manage Existing Blogs
-                </Button>
-              </div>
+            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-md">
+              <CardHeader className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center text-xl font-semibold">
+                    <FileText className="h-5 w-5 mr-2 text-indrasol-blue dark:text-indrasol-darkblue" />
+                    Manage Blogs
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={refreshBlogs}
+                    disabled={loadingBlogs}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${loadingBlogs ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                </div>
+                <CardDescription>
+                  View, edit, and manage your existing blog posts
+                </CardDescription>
+                
+                <div className="mt-4">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                    <Input
+                      placeholder="Search blogs by title, author, or category..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-8 bg-white dark:bg-gray-800"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="p-0">
+                {loadingBlogs ? (
+                  <div className="flex items-center justify-center p-8">
+                    <RefreshCw className="h-8 w-8 animate-spin text-indrasol-blue dark:text-indrasol-darkblue" />
+                    <span className="ml-2 text-gray-500 dark:text-gray-400">Loading blogs...</span>
+                  </div>
+                ) : filteredBlogs.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[300px]">Title</TableHead>
+                          <TableHead>Author</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Published</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredBlogs.map((blog) => (
+                          <TableRow key={blog.id}>
+                            <TableCell className="font-medium">{blog.title}</TableCell>
+                            <TableCell>{blog.author}</TableCell>
+                            <TableCell>{blog.category}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3 text-gray-500" />
+                                {formatDate(blog.created_at)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handlePreviewBlog(blog)} 
+                                  className="flex items-center gap-1 text-indrasol-blue hover:text-indrasol-darkblue border-indrasol-blue/20 hover:border-indrasol-blue/40"
+                                  title="Preview blog post"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  Preview
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(blog)}
+                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  title="Delete blog post"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+                      {searchQuery ? 'No matching blogs found' : 'No blogs yet'}
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                      {searchQuery 
+                        ? 'Try adjusting your search or clear the filter'
+                        : 'Upload your first blog post to get started'
+                      }
+                    </p>
+                    {searchQuery && (
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setSearchQuery('')}
+                        className="mx-auto"
+                      >
+                        Clear Search
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Whitepaper Upload Tab */}
+          <TabsContent value="wp-upload" className="space-y-6">
+            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-md">
+              <CardHeader className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 pb-4">
+                <CardTitle className="flex items-center text-xl font-semibold">
+                  <FileInput className="h-5 w-5 mr-2 text-indrasol-blue dark:text-indrasol-darkblue" />
+                  New Whitepaper
+                </CardTitle>
+                <CardDescription>
+                  Upload Word documents (DOCX) to create whitepapers. Documents are automatically converted and processed.
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="wp-title" className="text-sm font-medium flex items-center">
+                        <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                        Whitepaper Title
+                      </Label>
+                      <Input
+                        id="wp-title"
+                        value={wpTitle}
+                        onChange={(e) => setWpTitle(e.target.value)}
+                        placeholder="Enter whitepaper title"
+                        className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="wp-author" className="text-sm font-medium flex items-center">
+                        <User className="h-4 w-4 mr-2 text-gray-500" />
+                        Author
+                      </Label>
+                      <Input
+                        id="wp-author"
+                        value={wpAuthor}
+                        onChange={(e) => setWpAuthor(e.target.value)}
+                        placeholder="Enter author name"
+                        className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="wp-category" className="text-sm font-medium flex items-center">
+                        <Tag className="h-4 w-4 mr-2 text-gray-500" />
+                        Category
+                      </Label>
+                      <Input
+                        id="wp-category"
+                        value={wpCategory}
+                        onChange={(e) => setWpCategory(e.target.value)}
+                        placeholder="Enter whitepaper category"
+                        className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="wp-file-upload" className="text-sm font-medium flex items-center">
+                        <Upload className="h-4 w-4 mr-2 text-gray-500" />
+                        Document (DOCX)
+                      </Label>
+                      <div className="flex items-center justify-center w-full">
+                        <label
+                          htmlFor="wp-file-upload"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-3 text-gray-500 dark:text-gray-400" />
+                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                              {wpFile ? wpFile.name : <span>Click to upload or drag and drop</span>}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">DOCX files only (MAX. 20MB)</p>
+                          </div>
+                          <Input
+                            id="wp-file-upload"
+                            type="file"
+                            accept=".docx"
+                            onChange={handleWpFileChange}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              
+              <CardFooter className="flex justify-between items-center border-t border-gray-200 dark:border-gray-800 pt-6">
+                <div className="flex flex-col">
+                  <Button 
+                    variant="outline" 
+                    onClick={resetWhitepaperForm}
+                    disabled={wpProcessing || wpUploading}
+                    className="flex items-center gap-2"
+                  >
+                    <XCircle className="h-4 w-4" />
+                    Clear Form
+                  </Button>
+                  {uploadedWpPath && (
+                    <p className="text-xs text-green-600 mt-2">
+                      ✓ Whitepaper uploaded - Ready for preview
+                    </p>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button 
+                    onClick={handleWpUpload} 
+                    disabled={wpUploading || !wpFile || !wpTitle || !wpAuthor || !wpCategory || !!uploadedWpPath}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    {wpUploading ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        Upload
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleWpPreview} 
+                    disabled={!canPreviewWp || previewingWp}
+                    variant="outline"
+                    className="flex items-center gap-2 text-indrasol-blue border-indrasol-blue/20"
+                  >
+                    {previewingWp ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Previewing...
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-4 w-4" />
+                        Preview
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleWpPublish} 
+                    disabled={!canPublishWp || wpProcessing}
+                    className="bg-indrasol-blue hover:bg-indrasol-darkblue text-white flex items-center gap-2"
+                  >
+                    {wpProcessing ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        Publish
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+            
+            {/* Tips Card */}
+            <Card className="bg-blue-50 dark:bg-indrasol-darkblue border-indrasol-blue dark:border-indrasol-darkblue">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-indrasol-blue dark:text-indrasol-darkblue">Simplified Whitepaper System</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 text-xs text-indrasol-blue-700 dark:text-indrasol-darkblue-400">
+                <ul className="space-y-1">
+                  <li className="flex items-start">
+                    <ArrowRight className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                    <span>Whitepapers are processed exactly like blogs</span>
+                  </li>
+                  <li className="flex items-start">
+                    <ArrowRight className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                    <span>DOCX files are converted to markdown automatically</span>
+                  </li>
+                  <li className="flex items-start">
+                    <ArrowRight className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                    <span>Images are extracted and optimized</span>
+                  </li>
+                  <li className="flex items-start">
+                    <ArrowRight className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                    <span>Professional whitepaper styling is applied automatically</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Manage Whitepapers Tab */}
+          <TabsContent value="wp-manage">
+            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-md">
+              <CardHeader className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center text-xl font-semibold">
+                    <FileCheck className="h-5 w-5 mr-2 text-indrasol-blue dark:text-indrasol-darkblue" />
+                    Manage Whitepapers
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={refreshWhitepapers}
+                    disabled={loadingWhitepapers}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${loadingWhitepapers ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                </div>
+                <CardDescription>
+                  View and manage your published whitepapers
+                </CardDescription>
+                
+                <div className="mt-4">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                    <Input
+                      placeholder="Search whitepapers by title, author, or category..."
+                      value={wpSearchQuery}
+                      onChange={(e) => setWpSearchQuery(e.target.value)}
+                      className="pl-8 bg-white dark:bg-gray-800"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="p-0">
+                {loadingWhitepapers ? (
+                  <div className="flex items-center justify-center p-8">
+                    <RefreshCw className="h-8 w-8 animate-spin text-indrasol-blue dark:text-indrasol-darkblue" />
+                    <span className="ml-2 text-gray-500 dark:text-gray-400">Loading whitepapers...</span>
+                  </div>
+                ) : filteredWhitepapers.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[300px]">Title</TableHead>
+                          <TableHead>Author</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Published</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredWhitepapers.map((whitepaper) => (
+                          <TableRow key={whitepaper.id}>
+                            <TableCell className="font-medium">{whitepaper.title}</TableCell>
+                            <TableCell>{whitepaper.author}</TableCell>
+                            <TableCell>{whitepaper.category}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3 text-gray-500" />
+                                {formatDate(whitepaper.created_at)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handlePreviewWhitepaper(whitepaper)} 
+                                  className="flex items-center gap-1 text-indrasol-blue hover:text-indrasol-darkblue border-indrasol-blue/20 hover:border-indrasol-blue/40"
+                                  title="Preview whitepaper"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  Preview
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteWhitepaperClick(whitepaper)}
+                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  title="Delete whitepaper"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+                      {wpSearchQuery ? 'No matching whitepapers found' : 'No whitepapers yet'}
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                      {wpSearchQuery 
+                        ? 'Try adjusting your search or clear the filter'
+                        : 'Upload your first whitepaper to get started'
+                      }
+                    </p>
+                    {wpSearchQuery && (
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setWpSearchQuery('')}
+                        className="mx-auto"
+                      >
+                        Clear Search
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </main>
       
-      {/* Preview Dialog */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-4xl h-[80vh] overflow-y-auto bg-white dark:bg-gray-900">
-          <DialogHeader className="border-b border-gray-200 dark:border-gray-800 pb-4 mb-4">
-            <DialogTitle className="text-xl font-semibold flex items-center">
-              <Eye className="h-5 w-5 mr-2 text-indrasol-blue-600 dark:text-indrasol-darkblue-400" />
-              Blog Post Preview
+      {/* Delete Confirmation Dialogs */}
+      <Dialog open={confirmDeleteDialog} onOpenChange={setConfirmDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold flex items-center text-red-600">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              Confirm Deletion
             </DialogTitle>
             <DialogDescription>
-              Review how your blog post will appear on the Indrasol website
+              Are you sure you want to delete this blog post? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           
-          <div 
-            className="preview-container mt-4 prose prose-indrasol-blue dark:prose-invert max-w-none" 
-            dangerouslySetInnerHTML={{ __html: previewHtml }}
-          />
+          {selectedBlog && (
+            <div className="py-4">
+              <p className="font-medium">{selectedBlog.title}</p>
+              <p className="text-sm text-gray-500">by {selectedBlog.author} in {selectedBlog.category}</p>
+            </div>
+          )}
           
-          <DialogFooter className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-800 flex-row justify-between">
-            <Button variant="outline" onClick={() => setPreviewOpen(false)}>
-              Back to Editing
+          <DialogFooter className="flex items-center justify-end gap-2">
+            <Button variant="outline" onClick={() => setConfirmDeleteDialog(false)}>
+              Cancel
             </Button>
             <Button 
-              onClick={handleUpload} 
-              disabled={uploading}
-              className="bg-indrasol-blue hover:bg-indrasol-darkblue text-white"
+              variant="destructive" 
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
             >
-              {uploading ? 'Saving...' : 'Publish Blog Post'}
+              Delete Blog
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <Dialog open={confirmDeleteWhitepaperDialog} onOpenChange={setConfirmDeleteWhitepaperDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold flex items-center text-red-600">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              Confirm Deletion
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this whitepaper? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedWhitepaper && (
+            <div className="py-4">
+              <p className="font-medium">{selectedWhitepaper.title}</p>
+              <p className="text-sm text-gray-500">by {selectedWhitepaper.author} in {selectedWhitepaper.category}</p>
+            </div>
+          )}
+          
+          <DialogFooter className="flex items-center justify-end gap-2">
+            <Button variant="outline" onClick={() => setConfirmDeleteWhitepaperDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDeleteWhitepaper}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete Whitepaper
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* View Content Dialog (shared for blogs and whitepapers) */}
+      <Dialog open={viewBlogDialog} onOpenChange={setViewBlogDialog}>
+        <DialogContent className="max-w-7xl h-[80vh] overflow-y-auto bg-white dark:bg-gray-900">
+          <DialogHeader className="border-b border-gray-200 dark:border-gray-800 pb-4 mb-4">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xl font-semibold flex items-center">
+                <Eye className="h-5 w-5 mr-2 text-indrasol-blue-600 dark:text-indrasol-darkblue-400" />
+                Content Preview
+              </DialogTitle>
+              
+              {(selectedBlog || selectedWhitepaper) && (
+                <div className="flex items-center">
+                  <span className="px-2 py-1 bg-indrasol-blue/10 text-indrasol-blue text-xs font-medium rounded-full">
+                    {(selectedBlog || selectedWhitepaper)?.category}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {(selectedBlog || selectedWhitepaper) && (
+              <div className="mt-2">
+                <h3 className="text-lg font-medium">{(selectedBlog || selectedWhitepaper)?.title}</h3>
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <User className="h-3 w-3 mr-1" />
+                  <span>{(selectedBlog || selectedWhitepaper)?.author}</span>
+                  <span className="mx-2">•</span>
+                  <Calendar className="h-3 w-3 mr-1" />
+                  <span>{formatDate((selectedBlog || selectedWhitepaper)?.created_at)}</span>
+                </div>
+              </div>
+            )}
+          </DialogHeader>
+          
+          <div 
+            className="preview-container mt-4 prose prose-indrasol-blue dark:prose-invert max-w-none" 
+            dangerouslySetInnerHTML={{ __html: viewBlogContent }}
+          />
+          
+          <DialogFooter className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex w-full justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (selectedBlog) {
+                      const currentIndex = blogs.findIndex(blog => blog.id === selectedBlog?.id);
+                      if (currentIndex > 0) {
+                        const prevBlog = blogs[currentIndex - 1];
+                        handleViewBlog(prevBlog);
+                      }
+                    } else if (selectedWhitepaper) {
+                      const currentIndex = whitepapers.findIndex(wp => wp.id === selectedWhitepaper?.id);
+                      if (currentIndex > 0) {
+                        const prevWp = whitepapers[currentIndex - 1];
+                        setSelectedWhitepaper(prevWp);
+                        setViewBlogContent(prevWp.content);
+                        setViewBlogDialog(true);
+                      }
+                    }
+                  }}
+                  disabled={(!selectedBlog || blogs.findIndex(blog => blog.id === selectedBlog?.id) <= 0) && 
+                           (!selectedWhitepaper || whitepapers.findIndex(wp => wp.id === selectedWhitepaper?.id) <= 0)}
+                  className="flex items-center gap-1"
+                >
+                  <ArrowRight className="h-4 w-4 rotate-180" />
+                  Previous
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (selectedBlog) {
+                      const currentIndex = blogs.findIndex(blog => blog.id === selectedBlog?.id);
+                      if (currentIndex < blogs.length - 1) {
+                        const nextBlog = blogs[currentIndex + 1];
+                        handleViewBlog(nextBlog);
+                      }
+                    } else if (selectedWhitepaper) {
+                      const currentIndex = whitepapers.findIndex(wp => wp.id === selectedWhitepaper?.id);
+                      if (currentIndex < whitepapers.length - 1) {
+                        const nextWp = whitepapers[currentIndex + 1];
+                        setSelectedWhitepaper(nextWp);
+                        setViewBlogContent(nextWp.content);
+                        setViewBlogDialog(true);
+                      }
+                    }
+                  }}
+                  disabled={(!selectedBlog || blogs.findIndex(blog => blog.id === selectedBlog?.id) >= blogs.length - 1) &&
+                           (!selectedWhitepaper || whitepapers.findIndex(wp => wp.id === selectedWhitepaper?.id) >= whitepapers.length - 1)}
+                  className="flex items-center gap-1"
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    setViewBlogDialog(false);
+                    setTimeout(() => {
+                      if (selectedBlog) {
+                        handleDeleteClick(selectedBlog);
+                      } else if (selectedWhitepaper) {
+                        handleDeleteWhitepaperClick(selectedWhitepaper);
+                      }
+                    }, 100);
+                  }}
+                  className="h-9 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => setViewBlogDialog(false)}
+                  className="h-9"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* ADD PREVIEW MODAL HERE */}
+      {showPreview && previewDocument && (
+        <PreviewModal
+          open={showPreview}
+          onClose={() => {
+            setShowPreview(false);
+            setPreviewDocument(null);
+          }}
+          document={previewDocument}
+          type={previewType}
+          onPublish={handlePublishFromPreview}
+        />
+      )}
     </div>
   );
 };
@@ -732,551 +1982,4 @@ export default Admin;
 
 
 
-
-
-
-
-// import { useState, useEffect } from 'react';
-// import { supabase } from '../supabase';
-// import { Button } from '@/components/ui/button';
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-// import { Input } from '@/components/ui/input';
-// import { Label } from '@/components/ui/label';
-// import { useToast } from '@/components/ui/use-toast';
-// import * as pdfjsLib from 'pdfjs-dist';
-// import mammoth from 'mammoth';
-// import { GlobalWorkerOptions } from 'pdfjs-dist';
-// import { generateBlogTemplate } from '../utils/BlogTemplateGenerator';
-// import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-
-// const Admin = () => {
-//   const [file, setFile] = useState<File | null>(null);
-//   const [uploading, setUploading] = useState(false);
-//   const [processing, setProcessing] = useState(false);
-//   const [title, setTitle] = useState('');
-//   const [author, setAuthor] = useState('');
-//   const [category, setCategory] = useState('');
-//   const { toast } = useToast();
-
-//   // Preview state
-//   const [previewOpen, setPreviewOpen] = useState(false);
-//   const [previewHtml, setPreviewHtml] = useState('');
-//   const [processedData, setProcessedData] = useState<{
-//     content: string;
-//     title: string;
-//     author: string;
-//     category: string;
-//     excerpt: string;
-//     fileName: string;
-//     images: any[];
-//   } | null>(null);
-
-//   // Set up PDF.js worker
-//   useEffect(() => {
-//     try {
-//       // Configure PDF.js worker (this is crucial for PDF processing)
-//       // Use a CDN-hosted worker file for reliability
-//       const pdfjsVersion = pdfjsLib.version;
-//       console.log("PDF.js version:", pdfjsVersion);
-//       GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`;
-      
-//       console.log("PDF.js worker configured successfully");
-      
-//       // Log current user for debugging authentication state
-//       const checkAuth = async () => {
-//         const { data } = await supabase.auth.getUser();
-//         console.log("Current user:", data.user);
-//         console.log("User metadata:", data.user?.app_metadata);
-//       };
-//       checkAuth();
-//     } catch (err) {
-//       console.error("Error configuring PDF.js worker:", err);
-//     }
-//   }, []);
-
-//   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     if (e.target.files) setFile(e.target.files[0]);
-//   };
-
-//   const handleLogout = async () => {
-//     await supabase.auth.signOut();
-//   };
-
-//   const handleProcess = async () => {
-//     if (!file || !title || !author || !category) {
-//       toast({
-//         title: "Error",
-//         description: "Please provide title, author, category and a file",
-//         variant: "destructive",
-//       });
-//       return;
-//     }
-
-//     // Check file type
-//     if (!file.name.match(/\.(pdf|docx)$/)) {
-//       toast({
-//         title: "Invalid file type",
-//         description: "Please upload a PDF or Word document",
-//         variant: "destructive",
-//       });
-//       return;
-//     }
-
-//     setProcessing(true);
-
-//     try {
-//       // Skip bucket verification and try to upload directly
-//       console.log("Starting direct upload to blogs bucket");
-      
-//       // Upload to Supabase Storage - using 'blogs' bucket consistently
-//       const fileName = `${Date.now()}-${file.name}`;
-//       const { data, error } = await supabase.storage
-//         .from('blogs')
-//         .upload(`public/${fileName}`, file);
-
-//       if (error) {
-//         console.error("Upload error:", error);
-//         throw new Error(`Storage upload failed: ${error.message}`);
-//       }
-
-//       console.log("File uploaded successfully:", data);
-
-//       // Process the file but don't save to database yet
-//       const processedResult = await processFile(fileName, title, author, category);
-      
-//       // Store the processed data for later use
-//       setProcessedData(processedResult);
-      
-//       // Generate preview HTML
-//       const previewHtml = generateBlogTemplate(
-//         processedResult.content,
-//         processedResult.title,
-//         processedResult.author,
-//         processedResult.category,
-//         processedResult.excerpt,
-//         processedResult.images
-//       );
-      
-//       // Set the preview HTML and open the preview dialog
-//       setPreviewHtml(previewHtml);
-//       setPreviewOpen(true);
-      
-//       toast({
-//         title: "Processing complete!",
-//         description: "Preview ready. Review and confirm to save.",
-//       });
-//     } catch (error: any) {
-//       toast({
-//         title: "Processing failed",
-//         description: error.message || "An error occurred during processing",
-//         variant: "destructive",
-//       });
-//       console.error("Processing error details:", error);
-//     } finally {
-//       setProcessing(false);
-//     }
-//   };
-
-//   const handleUpload = async () => {
-//     if (!processedData) {
-//       toast({
-//         title: "Error",
-//         description: "No processed data available. Please process the file first.",
-//         variant: "destructive",
-//       });
-//       return;
-//     }
-
-//     setUploading(true);
-
-//     try {
-//       // Save the processed data to the database
-//       await saveToDatabase(
-//         processedData.content,
-//         processedData.title,
-//         processedData.author,
-//         processedData.category,
-//         processedData.excerpt,
-//         processedData.fileName,
-//         processedData.images
-//       );
-
-//       toast({
-//         title: "Success!",
-//         description: "Blog post saved successfully",
-//       });
-
-//       // Reset form and state
-//       setFile(null);
-//       setTitle('');
-//       setAuthor('');
-//       setCategory('');
-//       setProcessedData(null);
-//       setPreviewHtml('');
-//       setPreviewOpen(false);
-      
-//       if (document.getElementById('file-upload') as HTMLInputElement) {
-//         (document.getElementById('file-upload') as HTMLInputElement).value = '';
-//       }
-//     } catch (error: any) {
-//       toast({
-//         title: "Save failed",
-//         description: error.message || "An error occurred during save",
-//         variant: "destructive",
-//       });
-//       console.error("Save error details:", error);
-//     } finally {
-//       setUploading(false);
-//     }
-//   };
-
-//   const processFile = async (fileName: string, title: string, author: string, category: string) => {
-//     console.log(`Processing file: ${fileName}`);
-    
-//     try {
-//       // Generate signed URL from the blogs bucket
-//       const { data, error } = await supabase.storage
-//         .from('blogs')
-//         .createSignedUrl(`public/${fileName}`, 3600); // 1-hour expiration
-
-//       if (error) {
-//         console.error("Signed URL error:", error);
-//         throw new Error(`Failed to generate signed URL: ${error.message}`);
-//       }
-
-//       if (!data?.signedUrl) {
-//         throw new Error("No signed URL returned from Supabase");
-//       }
-
-//       console.log("Successfully generated signed URL");
-//       const signedUrl = data.signedUrl;
-      
-//       let content = '';
-//       let images = [];
-      
-//       try {
-//         if (fileName.endsWith('.pdf')) {
-//           console.log("Processing PDF document");
-//           // Extract text and images from PDF
-//           const result = await extractFromPdf(signedUrl);
-//           content = result.text;
-//           images = result.images;
-//         } else if (fileName.endsWith('.docx')) {
-//           console.log("Processing DOCX document");
-//           // Extract text and images from DOCX
-//           const result = await extractFromDocx(signedUrl);
-//           content = result.text;
-//           images = result.images;
-//         }
-        
-//         console.log(`Extracted content length: ${content.length} characters`);
-//         console.log(`Extracted ${images.length} images`);
-//       } catch (err) {
-//         console.error("Document processing error:", err);
-//         throw new Error("Failed to process document: " + (err as Error).message);
-//       }
-
-//       // Create an excerpt from the content (first 200 characters)
-//       const excerpt = content.substring(0, 200).trim() + '...';
-
-//       // Return the processed data
-//       return {
-//         content,
-//         title,
-//         author, 
-//         category,
-//         excerpt,
-//         fileName,
-//         images
-//       };
-//     } catch (err) {
-//       console.error("Process file error:", err);
-//       throw err;
-//     }
-//   };
-
-//   // PDF extraction function that handles both text and images
-//   const extractFromPdf = async (url: string): Promise<{ text: string, images: any[] }> => {
-//     const loadingTask = pdfjsLib.getDocument(url);
-//     const pdf = await loadingTask.promise;
-//     let fullText = '';
-//     const images = [];
-    
-//     // Process each page
-//     for (let i = 1; i <= pdf.numPages; i++) {
-//       const page = await pdf.getPage(i);
-      
-//       // Extract text
-//       const textContent = await page.getTextContent();
-//       fullText += textContent.items.map((item: any) => item.str).join(' ');
-      
-//       // Try to extract images (simplified approach)
-//       try {
-//         const operatorList = await page.getOperatorList();
-//         for (let j = 0; j < operatorList.fnArray.length; j++) {
-//           if (operatorList.fnArray[j] === pdfjsLib.OPS.paintImageXObject) {
-//             const imgIndex = operatorList.argsArray[j][0];
-//             // Store image reference for later use
-//             images.push({
-//               pageNum: i,
-//               imgIndex: imgIndex,
-//               placeholder: `/api/placeholder/800/400` // Use placeholder for now
-//             });
-//           }
-//         }
-//       } catch (err) {
-//         console.log(`Error extracting images from page ${i}:`, err);
-//       }
-//     }
-    
-//     return { text: fullText, images };
-//   };
-
-//   // DOCX extraction function that handles both text and images
-//   const extractFromDocx = async (url: string): Promise<{ text: string, images: any[] }> => {
-//     const response = await fetch(url);
-//     const arrayBuffer = await response.arrayBuffer();
-    
-//     // Extract text and references to images
-//     const options = {
-//       convertImage: mammoth.images.imgElement(function(image) {
-//         // Return a Promise that resolves to the image attributes
-//         return Promise.resolve({
-//           src: `/api/placeholder/800/400` // Use placeholder for now
-//         });
-//       })
-//     };
-    
-//     const result = await mammoth.convertToHtml({ arrayBuffer }, options);
-//     const htmlContent = result.value;
-    
-//     // Extract text from the HTML
-//     const text = htmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    
-//     // Find image references in the HTML
-//     const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g;
-//     const images = [];
-//     let match;
-    
-//     while ((match = imgRegex.exec(htmlContent)) !== null) {
-//       images.push({
-//         src: match[1],
-//         placeholder: match[1]
-//       });
-//     }
-    
-//     return { text, images };
-//   };
-
-//   const saveToDatabase = async (
-//     content: string, 
-//     title: string, 
-//     author: string, 
-//     category: string, 
-//     excerpt: string, 
-//     fileName: string, 
-//     images: any[]
-//   ) => {
-//     // Create a slug from the title
-//     const slug = title
-//       .toLowerCase()
-//       .replace(/[^\w\s]/gi, '')
-//       .replace(/\s+/g, '-');
-
-//     try {
-//       // Log what we're trying to insert (for debugging)
-//       console.log("Attempting to insert blog with data:", {
-//         title,
-//         slug,
-//         excerpt: excerpt.substring(0, 30) + "...", // Truncate for readability
-//         author,
-//         category,
-//         source_file: fileName
-//       });
-
-//       // Generate formatted blog content using the imported utility
-//       const styledContent = generateBlogTemplate(content, title, author, category, excerpt, images);
-
-//       // Save to Supabase database
-//       const { data, error } = await supabase
-//         .from('blogs')
-//         .insert({ 
-//           title: title,
-//           content: styledContent,
-//           slug: slug,
-//           excerpt: excerpt,
-//           author: author,
-//           category: category,
-//           source_file: fileName,
-//           created_at: new Date().toISOString()
-//         })
-//         .select();
-
-//       if (error) {
-//         console.error("Database insert error:", {
-//           code: error.code,
-//           message: error.message,
-//           details: error.details,
-//           hint: error.hint
-//         });
-//         throw new Error(`Database error: ${error.message || error.details || 'Unknown error'}`);
-//       }
-
-//       console.log("Blog saved successfully:", data);
-//     } catch (err: any) {
-//       console.error("Save error:", {
-//         name: err.name,
-//         message: err.message,
-//         stack: err.stack
-//       });
-//       throw new Error("Failed to save blog: " + (err.message || "Unknown error"));
-//     }
-//   };
-
-//   // Add a test function to verify Supabase connection
-//   const testSupabaseConnection = async () => {
-//     try {
-//       console.log("Testing Supabase connection...");
-      
-//       // Test authentication
-//       const { data: authData, error: authError } = await supabase.auth.getSession();
-//       console.log("Auth session:", authData);
-//       if (authError) console.error("Auth error:", authError);
-      
-//       // Test storage
-//       const { data: storageData, error: storageError } = await supabase.storage.listBuckets();
-//       console.log("Storage buckets:", storageData);
-//       if (storageError) console.error("Storage error:", storageError);
-      
-//       // Test database
-//       const { data: dbData, error: dbError } = await supabase.from('blogs').select('count').limit(1);
-//       console.log("Database response:", dbData);
-//       if (dbError) console.error("Database error:", dbError);
-      
-//       toast({
-//         title: "Connection Test",
-//         description: "Check console for results",
-//       });
-//     } catch (err) {
-//       console.error("Test failed:", err);
-//       toast({
-//         title: "Connection Test Failed",
-//         description: "See console for details",
-//         variant: "destructive",
-//       });
-//     }
-//   };
-
-//   return (
-//     <div className="container mx-auto px-4 py-8">
-//       <div className="flex justify-between items-center mb-8">
-//         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-//         <div className="space-x-2">
-//           <Button variant="outline" onClick={testSupabaseConnection}>
-//             Test Connection
-//           </Button>
-//           <Button variant="outline" onClick={handleLogout}>
-//             Logout
-//           </Button>
-//         </div>
-//       </div>
-
-//       <Card className="mb-8">
-//         <CardHeader>
-//           <CardTitle>Upload Document</CardTitle>
-//           <CardDescription>
-//             Upload PDF or Word documents to create blog posts
-//           </CardDescription>
-//         </CardHeader>
-//         <CardContent>
-//           <div className="space-y-4">
-//             <div className="space-y-2">
-//               <Label htmlFor="title">Blog Title</Label>
-//               <Input
-//                 id="title"
-//                 value={title}
-//                 onChange={(e) => setTitle(e.target.value)}
-//                 placeholder="Enter blog title"
-//               />
-//             </div>
-            
-//             <div className="space-y-2">
-//               <Label htmlFor="author">Author</Label>
-//               <Input
-//                 id="author"
-//                 value={author}
-//                 onChange={(e) => setAuthor(e.target.value)}
-//                 placeholder="Enter author name"
-//               />
-//             </div>
-            
-//             <div className="space-y-2">
-//               <Label htmlFor="category">Category</Label>
-//               <Input
-//                 id="category"
-//                 value={category}
-//                 onChange={(e) => setCategory(e.target.value)}
-//                 placeholder="Enter blog category"
-//               />
-//             </div>
-            
-//             <div className="space-y-2">
-//               <Label htmlFor="file-upload">Document (PDF or DOCX)</Label>
-//               <Input
-//                 id="file-upload"
-//                 type="file"
-//                 accept=".pdf,.docx"
-//                 onChange={handleFileChange}
-//               />
-//             </div>
-//           </div>
-//         </CardContent>
-//         <CardFooter className="flex justify-between">
-//           <Button 
-//             variant="outline"
-//             onClick={handleProcess} 
-//             disabled={processing || !file || !title || !author || !category}
-//           >
-//             {processing ? 'Processing...' : 'Process & Preview'}
-//           </Button>
-          
-//           <Button 
-//             onClick={handleUpload} 
-//             disabled={uploading || !processedData}
-//           >
-//             {uploading ? 'Saving...' : 'Save to Database'}
-//           </Button>
-//         </CardFooter>
-//       </Card>
-      
-//       {/* Preview Dialog */}
-//       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-//         <DialogContent className="max-w-4xl h-[80vh] overflow-y-auto">
-//           <DialogHeader>
-//             <DialogTitle>Blog Post Preview</DialogTitle>
-//             <DialogDescription>
-//               Review how your blog post will appear
-//             </DialogDescription>
-//           </DialogHeader>
-          
-//           <div 
-//             className="preview-container mt-4" 
-//             dangerouslySetInnerHTML={{ __html: previewHtml }}
-//           />
-          
-//           <DialogFooter className="mt-4">
-//             <Button variant="outline" onClick={() => setPreviewOpen(false)}>
-//               Back to Editing
-//             </Button>
-//             <Button onClick={handleUpload} disabled={uploading}>
-//               {uploading ? 'Saving...' : 'Save Blog Post'}
-//             </Button>
-//           </DialogFooter>
-//         </DialogContent>
-//       </Dialog>
-//     </div>
-//   );
-// };
-
-// export default Admin;
 

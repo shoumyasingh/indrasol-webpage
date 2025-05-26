@@ -205,14 +205,7 @@ export function AIHeroSection({
           </div>
         </div>
       </div>
-      
-      {/* Subtle scroll indicator for better UX */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 hidden md:flex flex-col items-center animate-bounce">
-        <span className="text-xs text-gray-400 mb-1">Scroll</span>
-        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-        </svg>
-      </div>
+       
     </section>
   );
 }

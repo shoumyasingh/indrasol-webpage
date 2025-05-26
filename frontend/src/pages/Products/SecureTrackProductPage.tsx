@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Brain,
   Code,
+  ChevronRight,
 } from "lucide-react";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
@@ -35,6 +36,16 @@ const SecureTrackHero = () => {
       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indrasol-orange/5 rounded-full blur-3xl"></div>
 
       <div className="container mx-auto px-4 relative z-10">
+
+        {/* Breadcrumb */}
+        <div className="flex items-center text-sm text-gray-500 mb-6">
+          <Link to="/" className="hover:text-indrasol-blue transition-colors">Home</Link>
+          <ChevronRight className="h-4 w-4 mx-1" />
+          <Link to="/products" className="hover:text-indrasol-blue transition-colors">Products</Link>
+          <ChevronRight className="h-4 w-4 mx-1" />
+          <span className="text-gray-700">SecureTrack</span>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <div className="inline-block bg-indrasol-blue/10 px-4 py-1 rounded-full mb-2">

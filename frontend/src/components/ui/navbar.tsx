@@ -192,17 +192,20 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
       {/* Services Dropdown */}
       {isMobile ? (
         <>
-          <div className={cn(className)}>
+          <Link to="/services" className={cn(className)}>
+            Services
+          </Link>
+          <div className={cn(className, "pl-4")}>
             <div 
               onClick={toggleServicesDropdown}
               onKeyDown={handleServicesKeyDown}
-              className="flex items-center w-full text-left cursor-pointer"
+              className="flex items-center w-full text-left cursor-pointer text-sm text-gray-600"
               tabIndex={0}
               role="button"
               aria-haspopup="true"
               aria-expanded={servicesDropdownOpen}
             >
-              Services <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
+              View All Services <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
             </div>
             
             {servicesDropdownOpen && (
@@ -240,17 +243,20 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
           </div>
           
           {/* Products Dropdown (Mobile) */}
-          <div className={cn(className)}>
+          <Link to="/products" className={cn(className)}>
+            Products
+          </Link>
+          <div className={cn(className, "pl-4")}>
             <div 
               onClick={toggleProductsDropdown}
               onKeyDown={handleProductsKeyDown}
-              className="flex items-center w-full text-left cursor-pointer"
+              className="flex items-center w-full text-left cursor-pointer text-sm text-gray-600"
               tabIndex={0}
               role="button"
               aria-haspopup="true"
               aria-expanded={productsDropdownOpen}
             >
-              Products <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
+              View All Products <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
             </div>
             
             {productsDropdownOpen && (
@@ -296,13 +302,6 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                   <FileText className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   Blogs
                 </Link>
-                {/* <Link 
-                  to="/resources/case-studies" 
-                  className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
-                >
-                  <ClipboardCheck className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  Case Studies
-                </Link> */}
                 <Link 
                   to="/Resources/whitepaper" 
                   className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
@@ -310,20 +309,6 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                   <File className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                   White Papers
                 </Link>
-                {/* <Link 
-                  to="/resources/news" 
-                  className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
-                >
-                  <Newspaper className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  News
-                </Link> */}
-                {/* <Link 
-                  to="/resources/videos" 
-                  className="flex items-center py-2 text-sm text-gray-700 hover:text-indrasol-blue"
-                >
-                  <Video className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                  Videos
-                </Link> */}
               </div>
             )}
           </div>
@@ -373,17 +358,28 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
         <>
           {/* Services Dropdown (Desktop) */}
           <div className="relative inline-block" ref={servicesDropdownRef}>
-            <div 
-              onClick={toggleServicesDropdown}
-              onKeyDown={handleServicesKeyDown}
-              className={cn(className, "flex items-center cursor-pointer")}
-              tabIndex={0}
-              role="button"
-              aria-haspopup="true"
-              aria-expanded={servicesDropdownOpen}
+            <Link 
+              to="/services"
+              onClick={(e) => {
+                // If clicking on the chevron icon, prevent navigation and toggle dropdown
+                const target = e.target as HTMLElement;
+                if (target.closest('.dropdown-arrow') || target.classList.contains('dropdown-arrow')) {
+                  e.preventDefault();
+                  toggleServicesDropdown();
+                }
+              }}
+              className={cn(className, "flex items-center")}
             >
-              Services <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
-            </div>
+              Services 
+              <ChevronDown 
+                className="dropdown-arrow ml-1 h-4 w-4 stroke-4 cursor-pointer" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleServicesDropdown();
+                }}
+              />
+            </Link>
             
             {servicesDropdownOpen && (
               <div 
@@ -391,6 +387,12 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                 role="menu"
               >
                 <div className="py-1">
+                  <Link 
+                    to="/services" 
+                    className="flex items-center px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 border-b border-gray-100"
+                  >
+                  
+                  </Link>
                   <Link 
                     to="/services/aisolutions" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -426,17 +428,28 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
           
           {/* Products Dropdown (Desktop) */}
           <div className="relative inline-block" ref={productsDropdownRef}>
-            <div 
-              onClick={toggleProductsDropdown}
-              onKeyDown={handleProductsKeyDown}
-              className={cn(className, "flex items-center cursor-pointer")}
-              tabIndex={0}
-              role="button"
-              aria-haspopup="true"
-              aria-expanded={productsDropdownOpen}
+            <Link 
+              to="/products"
+              onClick={(e) => {
+                // If clicking on the chevron icon, prevent navigation and toggle dropdown
+                const target = e.target as HTMLElement;
+                if (target.closest('.dropdown-arrow') || target.classList.contains('dropdown-arrow')) {
+                  e.preventDefault();
+                  toggleProductsDropdown();
+                }
+              }}
+              className={cn(className, "flex items-center")}
             >
-              Products <ChevronDown className="ml-1 h-4 w-4 stroke-4" />
-            </div>
+              Products 
+              <ChevronDown 
+                className="dropdown-arrow ml-1 h-4 w-4 stroke-4 cursor-pointer" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleProductsDropdown();
+                }}
+              />
+            </Link>
             
             {productsDropdownOpen && (
               <div 
@@ -444,6 +457,12 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                 role="menu"
               >
                 <div className="py-1">
+                  <Link 
+                    to="/products" 
+                    className="flex items-center px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 border-b border-gray-100"
+                  >
+                    
+                  </Link>
                   <Link 
                     to="/Products/Bizradar" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -490,13 +509,6 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                     <FileText className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     Blogs
                   </Link>
-                  {/* <Link 
-                    to="/resources/case-studies" 
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <ClipboardCheck className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Case Studies
-                  </Link> */}
                   <Link 
                     to="/Resources/whitepaper" 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -504,20 +516,6 @@ function NavLinks({ className, isMobile = false }: { className?: string, isMobil
                     <File className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
                     White Papers
                   </Link>
-                  {/* <Link 
-                    to="/resources/news" 
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <Newspaper className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    News
-                  </Link> */}
-                  {/* <Link 
-                    to="/resources/videos" 
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <Video className="mr-2 h-4 w-4 text-indrasol-blue stroke-4" />
-                    Videos
-                  </Link> */}
                 </div>
               </div>
             )}

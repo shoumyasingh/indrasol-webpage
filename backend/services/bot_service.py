@@ -51,10 +51,12 @@ def get_pinecone_index():
 def get_urls():
     urls = [
     "https://indrasol.com/",
+    "http://indrasol.com/services",
     "http://indrasol.com/services/aisolutions",
     "https://indrasol.com/services/cloud-engineering",
     "https://indrasol.com/services/application-security",
     "https://indrasol.com/services/data-engineering",
+    "https://indrasol.com/products",
     "https://indrasol.com/Products/Bizradar",
     "https://indrasol.com/Products/Securetrack",
     "https://indrasol.com/Resources/blogs2",

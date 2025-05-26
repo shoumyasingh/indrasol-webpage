@@ -160,7 +160,6 @@ export function PartnersSection() {
             const tilt = calculateTilt(index);
             return (
               <motion.a
-                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
                 key={index}
@@ -217,23 +216,6 @@ export function PartnersSection() {
           transition={{ delay: 0.5, duration: 0.7 }}
           className="mt-16 text-center"
         >
-          {/* <a 
-            href="#partnership-benefits" 
-            className="inline-flex items-center justify-center px-8 py-4 bg-[#367ABB] text-white rounded-full hover:bg-[#367ABB]/90 transition-colors shadow-lg hover:shadow-xl group"
-          >
-            <span className="font-medium mr-2">Explore Partnership Benefits</span>
-            <span className="relative w-6 h-6 bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white/30">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-4 w-4 transition-transform duration-300 transform group-hover:translate-x-1" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5-5 5M7 7l5 5-5 5" />
-              </svg>
-            </span>
-          </a> */}
         </motion.div>
       </div>
       

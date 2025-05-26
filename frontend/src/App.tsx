@@ -12,6 +12,9 @@ import CloudEngineeringSecurity from "./pages/services/CloudEngineeringSecurity"
 import ApplicationSecurity from "./pages/services/ApplicationSecurity";
 import DataEngineering from "./pages/services/DataEngineering";
 import Company from "./pages/Aboutus/Company";
+import Services from "./pages/Services";
+import Products from "./pages/Products";
+
 import BizRadarProductPage from "./pages/Products/BizRadarProductPage";
 import SecureTrackProductPage from "./pages/Products/SecureTrackProductPage";
 import BlogPage from "./pages/Resources/BlogPage";
@@ -61,6 +64,8 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/company" element={<Company />} />
           <Route path="/locations" element={<LocationsSection />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/products" element={<Products />} />
           <Route path="/services/aisolutions" element={<AiSolutions />} />
           <Route path="/services/cloud-engineering" element={<CloudEngineeringSecurity />} />
           <Route path="/services/application-security" element={<ApplicationSecurity />} />

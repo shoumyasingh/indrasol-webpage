@@ -67,12 +67,12 @@ const clientLogos = [
   {
     name: "Mervyn's",
     logo: "/logos/mervyns.png",
-    url: "https://www.mervyns.com/"
+    url: "https://mervynsonline.com/"
   },
   {
     name: "Concerto Health",
     logo: "/logos/concerto-health.png",
-    url: "https://www.concertohealth.com/"
+    url: "https://concertocare.com/"
   },
   // Row 3
   {

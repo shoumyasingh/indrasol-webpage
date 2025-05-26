@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { PreviewModal } from './PreviewModal'; // ADD THIS IMPORT
+import { MarkdownEnhancer } from '@/components/MarkdownEnhancer';
 import { 
   LogOut, 
   Upload, 
@@ -274,6 +275,7 @@ const Admin = () => {
     }
   };
 
+  // ------------------------- BLOG PUBLISH START ------------------------------------
   // Blog Publish Function
   const handleBlogPublish = async () => {
     if (!uploadedBlogPath) {
@@ -284,56 +286,228 @@ const Admin = () => {
       });
       return;
     }
-
+  
     setProcessing(true);
-
+  
     try {
-      console.log("Calling edge function to publish...");
+      console.log("Step 1: Processing document with edge function...");
       const slug = slugify(title);
+  
+      // Step 1: Call edge function to process and store the document
+      const payload = {
+        bucket: 'blogs',
+        path: uploadedBlogPath,
+        metadata: { 
+          slug,
+          title,
+          author, 
+          category
+        }
+      };
+  
       const { data: functionData, error: functionError } = await supabase.functions.invoke(
         'process-document',
-        {
-          body: {
-            bucket: 'blogs',
-            name: uploadedBlogPath,
-            supabase: supabase,
-            metadata: { 
-              slug, 
-              author, 
-              category
-              // excerpt: `An insightful article about ${title} by ${author}.`
-            }
-          },
-          headers: { 'Content-Type': 'application/json' }
-        }
+        { body: payload }
       );
-
-    
-
+  
       if (functionError) {
         console.error("Edge function error:", functionError);
-        throw new Error(`Publishing failed: ${functionError.message}`);
+        throw new Error(`Processing failed: ${functionError.message}`);
       }
-
-      console.log("Blog published successfully:", functionData);
+  
+      if (!functionData.success) {
+        throw new Error(functionData.error || 'Document processing failed');
+      }
+  
+      console.log("Document processed successfully:", functionData);
+  
+      // Step 2: Download the raw markdown from storage
+      console.log("Step 2: Downloading raw markdown...");
+      const { data: markdownData, error: downloadError } = await supabase.storage
+        .from('blogs')
+        .download(functionData.markdownPath);
+  
+      if (downloadError) {
+        throw new Error(`Failed to download markdown: ${downloadError.message}`);
+      }
+  
+      // Convert blob to text
+      const rawMarkdown = await markdownData.text();
+      console.log("Raw markdown downloaded, length:", rawMarkdown.length);
+  
+      // Step 3: Validate markdown
+      const validation = MarkdownEnhancer.validateMarkdown(rawMarkdown);
+      if (!validation.isValid) {
+        console.warn("Markdown validation warnings:", validation.errors);
+        // Continue processing but log warnings
+      }
+  
+      // Step 4: Update image URLs to use public URLs
+      // console.log("Step 3: Updating image URLs...");
+      // const imageMap = functionData.images.map((img: any) => {
+      //   const { data: imgUrl } = supabase.storage
+      //     .from('blogs')
+      //     .getPublicUrl(img.storagePath);
+        
+      //   return {
+      //     storagePath: img.storagePath,
+      //     publicUrl: imgUrl.publicUrl
+      //   };
+      // });
+  
+      // let enhancedMarkdown = MarkdownEnhancer.updateImageUrls(rawMarkdown, imageMap);
+  
+      // Step 5: Apply markdown enhancements
+      console.log("Step 4: Enhancing markdown...");
+      let enhancedMarkdown = MarkdownEnhancer.enhanceMarkdown(rawMarkdown);
+  
+      // Step 6: Analyze document structure
+      console.log("Step 5: Analyzing document structure...");
+      const structure = MarkdownEnhancer.analyzeDocumentStructure(enhancedMarkdown);
+  
+      // Optional: Add table of contents if needed
+      if (structure.tableOfContents.length > 3) { // Only add TOC for longer documents
+        const toc = MarkdownEnhancer.generateTableOfContents(structure);
+        // Insert TOC after the main title
+        const titleMatch = enhancedMarkdown.match(/^(#\s+.+\n)/m);
+        if (titleMatch) {
+          enhancedMarkdown = enhancedMarkdown.replace(
+            titleMatch[0],
+            titleMatch[0] + '\n' + toc
+          );
+        }
+      }
+  
+      // Step 7: Extract enhanced metadata
+      console.log("Step 6: Extracting metadata...");
+      const metadata = MarkdownEnhancer.extractMetadata(enhancedMarkdown, {
+        title,
+        author,
+        category,
+        excerpt: null
+      });
+  
+      // Step 8: Upload enhanced markdown to storage
+      console.log("Step 7: Uploading enhanced markdown...");
+      const enhancedMarkdownPath = `${slug}/${slug}.md`;
+      const { error: uploadError } = await supabase.storage
+        .from('blogs')
+        .upload(enhancedMarkdownPath, new TextEncoder().encode(enhancedMarkdown), {
+          contentType: 'text/markdown',
+          upsert: true
+        });
+  
+      if (uploadError) {
+        throw new Error(`Failed to upload enhanced markdown: ${uploadError.message}`);
+      }
+  
+      // Get public URLs
+      const { data: mdUrlData } = supabase.storage
+        .from('blogs')
+        .getPublicUrl(enhancedMarkdownPath);
       
+      const { data: docxUrlData } = supabase.storage
+        .from('blogs')
+        .getPublicUrl(uploadedBlogPath);
+  
+      // Step 9: Insert record into database
+      console.log("Step 8: Publishing to database...");
+      const blogRecord = {
+        title: metadata.title,
+        slug,
+        content: enhancedMarkdown,
+        markdown_content: enhancedMarkdown,
+        markdown_url: mdUrlData.publicUrl,
+        docx_url: docxUrlData.publicUrl,
+        source_file: uploadedBlogPath,
+        excerpt: metadata.excerpt,
+        readtime: structure.estimatedReadTime,
+        author: metadata.author,
+        category: metadata.category,
+        created_at: new Date().toISOString(),
+        
+        // Enhanced metadata
+        word_count: structure.totalWordCount,
+        has_images: structure.hasImages,
+        has_tables: structure.hasTables,
+        has_code: structure.hasCode,
+        image_count: functionData.images.length,
+        
+        // Store structure as JSON
+        document_structure: JSON.stringify(structure),
+        
+        // SEO metadata
+        meta_description: metadata.excerpt?.substring(0, 160),
+        
+        // Document stats
+        stats: metadata.stats
+      };
+  
+      // Insert into database with basic fields fallback
+      const { data: insertData, error: insertError } = await supabase
+        .from('blogs')
+        .upsert(blogRecord, { onConflict: 'slug' })
+        .select()
+        .single();
+  
+      if (insertError) {
+        // If error is about missing columns, try with basic fields only
+        if (insertError.message.includes('column')) {
+          console.log('Retrying with basic fields only...');
+          const basicRecord = {
+            title: metadata.title,
+            slug,
+            content: enhancedMarkdown,
+            markdown_content: enhancedMarkdown,
+            markdown_url: mdUrlData.publicUrl,
+            docx_url: docxUrlData.publicUrl,
+            source_file: uploadedBlogPath,
+            excerpt: metadata.excerpt,
+            readtime: structure.estimatedReadTime,
+            author: metadata.author,
+            category: metadata.category,
+            created_at: new Date().toISOString()
+          };
+  
+          const { data: retryData, error: retryError } = await supabase
+            .from('blogs')
+            .upsert(basicRecord, { onConflict: 'slug' })
+            .select()
+            .single();
+  
+          if (retryError) {
+            throw new Error(`Failed to publish blog: ${retryError.message}`);
+          }
+  
+          console.log("Blog published successfully (basic mode):", retryData);
+        } else {
+          throw new Error(`Failed to publish blog: ${insertError.message}`);
+        }
+      } else {
+        console.log("Blog published successfully:", insertData);
+        console.log("- Word count:", structure.totalWordCount);
+        console.log("- Read time:", structure.estimatedReadTime);
+        console.log("- Images:", functionData.images.length);
+        console.log("- Sections:", structure.sections.length);
+      }
+  
       toast({
         title: "Blog Published Successfully!",
-        description: "Your blog post is being processed and will be available shortly.",
+        description: `Your blog "${metadata.title}" has been published.`,
         variant: "default",
       });
-
+  
       // Reset form and workflow state
       resetBlogForm();
       setUploadedBlogPath('');
       setCanPreviewBlog(false);
       setCanPublishBlog(false);
-
+  
       // Refresh the blogs list
       setTimeout(() => {
         refreshBlogs();
       }, 2000);
-
+  
     } catch (error: any) {
       toast({
         title: "Publish Failed",
@@ -346,6 +520,8 @@ const Admin = () => {
     }
   };
 
+
+  // ------------------------- BLOG PUBLISH END ------------------------------------
   // Whitepaper Upload Function
   const handleWpUpload = async () => {
     if (!wpFile || !wpTitle || !wpAuthor || !wpCategory) {
@@ -388,7 +564,7 @@ const Admin = () => {
 
       const slug = slugify(wpTitle);
       const sanitizedFileName = wpFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const originalPath = `raw-docs/${slug}/${sanitizedFileName}`;
+      const originalPath = `${slug}/${sanitizedFileName}`;
       
       console.log("Uploading whitepaper to path:", originalPath);
       console.log("File size:", wpFile.size, "bytes");
@@ -536,9 +712,9 @@ const Admin = () => {
         {
           body: {
             bucket: 'whitepapers',
-            name: uploadedWpPath,
+            path: uploadedWpPath,
             metadata: { 
-              title: wpTitle, 
+              title: slugify(wpTitle), 
               author: wpAuthor, 
               category: wpCategory,
               excerpt: `A comprehensive whitepaper on ${wpTitle} by ${wpAuthor}.`

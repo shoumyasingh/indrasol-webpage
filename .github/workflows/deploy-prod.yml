@@ -40,7 +40,7 @@ jobs:
         zip -r ../site.zip .
         cd ..
 
-    - name: Upload artefact (for troubleshooting)
+    - name: Upload artifact (for troubleshooting)
       uses: actions/upload-artifact@v4
       with:
         name: build-output
@@ -50,9 +50,9 @@ jobs:
     - name: Azure login (OIDC)
       uses: azure/login@v2
       with:
-        client-id:      ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id:      ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        client-id: ${{ secrets.AZUREAPPSERVICE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTION_ID }}
 
     - name: Deploy to Web App
       id: deploy

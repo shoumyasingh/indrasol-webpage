@@ -62,7 +62,7 @@ def get_urls():
     "https://indrasol.com/Resources/blogs2",
     "https://indrasol.com/Resources/whitepaper",
     "https://indrasol.com/company",
-    "https://indrasol.com/company/indrasol",
+    "https://indrasol.com/contact",
     "https://indrasol.com/company/locations"
     ]
     return urls 
@@ -239,3 +239,59 @@ def retrieve_relevant_chunks(query, top_k=3):
     query_embedding = create_embedding(query)
     results = index.query(vector=query_embedding, top_k=top_k, include_metadata=True)
     return [match["metadata"]["text"] for match in results["matches"]]
+def export_pinecone_to_markdown(output_file="pinecone_content.md"):
+    try:
+        index = get_pinecone_index()
+        stats = index.describe_index_stats()
+        logging.info(f"Exporting Pinecone data (vectors: {stats.get('total_vector_count', 'N/A')})")
+
+        all_texts_by_url = {}
+
+        # You’ll need to paginate through all items in Pinecone (simulate with a dummy vector if needed)
+        dummy_vector = [0.0] * stats['dimension']
+        results = index.query(
+            vector=dummy_vector,
+            top_k=10000,
+            include_metadata=True
+        )
+
+        for match in results.get("matches", []):
+            metadata = match.get("metadata", {})
+            text = metadata.get("text", "")
+            url = metadata.get("url", "unknown-url")
+            if url not in all_texts_by_url:
+                all_texts_by_url[url] = []
+            all_texts_by_url[url].append(text)
+
+        # Write to markdown
+        with open(output_file, "w", encoding="utf-8") as f:
+            for url, chunks in all_texts_by_url.items():
+                f.write(f"# Content from: {url}\n\n")
+                for chunk in chunks:
+                    f.write(f"{chunk}\n\n---\n\n")
+        logging.info(f"Markdown file '{output_file}' created successfully.")
+
+    except Exception as e:
+        logging.error(f"Failed to export Pinecone data to markdown: {e}")
+def delete_all_pinecone_data():
+    """
+    Deletes all vectors from the Pinecone index.
+    WARNING: This operation is irreversible.
+    """
+    try:
+        index = get_pinecone_index()
+        logging.info("Deleting all vectors from Pinecone index...")
+        
+        # Delete all vectors using delete with delete_all=True
+        index.delete(delete_all=True)
+        
+        logging.info("All vectors deleted from Pinecone index successfully.")
+    except Exception as e:
+        logging.error(f"Failed to delete vectors from Pinecone: {e}")
+import re
+
+def convert_markdown_links_to_html(text):
+    pattern = r"\[([^\]]+)\]\(([^)]+)\)"
+    return re.sub(pattern, r'<a href="\2" target="_blank" style="color: blue;">\1</a>', text)
+
+   

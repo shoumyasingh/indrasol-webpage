@@ -49,6 +49,7 @@
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^12.7.3",
     "highlight.js": "^11.11.1",
+    "html-react-parser": "^5.2.5",
     "input-otp": "^1.2.4",
     "jsdom": "^22.1.0",
     "katex": "^0.16.22",

@@ -31,7 +31,7 @@ const Index = () => {
         <ContactSection />
       </main>
       <Footer />
-      <BackToTop />
+      <BackToTop /> 
       <ChatBot /> {/* Add the ChatBot component here */}
     </div>
   );

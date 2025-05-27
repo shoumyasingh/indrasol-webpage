@@ -2,7 +2,7 @@ import { Message } from '../types/chat';
 import { API_ENDPOINTS } from '../config';
 
 export interface SendMessageResponse {
-  message: Message;
+  response: string;
 }
 
 export const chatService = {
@@ -18,7 +18,7 @@ export const chatService = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ query: message }),
       });
 
       if (!response.ok) {
@@ -26,7 +26,11 @@ export const chatService = {
       }
 
       const data: SendMessageResponse = await response.json();
-      return data.message;
+      return {
+        id: Date.now(),
+        text: data.response,
+        sender: "bot"
+      };
     } catch (error) {
       console.error('Error sending message:', error);
       // Return a fallback error message

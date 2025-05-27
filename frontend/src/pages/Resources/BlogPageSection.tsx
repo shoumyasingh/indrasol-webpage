@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -6,11 +6,14 @@ import {
   Tag,
   ChevronRight,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { supabase } from "@/supabase";
+import { format, parseISO } from "date-fns";
 
 // Types for blog posts
 interface BlogPost {
@@ -21,85 +24,19 @@ interface BlogPost {
   category: string;
   author: string;
   authorRole: string;
-  authorAvatar: string;
   publishDate: string;
   readTime: string;
   slug: string;
   featured?: boolean;
 }
 
-// Sample data (would typically come from an API or CMS)
-const sampleBlogs: BlogPost[] = [
-  {
-    id: "1",
-    title: "Cyber Risk Management",
-    excerpt:
-      "Demystifying Secure Architecture Review of Generative AI-Based Products and Services.",
-    coverImage: "/blog-images/blog1.png",
-    category: "Cybersecurity",
-    author: "Satish Govindappa",
-    authorRole: "",
-    authorAvatar: "/blog-images/SatishGovindappa.png",
-    publishDate: "April 18, 2025",
-    readTime: "8 min read",
-    slug: "cyber-risk-management",
-    featured: true,
-  },
-//   {
-//     id: "2",
-//     title: "Implementing RAG Systems for Enhanced Threat Detection",
-//     excerpt:
-//       "A practical guide to implementing Retrieval-Augmented Generation for more effective cybersecurity threat analysis.",
-//     coverImage: "/blog-images/rag-threat-detection.jpg",
-//     category: "Machine Learning",
-//     author: "Maya Patel",
-//     authorRole: "ML Security Researcher",
-//     authorAvatar: "/avatars/maya-patel.jpg",
-//     publishDate: "April 10, 2025",
-//     readTime: "10 min read",
-//     slug: "rag-threat-detection",
-//     featured: true,
-//   },
-//   {
-//     id: "3",
-//     title: "Zero Trust Architecture: Beyond the Buzzword",
-//     excerpt:
-//       "Practical strategies for implementing genuine zero trust architecture in modern enterprise networks.",
-//     coverImage: "/blog-images/zero-trust.jpg",
-//     category: "Security Architecture",
-//     author: "James Wilson",
-//     authorRole: "Security Consultant",
-//     authorAvatar: "/avatars/james-wilson.jpg",
-//     publishDate: "April 5, 2025",
-//     readTime: "7 min read",
-//     slug: "zero-trust-architecture-guide",
-//   },
-//   {
-//     id: "4",
-//     title: "The Hidden Dangers of Prompt Injection in LLMs",
-//     excerpt:
-//       "Understanding and mitigating prompt injection attacks in large language model applications.",
-//     coverImage: "/blog-images/prompt-injection.jpg",
-//     category: "AI Security",
-//     author: "Dr. Alex Chen",
-//     authorRole: "Chief Security Architect",
-//     authorAvatar: "/avatars/alex-chen.jpg",
-//     publishDate: "March 28, 2025",
-//     readTime: "6 min read",
-//     slug: "prompt-injection-dangers",
-//   },
-  
-];
-
-// Categories for filtering
-const categories = [
-  "All",
-  "AI Security",
-  "Cybersecurity",
-  "Machine Learning",
-  "Security Architecture",
-  "AI Ethics",
-];
+// Function to generate read time estimate
+const calculateReadTime = (content: string): string => {
+  // Average reading speed is about 200-250 words per minute
+  const words = content.split(/\s+/).length;
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  return `${minutes} min read`;
+};
 
 // Featured blog post card component
 const FeaturedBlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
@@ -107,7 +44,7 @@ const FeaturedBlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
 
   // Handle card click to navigate to blog detail page
   const handleCardClick = () => {
-    navigate(`/blog/${blog.slug}`);
+    navigate(`/Resources/blog/${blog.slug}`);
   };
 
   return (
@@ -128,6 +65,10 @@ const FeaturedBlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
           src={blog.coverImage}
           alt={blog.title}
           className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = `/api/placeholder/800/400?text=${encodeURIComponent(blog.title)}`;
+          }}
         />
       </div>
       <div className="p-6 flex flex-col flex-grow">
@@ -148,16 +89,13 @@ const FeaturedBlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
         </p>
         <div className="flex justify-between items-center mt-auto">
           <div className="flex items-center">
-            <img
-              src={blog.authorAvatar}
-              alt={blog.author}
-              className="h-8 w-8 rounded-full mr-2 border border-gray-200"
-            />
             <div>
               <div className="text-sm font-medium text-gray-900">
                 {blog.author}
               </div>
-              <div className="text-xs text-gray-500">{blog.authorRole}</div>
+              {blog.authorRole && (
+                <div className="text-xs text-gray-500">{blog.authorRole}</div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -182,7 +120,7 @@ const BlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
 
   // Handle card click to navigate to blog detail page
   const handleCardClick = () => {
-    navigate(`/blog/${blog.slug}`);
+    navigate(`/Resources/blog/${blog.slug}`);
   };
 
   return (
@@ -200,6 +138,10 @@ const BlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
           src={blog.coverImage}
           alt={blog.title}
           className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = `/api/placeholder/800/400?text=${encodeURIComponent(blog.title)}`;
+          }}
         />
       </div>
       <div className="p-5 flex flex-col flex-grow">
@@ -219,13 +161,8 @@ const BlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
           {blog.excerpt}
         </p>
         <div className="flex justify-between items-center mt-auto">
-          <div className="flex items-center">
-            <img
-              src={blog.authorAvatar}
-              alt={blog.author}
-              className="h-6 w-6 rounded-full mr-2 border border-gray-200"
-            />
-            <span className="text-xs text-gray-700">{blog.author}</span>
+          <div>
+            <span className="text-xs font-medium text-gray-700">{blog.author}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-gray-500 text-xs flex items-center">
@@ -243,11 +180,43 @@ const BlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
   );
 };
 
+// Empty state component
+const EmptyState: React.FC<{ message: string }> = ({ message }) => (
+  <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
+    <div className="mx-auto w-24 h-24 mb-4 text-gray-300">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+        />
+      </svg>
+    </div>
+    <h3 className="text-lg font-medium text-gray-600">{message}</h3>
+    <p className="mt-2 text-gray-500">Check back soon for new content!</p>
+  </div>
+);
+
+// Loading state component
+const LoadingState: React.FC = () => (
+  <div className="text-center py-16">
+    <Loader2 className="h-12 w-12 mx-auto text-indrasol-blue animate-spin mb-4" />
+    <h3 className="text-lg font-medium text-gray-600">Loading blog posts...</h3>
+  </div>
+);
+
 // Category filter component
 const CategoryFilter: React.FC<{
   activeCategory: string;
   setActiveCategory: (category: string) => void;
-}> = ({ activeCategory, setActiveCategory }) => {
+  categories: string[];
+}> = ({ activeCategory, setActiveCategory, categories }) => {
   return (
     <div className="overflow-x-auto pb-4 mb-6 -mx-4 px-4">
       <div className="flex space-x-2 min-w-max">
@@ -272,12 +241,93 @@ const CategoryFilter: React.FC<{
 // Main blog page section component
 const BlogPageSection: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<string[]>(["All"]);
+
+  // Fetch blogs from Supabase
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch blogs from Supabase, ordered by creation date (newest first)
+        const { data, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data) {
+          // Transform the data to match our BlogPost interface
+          const transformedBlogs: BlogPost[] = data.map((blog, index) => {
+            // Format the date
+            let formattedDate;
+            try {
+              formattedDate = format(parseISO(blog.created_at), 'MMMM d, yyyy');
+            } catch (e) {
+              formattedDate = 'Unknown date';
+            }
+            
+            // Extract the first image from content for cover image, or use placeholder
+            let coverImage = `/api/placeholder/800/400?text=${encodeURIComponent(blog.title)}`;
+            const imgMatch = blog.content?.match(/<img[^>]+src="([^"]+)"[^>]*>/);
+            if (imgMatch && imgMatch[1]) {
+              coverImage = imgMatch[1];
+            }
+            
+            return {
+              id: blog.id,
+              title: blog.title,
+              excerpt: blog.excerpt || 'No excerpt available',
+              coverImage,
+              category: blog.category || 'Uncategorized',
+              author: blog.author || 'Indrasol Team',
+              authorRole: '', // Not available in our database
+              publishDate: formattedDate,
+              readTime: calculateReadTime(blog.content || ''),
+              slug: blog.slug,
+              featured: index < 2 // Mark the first 2 as featured for now
+            };
+          });
+          
+          setBlogs(transformedBlogs);
+          
+          // Extract unique categories for filter
+          const uniqueCategories = [...new Set(data.map(blog => blog.category || 'Uncategorized'))];
+          setCategories(['All', ...uniqueCategories]);
+        }
+      } catch (error) {
+        console.error('Error fetching blogs:', error);
+        setError('Failed to load blog posts. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchBlogs();
+    
+    // Set up real-time subscription for new blogs
+    const subscription = supabase
+      .channel('blogs-channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'blogs' }, fetchBlogs)
+      .subscribe();
+    
+    // Clean up the subscription when the component unmounts
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Filter blogs based on selected category
   const filteredBlogs =
     activeCategory === "All"
-      ? sampleBlogs
-      : sampleBlogs.filter((blog) => blog.category === activeCategory);
+      ? blogs
+      : blogs.filter((blog) => blog.category === activeCategory);
 
   // Separate featured and regular blogs
   const featuredBlogs = filteredBlogs.filter((blog) => blog.featured);
@@ -305,62 +355,79 @@ const BlogPageSection: React.FC = () => {
             </p>
           </div>
 
-          {/* Category filter */}
-          <CategoryFilter
-            activeCategory={activeCategory}
-            setActiveCategory={setActiveCategory}
-          />
+          {loading ? (
+            <LoadingState />
+          ) : error ? (
+            <EmptyState message={error} />
+          ) : blogs.length === 0 ? (
+            <EmptyState message="No blog posts found" />
+          ) : (
+            <>
+              {/* Category filter */}
+              <CategoryFilter
+                activeCategory={activeCategory}
+                setActiveCategory={setActiveCategory}
+                categories={categories}
+              />
 
-          {/* Featured blogs section (only show if we have featured blogs in the filtered results) */}
-          {featuredBlogs.length > 0 && (
-            <div className="mb-12">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-gray-900">
-                  Featured Articles
-                </h3>
-                <Link
-                  to="/blog"
-                  className="text-indrasol-blue font-medium text-sm flex items-center hover:underline"
-                >
-                  View all <ChevronRight className="ml-1 h-4 w-4" />
-                </Link>
+              {/* Featured blogs section (only show if we have featured blogs in the filtered results) */}
+              {featuredBlogs.length > 0 && (
+                <div className="mb-12">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Featured Articles
+                    </h3>
+                    <Link
+                      to="/Resources/blogs2"
+                      className="text-indrasol-blue font-medium text-sm flex items-center hover:underline"
+                    >
+                      View all <ChevronRight className="ml-1 h-4 w-4" />
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {featuredBlogs.slice(0, 2).map((blog) => (
+                      <FeaturedBlogCard key={blog.id} blog={blog} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Regular blogs grid */}
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Latest Articles</h3>
+                  <Link
+                    to="/Resources/blogs2"
+                    className="text-indrasol-blue font-medium text-sm flex items-center hover:underline"
+                  >
+                    View all <ChevronRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </div>
+                {regularBlogs.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {regularBlogs.slice(0, 6).map((blog) => (
+                      <BlogCard key={blog.id} blog={blog} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState message="No regular blog posts found" />
+                )}
+
+                {/* View more button - only show if we have more than 6 regular blogs */}
+                {regularBlogs.length > 6 && (
+                  <div className="text-center mt-12 mb-8">
+                    <Link
+                      to="/Resources/blogs2"
+                      className="group inline-flex items-center px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-colors shadow-lg shadow-indrasol-blue/20"
+                    >
+                      Explore All Articles
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                    </Link>
+                  </div>
+                )}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {featuredBlogs.slice(0, 2).map((blog) => (
-                  <FeaturedBlogCard key={blog.id} blog={blog} />
-                ))}
-              </div>
-            </div>
+            </>
           )}
-
-          {/* Regular blogs grid */}
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Latest Articles</h3>
-              <Link
-                to="/blog"
-                className="text-indrasol-blue font-medium text-sm flex items-center hover:underline"
-              >
-                View all <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {regularBlogs.slice(0, 6).map((blog) => (
-                <BlogCard key={blog.id} blog={blog} />
-              ))}
-            </div>
-
-            {/* View more button */}
-            <div className="text-center mt-12 mb-8">
-              <Link
-                to="/blog"
-                className="group inline-flex items-center px-6 py-3 bg-indrasol-blue text-white rounded-lg hover:bg-indrasol-blue/90 transition-colors shadow-lg shadow-indrasol-blue/20"
-              >
-                Explore All Articles
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
       <Footer />
@@ -370,4 +437,3 @@ const BlogPageSection: React.FC = () => {
 };
 
 export default BlogPageSection;
-// export { BlogDetailPage };

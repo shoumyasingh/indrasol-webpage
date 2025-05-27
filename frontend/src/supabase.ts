@@ -3,7 +3,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL_IND;
-const supabaseKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY_IND;
+// const supabaseKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY_IND;
+const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY_IND;
 
 // Debug environment variables
 console.log('Supabase URL:', supabaseUrl);

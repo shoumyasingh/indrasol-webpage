@@ -27,11 +27,9 @@ jobs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Install deps
+    - name: Install deps into backend
       run: |
-        python -m venv venv
-        source venv/bin/activate
-        pip install -r backend/requirements.txt
+        pip install -r backend/requirements.txt -t backend
 
     # package only the backend folder
     - name: Zip site

@@ -1,6 +1,7 @@
 -- Simplified script to add enhanced columns first
 -- Run this BEFORE the full enhanced-fields-sql script
 
+
 -- Step 1: Add columns to blogs table
 ALTER TABLE public.blogs 
 ADD COLUMN IF NOT EXISTS document_structure JSONB,

@@ -42,6 +42,8 @@ const Admin = () => {
   const [processing, setProcessing] = useState(false);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
+  const [author_desc, setAuthor_desc] = useState('');
+  const [author_profile_url, setAuthor_profile_url] = useState('');
   const [category, setCategory] = useState('');
   const [debugMode, setDebugMode] = useState(false);
   const { toast } = useToast();
@@ -243,6 +245,8 @@ const Admin = () => {
       const previewDoc = {
         title,
         author,
+        author_desc,
+        author_profile_url,
         category,
         excerpt: `An insightful article about ${title} by ${author}.`,
         slug: slugify(title),
@@ -300,7 +304,9 @@ const Admin = () => {
         metadata: { 
           slug,
           title,
-          author, 
+          author,
+          author_desc,
+          author_profile_url,
           category
         }
       };
@@ -383,6 +389,8 @@ const Admin = () => {
       const metadata = MarkdownEnhancer.extractMetadata(enhancedMarkdown, {
         title,
         author,
+        author_desc,
+        author_profile_url,
         category,
         excerpt: null
       });
@@ -423,6 +431,8 @@ const Admin = () => {
         excerpt: metadata.excerpt,
         readtime: structure.estimatedReadTime,
         author: metadata.author,
+        author_desc: metadata.author_desc,
+        author_profile_url: metadata.author_profile_url,
         category: metadata.category,
         created_at: new Date().toISOString(),
         
@@ -465,6 +475,8 @@ const Admin = () => {
             excerpt: metadata.excerpt,
             readtime: structure.estimatedReadTime,
             author: metadata.author,
+            author_desc: metadata.author_desc,
+            author_profile_url: metadata.author_profile_url,
             category: metadata.category,
             created_at: new Date().toISOString()
           };
@@ -786,6 +798,8 @@ const Admin = () => {
     setFile(null);
     setTitle('');
     setAuthor('');
+    setAuthor_desc('');
+    setAuthor_profile_url('');
     setCategory('');
     setUploadedBlogPath('');
     setCanPreviewBlog(false);
@@ -1331,6 +1345,32 @@ const Admin = () => {
                         className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="author" className="text-sm font-medium flex items-center">
+                        <User className="h-4 w-4 mr-2 text-gray-500" />
+                        Author Description
+                      </Label>
+                      <Input
+                        id="author_desc"
+                        value={author_desc}
+                        onChange={(e) => setAuthor_desc(e.target.value)}
+                        placeholder="Enter author description"
+                        className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="author" className="text-sm font-medium flex items-center">
+                        <User className="h-4 w-4 mr-2 text-gray-500" />
+                        Author Profile URL
+                      </Label>
+                      <Input
+                        id="author_profile_url"
+                        value={author_profile_url}
+                        onChange={(e) => setAuthor_profile_url(e.target.value)}
+                        placeholder="Enter author profile URL"
+                        className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                      />
+                    </div>
                   </div>
                   
                   <div className="space-y-5">
@@ -1414,7 +1454,7 @@ const Admin = () => {
                     )}
                   </Button>
                   
-                  <Button 
+                  {/* <Button 
                     onClick={handleBlogPreview} 
                     disabled={!canPreviewBlog || previewingBlog}
                     variant="outline"
@@ -1434,7 +1474,7 @@ const Admin = () => {
                         Preview
                       </>
                     )}
-                  </Button>
+                  </Button> */}
                   
                   <Button 
                     onClick={handleBlogPublish} 

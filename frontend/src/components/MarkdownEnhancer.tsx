@@ -44,6 +44,8 @@ export interface DocumentSection {
   export interface EnhancedMetadata {
     title: string;
     author: string;
+    author_desc?: string;
+    author_profile_url?: string;
     category: string;
     excerpt: string;
     stats: DocumentStats;
@@ -166,7 +168,17 @@ export interface DocumentSection {
     /**
      * Generate a URL-friendly ID from heading text
      */
-    generateHeadingId(text: string): string {
+    generateHeadingId(text: string | any): string {
+      if (typeof text !== 'string') {
+        // Handle React elements by extracting text content
+        const textContent = String(text);
+        return textContent
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .substring(0, 50);
+      }
       return text
         .toLowerCase()
         .replace(/[^\w\s-]/g, '')
@@ -218,6 +230,8 @@ export interface DocumentSection {
       return {
         title: extractedTitle,
         author: providedMetadata.author || 'Unknown',
+        author_desc: providedMetadata.author_desc || '',
+        author_profile_url: providedMetadata.author_profile_url || '',
         category: providedMetadata.category || 'General',
         excerpt,
         stats: {

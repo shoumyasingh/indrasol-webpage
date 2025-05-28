@@ -38,6 +38,88 @@ const calculateReadTime = (content: string): string => {
   return `${minutes} min read`;
 };
 
+// Helper function to extract the first image from various sources
+const extractCoverImage = (blog: any): string => {
+  const defaultImage = `/api/placeholder/800/400?text=${encodeURIComponent(blog.title)}`;
+  
+  // 1. Check if there's a dedicated cover_image field
+  if (blog.cover_image) {
+    return blog.cover_image;
+  }
+  
+  // 2. Check document_structure for first image
+  if (blog.document_structure) {
+    try {
+      const structure = JSON.parse(blog.document_structure);
+      
+      // Look for images in the structure
+      if (structure.images && Array.isArray(structure.images) && structure.images.length > 0) {
+        const firstImage = structure.images[0];
+        if (firstImage.src) return firstImage.src;
+        if (firstImage.placeholder) return firstImage.placeholder;
+      }
+      
+      // Alternative: look for images in sections
+      if (structure.sections && Array.isArray(structure.sections)) {
+        for (const section of structure.sections) {
+          if (section.images && Array.isArray(section.images) && section.images.length > 0) {
+            const firstImage = section.images[0];
+            if (firstImage.src) return firstImage.src;
+            if (firstImage.placeholder) return firstImage.placeholder;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error parsing document structure for blog:', blog.id, e);
+    }
+  }
+  
+  // 3. Extract from markdown content (look for first image)
+  if (blog.markdown_content || blog.content) {
+    const content = blog.markdown_content || blog.content;
+    
+    // Try markdown image syntax first: ![alt](url)
+    const markdownImgMatch = content.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+    if (markdownImgMatch && markdownImgMatch[2]) {
+      return normalizeImageUrl(markdownImgMatch[2]);
+    }
+    
+    // Fallback to HTML img tags
+    const htmlImgMatch = content.match(/<img[^>]+src="([^"]+)"[^>]*>/);
+    if (htmlImgMatch && htmlImgMatch[1]) {
+      return normalizeImageUrl(htmlImgMatch[1]);
+    }
+  }
+  
+  return defaultImage;
+};
+
+// Helper function to normalize image URLs (especially Supabase URLs)
+const normalizeImageUrl = (url: string): string => {
+  if (!url) return '';
+  
+  // If it's a Supabase storage URL, ensure it's a public URL
+  if (url.includes('storage/v1/object/')) {
+    // Convert signed URLs to public URLs if needed
+    if (url.includes('/sign/')) {
+      return url.replace('/storage/v1/object/sign/', '/storage/v1/object/public/');
+    }
+    // Ensure it's a proper public URL format
+    else if (!url.includes('/public/')) {
+      // Extract the bucket and path from the URL
+      const urlParts = url.split('/storage/v1/object/');
+      if (urlParts.length > 1) {
+        const pathPart = urlParts[1];
+        if (!pathPart.startsWith('public/')) {
+          return url.replace('/storage/v1/object/', '/storage/v1/object/public/');
+        }
+      }
+    }
+  }
+  
+  return url;
+};
+
 // Featured blog post card component
 const FeaturedBlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
   const navigate = useNavigate();
@@ -54,7 +136,7 @@ const FeaturedBlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
     >
       <div className="relative h-64 overflow-hidden">
         <span className="absolute top-4 left-4 bg-indrasol-blue/90 text-white text-xs font-bold px-3 py-1 rounded-full z-10">
-          FEATURED
+          {blog.category}
         </span>
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <div className="bg-white/90 rounded-full p-3 transform scale-0 group-hover:scale-100 transition-transform duration-300">
@@ -72,37 +154,36 @@ const FeaturedBlogCard: React.FC<{ blog: BlogPost }> = ({ blog }) => {
         />
       </div>
       <div className="p-6 flex flex-col flex-grow">
-        <div className="flex justify-between items-center mb-3">
-          <div className="bg-indrasol-blue/10 text-indrasol-blue text-xs font-semibold px-3 py-1 rounded-full">
-            {blog.category}
-          </div>
-          <div className="flex items-center text-gray-500 text-xs">
-            <Calendar className="h-3 w-3 mr-1" />
-            {blog.publishDate}
+        <div className="flex justify-end items-center mb-3">
+          <div className="flex items-center gap-4 text-gray-500 text-xs">
+            <div className="flex items-center">
+              <Calendar className="h-3 w-3 mr-1" />
+              {blog.publishDate}
+            </div>
+            <div className="flex items-center">
+              <Clock className="h-3 w-3 mr-1" />
+              {blog.readTime}
+            </div>
           </div>
         </div>
         <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2 group-hover:text-indrasol-blue transition-colors">
           {blog.title}
         </h3>
-        <p className="text-gray-600 mb-4 flex-grow line-clamp-3">
+        {/* <p className="text-gray-600 mb-4 flex-grow line-clamp-3">
           {blog.excerpt}
-        </p>
+        </p> */}
         <div className="flex justify-between items-center mt-auto">
           <div className="flex items-center">
             <div>
-              <div className="text-sm font-medium text-gray-900">
+              <div className="bg-indrasol-blue/10 text-indrasol-blue text-xs font-semibold px-3 py-1 rounded-full">
                 {blog.author}
               </div>
               {blog.authorRole && (
-                <div className="text-xs text-gray-500">{blog.authorRole}</div>
+                <div className="text-xs text-gray-500 mt-1">{blog.authorRole}</div>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-gray-500 text-xs flex items-center">
-              <Clock className="h-3 w-3 mr-1" />
-              {blog.readTime}
-            </div>
+          <div className="flex items-center">
             <span className="text-indrasol-blue text-sm font-medium flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
               Read more{" "}
               <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
@@ -274,11 +355,7 @@ const BlogPageSection: React.FC = () => {
             }
             
             // Extract the first image from content for cover image, or use placeholder
-            let coverImage = `/api/placeholder/800/400?text=${encodeURIComponent(blog.title)}`;
-            const imgMatch = blog.content?.match(/<img[^>]+src="([^"]+)"[^>]*>/);
-            if (imgMatch && imgMatch[1]) {
-              coverImage = imgMatch[1];
-            }
+            let coverImage = extractCoverImage(blog);
             
             return {
               id: blog.id,
@@ -394,7 +471,7 @@ const BlogPageSection: React.FC = () => {
 
               {/* Regular blogs grid */}
               <div>
-                <div className="flex justify-between items-center mb-6">
+                {/* <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-gray-900">Latest Articles</h3>
                   <Link
                     to="/Resources/blogs2"
@@ -402,8 +479,8 @@ const BlogPageSection: React.FC = () => {
                   >
                     View all <ChevronRight className="ml-1 h-4 w-4" />
                   </Link>
-                </div>
-                {regularBlogs.length > 0 ? (
+                </div> */}
+                {/* {regularBlogs.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {regularBlogs.slice(0, 6).map((blog) => (
                       <BlogCard key={blog.id} blog={blog} />
@@ -411,10 +488,10 @@ const BlogPageSection: React.FC = () => {
                   </div>
                 ) : (
                   <EmptyState message="No regular blog posts found" />
-                )}
+                )} */}
 
                 {/* View more button - only show if we have more than 6 regular blogs */}
-                {regularBlogs.length > 6 && (
+                {/* {regularBlogs.length > 6 && (
                   <div className="text-center mt-12 mb-8">
                     <Link
                       to="/Resources/blogs2"
@@ -424,7 +501,7 @@ const BlogPageSection: React.FC = () => {
                       <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                     </Link>
                   </div>
-                )}
+                )} */}
               </div>
             </>
           )}

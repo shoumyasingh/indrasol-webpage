@@ -27,16 +27,21 @@ jobs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Install deps into backend
+    - name: Prepare deployment folder
       run: |
-        pip install -r backend/requirements.txt -t backend
-
-    # package only the backend folder
-    - name: Zip site
-      run: |
-        cd backend                # <── change to your folder
+        # 1.  make a clean folder for everything that must go to the server
+        mkdir deploy
+    
+        # 2.  copy your source package exactly as-is
+        cp -r backend deploy/
+    
+        # 3.  vendor all dependencies **into the deploy root**
+        pip install --upgrade pip
+        pip install --no-cache-dir -r backend/requirements.txt -t deploy
+    
+        # 4.  create the zip from inside deploy/
+        cd deploy
         zip -r ../site.zip .
-        cd ..
 
     - name: Upload artifact (for troubleshooting)
       uses: actions/upload-artifact@v4

@@ -23,10 +23,9 @@ import BlogPageSection from "./pages/Resources/BlogPageSection";
 import BlogDetailPage from "./pages/Resources/BlogDetailPage";
 // Import the whitepaper detail component
 import WhitePaper1 from "./components/whitepaper/ai-augmented-pen-testing";
-// Import WhitePaperDetailPage component from WhitePaperSection
-import { WhitePaperDetailPage } from "./pages/Resources/WhitePaperSection";
 // Import the new standalone WhitepaperDetailPage component
 import WhitepaperDetailPage from "./pages/Resources/WhitepaperDetailPage";
+
 
 // Import Admin component and Protected Route component
 import Admin from "./pages/Admin";
@@ -72,12 +71,16 @@ const App = () => (
           <Route path="/services/data-engineering" element={<DataEngineering />} />
           <Route path="/Products/Bizradar" element={<BizRadarProductPage />} />
           <Route path="/Products/Securetrack" element={<SecureTrackProductPage />} />
+        
           {/* <Route path="/Resources/blogs" element={<BlogPage />} /> */}
           <Route path="/Resources/blogs2" element={<BlogPageSection />} />
           <Route path="/Resources/blog/:slug" element={<BlogDetailPage />} />
           
           {/* Whitepaper routes */}
           <Route path="/Resources/whitepaper" element={<WhitePaperSection />} />
+          <Route path="/resources/whitepaper/:slug" element={<WhitePaperRouter />} />
+          
+          {/* Legacy route for backward compatibility */}
           <Route path="/components/whitepaper/:slug" element={<WhitePaperRouter />} />
           
           {/* Protected Admin Route */}

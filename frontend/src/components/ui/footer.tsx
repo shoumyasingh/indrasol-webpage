@@ -51,7 +51,7 @@ export function Footer() {
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 text-[#D5844C] mr-2" />
-                <span className="text-white/80">info@indrasol.com</span>
+                <span className="text-white/80">sales@indrasol.com</span>
               </li>
             </ul>
           </div>
@@ -74,7 +74,7 @@ export function Footer() {
               <ul className="space-y-2">
                 <li><Link to="/#about" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">About Us</Link></li>
                 <li><Link to="/#locations" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Locations</Link></li>
-                <li><Link to="/contact" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Contact</Link></li>
+                <li><Link to="https://www.linkedin.com/company/indrasol/" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Contact</Link></li>
                 <li><a href="#" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Careers</a></li>
               </ul>
             </div>

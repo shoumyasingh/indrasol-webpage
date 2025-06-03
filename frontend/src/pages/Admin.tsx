@@ -11,17 +11,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { PreviewModal } from './PreviewModal'; // ADD THIS IMPORT
 import { MarkdownEnhancer } from '@/components/MarkdownEnhancer';
-import { 
-  LogOut, 
-  Upload, 
-  FileType, 
-  Database, 
-  User, 
-  Tag, 
-  FileText, 
-  Eye, 
-  Save, 
-  FileCheck, 
+import {
+  LogOut,
+  Upload,
+  FileType,
+  Database,
+  User,
+  Tag,
+  FileText,
+  Eye,
+  Save,
+  FileCheck,
   AlertCircle,
   CheckCircle,
   ArrowRight,
@@ -32,7 +32,9 @@ import {
   RefreshCw,
   FileInput,
   Download,
-  XCircle
+  XCircle,
+  Link,
+  NotebookPen
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -68,6 +70,8 @@ const Admin = () => {
   const [wpUploading, setWpUploading] = useState(false);
   const [wpTitle, setWpTitle] = useState('');
   const [wpAuthor, setWpAuthor] = useState('');
+  const [wpAuthor_desc, setWpAuthor_desc] = useState('');
+  const [wpAuthor_profile_url, setWpAuthor_profile_url] = useState('');
   const [wpCategory, setWpCategory] = useState('');
   const [whitepapers, setWhitepapers] = useState<any[]>([]);
   const [loadingWhitepapers, setLoadingWhitepapers] = useState(false);
@@ -134,31 +138,31 @@ const Admin = () => {
       // First, check if the bucket exists and is accessible
       console.log("Checking bucket access...");
       const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
-      
+
       if (bucketError) {
         console.error("Bucket access error:", bucketError);
         throw new Error(`Storage access issue: ${bucketError.message}`);
       }
-      
+
       const blogsBucket = buckets?.find(bucket => bucket.name === 'blogs');
       if (!blogsBucket) {
         console.error("Available buckets:", buckets?.map(b => b.name));
         throw new Error("Blogs bucket not found. Please contact administrator.");
       }
-      
+
       console.log("Bucket access confirmed:", blogsBucket);
 
       const slug = slugify(title);
       const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
       const originalPath = `${slug}/${sanitizedFileName}`;
-      
+
       console.log("Uploading to path:", originalPath);
       console.log("File size:", file.size, "bytes");
-      
+
       // Try upload with minimal options first
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('blogs')
-        .upload(originalPath, file, { 
+        .upload(originalPath, file, {
           upsert: false
         });
 
@@ -169,21 +173,21 @@ const Admin = () => {
           fileSize: file.size,
           fileName: file.name
         });
-        
+
         // Try alternative approach if database error
         if (uploadError.message?.includes('DatabaseError') || uploadError.message?.includes('unrecognized configuration')) {
           console.log("Attempting alternative upload method...");
-          
+
           // Try with different path structure
           const simplePath = `${slug}-${Date.now()}.docx`;
           const { data: retryData, error: retryError } = await supabase.storage
             .from('blogs')
             .upload(simplePath, file);
-            
+
           if (retryError) {
             throw new Error(`Upload failed (retry): ${retryError.message}. This appears to be a Supabase configuration issue. Please check your project settings.`);
           }
-          
+
           console.log("Alternative upload successful:", retryData);
           setUploadedBlogPath(simplePath);
         } else {
@@ -193,10 +197,10 @@ const Admin = () => {
         console.log("File uploaded successfully:", uploadData);
         setUploadedBlogPath(originalPath);
       }
-      
+
       setCanPreviewBlog(true);
       setCanPublishBlog(true);
-      
+
       toast({
         title: "File Uploaded Successfully!",
         description: "Your file is ready for preview. Click Preview to see how it will look.",
@@ -205,9 +209,9 @@ const Admin = () => {
 
     } catch (error: any) {
       console.error("Complete upload error:", error);
-      
+
       let errorMessage = error.message || "An error occurred during upload";
-      
+
       // Provide specific guidance for common issues
       if (error.message?.includes('DatabaseError') || error.message?.includes('unrecognized configuration')) {
         errorMessage = "Supabase configuration issue detected. Please check your project settings or contact support.";
@@ -216,7 +220,7 @@ const Admin = () => {
       } else if (error.message?.includes('permission')) {
         errorMessage = "Permission denied. Please check your storage policies.";
       }
-      
+
       toast({
         title: "Upload Failed",
         description: errorMessage,
@@ -267,7 +271,7 @@ const Admin = () => {
       setPreviewDocument(previewDoc);
       setPreviewType('blog');
       setShowPreview(true);
-      
+
     } catch (error: any) {
       toast({
         title: "Preview Failed",
@@ -290,18 +294,18 @@ const Admin = () => {
       });
       return;
     }
-  
+
     setProcessing(true);
-  
+
     try {
       console.log("Step 1: Processing document with edge function...");
       const slug = slugify(title);
-  
+
       // Step 1: Call edge function to process and store the document
       const payload = {
         bucket: 'blogs',
         path: uploadedBlogPath,
-        metadata: { 
+        metadata: {
           slug,
           title,
           author,
@@ -310,67 +314,67 @@ const Admin = () => {
           category
         }
       };
-  
+
       const { data: functionData, error: functionError } = await supabase.functions.invoke(
         'process-document',
         { body: payload }
       );
-  
+
       if (functionError) {
         console.error("Edge function error:", functionError);
         throw new Error(`Processing failed: ${functionError.message}`);
       }
-  
+
       if (!functionData.success) {
         throw new Error(functionData.error || 'Document processing failed');
       }
-  
+
       console.log("Document processed successfully:", functionData);
-  
+
       // Step 2: Download the raw markdown from storage
       console.log("Step 2: Downloading raw markdown...");
       const { data: markdownData, error: downloadError } = await supabase.storage
         .from('blogs')
         .download(functionData.markdownPath);
-  
+
       if (downloadError) {
         throw new Error(`Failed to download markdown: ${downloadError.message}`);
       }
-  
+
       // Convert blob to text
       const rawMarkdown = await markdownData.text();
       console.log("Raw markdown downloaded, length:", rawMarkdown.length);
-  
+
       // Step 3: Validate markdown
       const validation = MarkdownEnhancer.validateMarkdown(rawMarkdown);
       if (!validation.isValid) {
         console.warn("Markdown validation warnings:", validation.errors);
         // Continue processing but log warnings
       }
-  
+
       // Step 4: Update image URLs to use public URLs
       // console.log("Step 3: Updating image URLs...");
       // const imageMap = functionData.images.map((img: any) => {
       //   const { data: imgUrl } = supabase.storage
       //     .from('blogs')
       //     .getPublicUrl(img.storagePath);
-        
+
       //   return {
       //     storagePath: img.storagePath,
       //     publicUrl: imgUrl.publicUrl
       //   };
       // });
-  
+
       // let enhancedMarkdown = MarkdownEnhancer.updateImageUrls(rawMarkdown, imageMap);
-  
+
       // Step 5: Apply markdown enhancements
       console.log("Step 4: Enhancing markdown...");
       let enhancedMarkdown = MarkdownEnhancer.enhanceMarkdown(rawMarkdown);
-  
+
       // Step 6: Analyze document structure
       console.log("Step 5: Analyzing document structure...");
       const structure = MarkdownEnhancer.analyzeDocumentStructure(enhancedMarkdown);
-  
+
       // Optional: Add table of contents if needed
       if (structure.tableOfContents.length > 3) { // Only add TOC for longer documents
         const toc = MarkdownEnhancer.generateTableOfContents(structure);
@@ -383,7 +387,7 @@ const Admin = () => {
           );
         }
       }
-  
+
       // Step 7: Extract enhanced metadata
       console.log("Step 6: Extracting metadata...");
       const metadata = MarkdownEnhancer.extractMetadata(enhancedMarkdown, {
@@ -394,7 +398,7 @@ const Admin = () => {
         category,
         excerpt: null
       });
-  
+
       // Step 8: Upload enhanced markdown to storage
       console.log("Step 7: Uploading enhanced markdown...");
       const enhancedMarkdownPath = `${slug}/${slug}.md`;
@@ -404,20 +408,20 @@ const Admin = () => {
           contentType: 'text/markdown',
           upsert: true
         });
-  
+
       if (uploadError) {
         throw new Error(`Failed to upload enhanced markdown: ${uploadError.message}`);
       }
-  
+
       // Get public URLs
       const { data: mdUrlData } = supabase.storage
         .from('blogs')
         .getPublicUrl(enhancedMarkdownPath);
-      
+
       const { data: docxUrlData } = supabase.storage
         .from('blogs')
         .getPublicUrl(uploadedBlogPath);
-  
+
       // Step 9: Insert record into database
       console.log("Step 8: Publishing to database...");
       const blogRecord = {
@@ -435,31 +439,31 @@ const Admin = () => {
         author_profile_url: metadata.author_profile_url,
         category: metadata.category,
         created_at: new Date().toISOString(),
-        
+
         // Enhanced metadata
         word_count: structure.totalWordCount,
         has_images: structure.hasImages,
         has_tables: structure.hasTables,
         has_code: structure.hasCode,
         image_count: functionData.images.length,
-        
+
         // Store structure as JSON
         document_structure: JSON.stringify(structure),
-        
+
         // SEO metadata
         meta_description: metadata.excerpt?.substring(0, 160),
-        
+
         // Document stats
         stats: metadata.stats
       };
-  
+
       // Insert into database with basic fields fallback
       const { data: insertData, error: insertError } = await supabase
         .from('blogs')
         .upsert(blogRecord, { onConflict: 'slug' })
         .select()
         .single();
-  
+
       if (insertError) {
         // If error is about missing columns, try with basic fields only
         if (insertError.message.includes('column')) {
@@ -480,17 +484,17 @@ const Admin = () => {
             category: metadata.category,
             created_at: new Date().toISOString()
           };
-  
+
           const { data: retryData, error: retryError } = await supabase
             .from('blogs')
             .upsert(basicRecord, { onConflict: 'slug' })
             .select()
             .single();
-  
+
           if (retryError) {
             throw new Error(`Failed to publish blog: ${retryError.message}`);
           }
-  
+
           console.log("Blog published successfully (basic mode):", retryData);
         } else {
           throw new Error(`Failed to publish blog: ${insertError.message}`);
@@ -502,24 +506,24 @@ const Admin = () => {
         console.log("- Images:", functionData.images.length);
         console.log("- Sections:", structure.sections.length);
       }
-  
+
       toast({
         title: "Blog Published Successfully!",
         description: `Your blog "${metadata.title}" has been published.`,
         variant: "default",
       });
-  
+
       // Reset form and workflow state
       resetBlogForm();
       setUploadedBlogPath('');
       setCanPreviewBlog(false);
       setCanPublishBlog(false);
-  
+
       // Refresh the blogs list
       setTimeout(() => {
         refreshBlogs();
       }, 2000);
-  
+
     } catch (error: any) {
       toast({
         title: "Publish Failed",
@@ -560,31 +564,31 @@ const Admin = () => {
       // Check if whitepapers bucket exists
       console.log("Checking whitepaper bucket access...");
       const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
-      
+
       if (bucketError) {
         console.error("Bucket access error:", bucketError);
         throw new Error(`Storage access issue: ${bucketError.message}`);
       }
-      
+
       const wpBucket = buckets?.find(bucket => bucket.name === 'whitepapers');
       if (!wpBucket) {
         console.error("Available buckets:", buckets?.map(b => b.name));
         throw new Error("Whitepapers bucket not found. Please contact administrator.");
       }
-      
+
       console.log("Whitepaper bucket access confirmed:", wpBucket);
 
       const slug = slugify(wpTitle);
       const sanitizedFileName = wpFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
       const originalPath = `${slug}/${sanitizedFileName}`;
-      
+
       console.log("Uploading whitepaper to path:", originalPath);
       console.log("File size:", wpFile.size, "bytes");
-      
+
       // Try upload with minimal options first
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('whitepapers')
-        .upload(originalPath, wpFile, { 
+        .upload(originalPath, wpFile, {
           upsert: true
         });
 
@@ -595,21 +599,21 @@ const Admin = () => {
           fileSize: wpFile.size,
           fileName: wpFile.name
         });
-        
+
         // Try alternative approach if database error
         if (uploadError.message?.includes('DatabaseError') || uploadError.message?.includes('unrecognized configuration')) {
           console.log("Attempting alternative whitepaper upload method...");
-          
+
           // Try with different path structure
           const simplePath = `wp-${slug}-${Date.now()}.docx`;
           const { data: retryData, error: retryError } = await supabase.storage
             .from('whitepapers')
             .upload(simplePath, wpFile);
-            
+
           if (retryError) {
             throw new Error(`Whitepaper upload failed (retry): ${retryError.message}. This appears to be a Supabase configuration issue.`);
           }
-          
+
           console.log("Alternative whitepaper upload successful:", retryData);
           setUploadedWpPath(simplePath);
         } else {
@@ -619,10 +623,10 @@ const Admin = () => {
         console.log("Whitepaper uploaded successfully:", uploadData);
         setUploadedWpPath(originalPath);
       }
-      
+
       setCanPreviewWp(true);
       setCanPublishWp(true);
-      
+
       toast({
         title: "Whitepaper Uploaded Successfully!",
         description: "Your whitepaper is ready for preview. Click Preview to see how it will look.",
@@ -631,9 +635,9 @@ const Admin = () => {
 
     } catch (error: any) {
       console.error("Complete whitepaper upload error:", error);
-      
+
       let errorMessage = error.message || "An error occurred during upload";
-      
+
       // Provide specific guidance for common issues
       if (error.message?.includes('DatabaseError') || error.message?.includes('unrecognized configuration')) {
         errorMessage = "Supabase configuration issue detected. Please check your project settings or contact support.";
@@ -642,7 +646,7 @@ const Admin = () => {
       } else if (error.message?.includes('permission')) {
         errorMessage = "Permission denied. Please check your storage policies.";
       }
-      
+
       toast({
         title: "Upload Failed",
         description: errorMessage,
@@ -691,7 +695,7 @@ const Admin = () => {
       setPreviewDocument(previewDoc);
       setPreviewType('whitepaper');
       setShowPreview(true);
-      
+
     } catch (error: any) {
       toast({
         title: "Preview Failed",
@@ -702,7 +706,7 @@ const Admin = () => {
       setPreviewingWp(false);
     }
   };
-
+// ----------------------------------------------- Whitepaper Publish starts -----------------------------------------------
   // Whitepaper Publish Function
   const handleWpPublish = async () => {
     if (!uploadedWpPath) {
@@ -717,22 +721,26 @@ const Admin = () => {
     setWpProcessing(true);
 
     try {
-      console.log("Calling edge function to publish whitepaper...");
-      
+      console.log("Step 1: Processing document with edge function...");
+      const slug = slugify(wpTitle);
+
+      // Step 1: Call edge function to process and store the document
+      const payload = {
+        bucket: 'whitepapers',
+        path: uploadedWpPath,
+        metadata: {
+          slug,
+          wpTitle,
+          wpAuthor,
+          wpAuthor_desc,
+          wpAuthor_profile_url,
+          wpCategory
+        }
+      };
+
       const { data: functionData, error: functionError } = await supabase.functions.invoke(
         'process-document',
-        {
-          body: {
-            bucket: 'whitepapers',
-            path: uploadedWpPath,
-            metadata: { 
-              title: slugify(wpTitle), 
-              author: wpAuthor, 
-              category: wpCategory,
-              excerpt: `A comprehensive whitepaper on ${wpTitle} by ${wpAuthor}.`
-            }
-          }
-        }
+        { body: payload }
       );
 
       if (functionError) {
@@ -740,11 +748,178 @@ const Admin = () => {
         throw new Error(`Publishing failed: ${functionError.message}`);
       }
 
+      if (!functionData.success) {
+        throw new Error(functionData.error || 'Document processing failed');
+      }
+
       console.log("Whitepaper published successfully:", functionData);
-      
+
+      // Step 2: Download the raw markdown from storage
+      console.log("Step 2: Downloading raw markdown...");
+      const { data: markdownData, error: downloadError } = await supabase.storage
+        .from('whitepapers')
+        .download(functionData.markdownPath);
+
+      if (downloadError) {
+        throw new Error(`Failed to download markdown: ${downloadError.message}`);
+      }
+
+      // Convert blob to text
+      const rawMarkdown = await markdownData.text();
+      console.log("Raw markdown downloaded, length:", rawMarkdown.length);
+
+      // Step 3: Validate markdown
+      const validation = MarkdownEnhancer.validateMarkdown(rawMarkdown);
+      if (!validation.isValid) {
+        console.warn("Markdown validation warnings:", validation.errors);
+        // Continue processing but log warnings
+      }
+
+
+
+      // Step 5: Apply markdown enhancements
+      console.log("Step 4: Enhancing markdown...");
+      let enhancedMarkdown = MarkdownEnhancer.enhanceMarkdown(rawMarkdown);
+
+      // Step 6: Analyze document structure
+      console.log("Step 5: Analyzing document structure...");
+      const structure = MarkdownEnhancer.analyzeDocumentStructure(enhancedMarkdown);
+
+       // Optional: Add table of contents if needed
+       if (structure.tableOfContents.length > 3) { // Only add TOC for longer documents
+        const toc = MarkdownEnhancer.generateTableOfContents(structure);
+        // Insert TOC after the main title
+        const titleMatch = enhancedMarkdown.match(/^(#\s+.+\n)/m);
+        if (titleMatch) {
+          enhancedMarkdown = enhancedMarkdown.replace(
+            titleMatch[0],
+            titleMatch[0] + '\n' + toc
+          );
+        }
+      }
+
+      // Step 7: Extract enhanced metadata
+      console.log("Step 6: Extracting metadata...");
+      const metadata = MarkdownEnhancer.extractMetadata(enhancedMarkdown, {
+        wpTitle,
+        wpAuthor,
+        wpAuthor_desc,
+        wpAuthor_profile_url,
+        wpCategory,
+        excerpt: null
+      });
+
+      // Step 8: Upload enhanced markdown to storage
+      console.log("Step 7: Uploading enhanced markdown...");
+      const enhancedMarkdownPath = `${slug}/${slug}.md`;
+      const { error: uploadError } = await supabase.storage
+        .from('whitepapers')
+        .upload(enhancedMarkdownPath, new TextEncoder().encode(enhancedMarkdown), {
+          contentType: 'text/markdown',
+          upsert: true
+        });
+
+      if (uploadError) {
+        throw new Error(`Failed to upload enhanced markdown: ${uploadError.message}`);
+      }
+
+      // Get public URLs
+      const { data: mdUrlData } = supabase.storage
+        .from('whitepapers')
+        .getPublicUrl(enhancedMarkdownPath);
+
+      const { data: docxUrlData } = supabase.storage
+        .from('whitepapers')
+        .getPublicUrl(uploadedBlogPath);
+
+      // Step 9: Insert record into database
+      console.log("Step 8: Publishing to database...");
+      const wpRecord = {
+        wpTitle: metadata.wpTitle,
+        slug,
+        content: enhancedMarkdown,
+        markdown_content: enhancedMarkdown,
+        markdown_url: mdUrlData.publicUrl,
+        docx_url: docxUrlData.publicUrl,
+        source_file: uploadedWpPath,
+        excerpt: metadata.excerpt,
+        readtime: structure.estimatedReadTime,
+        wpAuthor: metadata.wpAuthor,
+        wpAuthor_desc: metadata.wpAuthor_desc,
+        wpAuthor_profile_url: metadata.wpAuthor_profile_url,
+        wpCategory: metadata.wpCategory,
+        created_at: new Date().toISOString(),
+
+        // Enhanced metadata
+        word_count: structure.totalWordCount,
+        has_images: structure.hasImages,
+        has_tables: structure.hasTables,
+        has_code: structure.hasCode,
+        image_count: functionData.images.length,
+
+        // Store structure as JSON
+        document_structure: JSON.stringify(structure),
+
+        // SEO metadata
+        meta_description: metadata.excerpt?.substring(0, 160),
+
+        // Document stats
+        stats: metadata.stats
+      };
+
+      // Insert into database with basic fields fallback
+      const { data: insertData, error: insertError } = await supabase
+        .from('whitepapers')
+        .upsert(wpRecord, { onConflict: 'Slug' })
+        .select()
+        .single();
+
+        if (insertError) {
+          // If error is about missing columns, try with basic fields only
+          if (insertError.message.includes('column')) {
+            console.log('Retrying with basic fields only...');
+            const basicRecord = {
+              wpTitle: metadata.wpTitle,
+              slug,
+              content: enhancedMarkdown,
+              markdown_content: enhancedMarkdown,
+              markdown_url: mdUrlData.publicUrl,
+              docx_url: docxUrlData.publicUrl,
+              source_file: uploadedWpPath,
+              excerpt: metadata.excerpt,
+              readtime: structure.estimatedReadTime,
+              wpAuthor: metadata.wpAuthor,
+              wpAuthor_desc: metadata.wpAuthor_desc,
+              wpAuthor_profile_url: metadata.wpAuthor_profile_url,
+              wpCategory: metadata.wpCategory,
+              created_at: new Date().toISOString()
+            };
+
+            const { data: retryData, error: retryError } = await supabase
+            .from('whitepapers')
+            .upsert(basicRecord, { onConflict: 'slug' })
+            .select()
+            .single();
+
+          if (retryError) {
+            throw new Error(`Failed to publish whitepaper: ${retryError.message}`);
+          }
+
+          console.log("Whitepaper published successfully (basic mode):", retryData);
+        } else {
+          throw new Error(`Failed to publish whitepaper: ${insertError.message}`);
+        }
+      } else {
+        console.log("Whitepaper published successfully:", insertData);
+        console.log("- Word count:", structure.totalWordCount);
+        console.log("- Read time:", structure.estimatedReadTime);
+        console.log("- Images:", functionData.images.length);
+        console.log("- Sections:", structure.sections.length);
+      }
+
       toast({
         title: "Whitepaper Published Successfully!",
-        description: "Your whitepaper is being processed and will be available shortly.",
+        description: `Your whitepaper "${metadata.wpTitle}" has been published successfully.`,
         variant: "default",
       });
 
@@ -770,6 +945,8 @@ const Admin = () => {
       setWpProcessing(false);
     }
   };
+
+  // ----------------------------------------------- Whitepaper Publish ends -----------------------------------------------
 
   // ADD THESE NEW HANDLER FUNCTIONS
   const handlePreviewBlog = (blog: any) => {
@@ -804,7 +981,7 @@ const Admin = () => {
     setUploadedBlogPath('');
     setCanPreviewBlog(false);
     setCanPublishBlog(false);
-    
+
     const fileInput = document.getElementById('file-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
@@ -819,7 +996,7 @@ const Admin = () => {
     setUploadedWpPath('');
     setCanPreviewWp(false);
     setCanPublishWp(false);
-    
+
     const fileInput = document.getElementById('wp-file-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
@@ -829,7 +1006,7 @@ const Admin = () => {
   const testSupabaseConnection = async () => {
     try {
       console.log("=== COMPREHENSIVE SUPABASE CONNECTION TEST ===");
-      
+
       // 1. Test Auth
       console.log("1. Testing Authentication...");
       const { data: authData, error: authError } = await supabase.auth.getSession();
@@ -839,7 +1016,7 @@ const Admin = () => {
         console.log("✅ Auth session:", authData?.session ? "Active" : "No session");
         console.log("User:", authData?.session?.user?.email || "Not logged in");
       }
-      
+
       // 2. Test Storage Access
       console.log("\n2. Testing Storage Access...");
       const { data: storageData, error: storageError } = await supabase.storage.listBuckets();
@@ -847,11 +1024,11 @@ const Admin = () => {
         console.error("❌ Storage error:", storageError);
       } else {
         console.log("✅ Available buckets:", storageData?.map(b => b.name) || []);
-        
+
         // If no buckets visible, test bucket access directly
         if (!storageData || storageData.length === 0) {
           console.log("⚠️ No buckets visible - testing direct bucket access...");
-          
+
           // Test direct bucket access
           const requiredBuckets = ['blogs', 'whitepapers'];
           for (const bucketName of requiredBuckets) {
@@ -859,7 +1036,7 @@ const Admin = () => {
               const { data: listData, error: listError } = await supabase.storage
                 .from(bucketName)
                 .list('', { limit: 1 });
-                
+
               if (listError) {
                 console.log(`❌ ${bucketName} bucket: ${listError.message}`);
               } else {
@@ -878,7 +1055,7 @@ const Admin = () => {
           });
         }
       }
-      
+
       // 3. Test Database
       console.log("\n3. Testing Database Access...");
       const { data: dbData, error: dbError } = await supabase.from('blogs').select('count').limit(1);
@@ -887,33 +1064,33 @@ const Admin = () => {
       } else {
         console.log("✅ Database access: Working");
       }
-      
+
       // 4. Test Storage Upload (small test file)
       console.log("\n4. Testing Storage Upload...");
       try {
         const testBlob = new Blob(['test'], { type: 'text/plain' });
         const testFile = new File([testBlob], 'connection-test.txt', { type: 'text/plain' });
-        
+
         const { data: uploadTest, error: uploadTestError } = await supabase.storage
           .from('blogs')
           .upload(`test/connection-test-${Date.now()}.txt`, testFile);
-          
-                 if (uploadTestError) {
-           console.error("❌ Upload test failed:", uploadTestError);
-           console.error("Upload error details:", {
-             message: uploadTestError.message,
-             fullError: uploadTestError
-           });
+
+        if (uploadTestError) {
+          console.error("❌ Upload test failed:", uploadTestError);
+          console.error("Upload error details:", {
+            message: uploadTestError.message,
+            fullError: uploadTestError
+          });
         } else {
           console.log("✅ Upload test: Success");
-          
+
           // Clean up test file
           await supabase.storage.from('blogs').remove([uploadTest.path]);
         }
       } catch (uploadErr) {
         console.error("❌ Upload test exception:", uploadErr);
       }
-      
+
       // 5. Test Edge Functions
       console.log("\n5. Testing Edge Functions...");
       const { data: functionsData, error: functionsError } = await supabase.functions.invoke('process-document', {
@@ -924,24 +1101,24 @@ const Admin = () => {
       } else {
         console.log("✅ Edge functions: Available");
       }
-      
+
       console.log("\n=== CONNECTION TEST COMPLETE ===");
-      
+
       // Summary
       const issues = [];
       if (authError) issues.push("Authentication");
       if (storageError) issues.push("Storage Access");
       if (dbError) issues.push("Database");
       if (functionsError) issues.push("Edge Functions");
-      
+
       toast({
         title: issues.length === 0 ? "All Tests Passed!" : "Issues Detected",
-        description: issues.length === 0 
-          ? "All Supabase services are working correctly" 
+        description: issues.length === 0
+          ? "All Supabase services are working correctly"
           : `Issues found with: ${issues.join(', ')}. Check console for details.`,
         variant: issues.length === 0 ? "default" : "destructive",
       });
-      
+
     } catch (err) {
       console.error("❌ Connection test failed:", err);
       toast({
@@ -961,7 +1138,7 @@ const Admin = () => {
           .from('blogs')
           .select('*')
           .order('created_at', { ascending: false });
-          
+
         if (error) {
           console.error("Error fetching blogs:", error);
           toast({
@@ -971,7 +1148,7 @@ const Admin = () => {
           });
           return;
         }
-        
+
         setBlogs(data || []);
       } catch (err) {
         console.error("Failed to fetch blogs:", err);
@@ -984,7 +1161,7 @@ const Admin = () => {
         setLoadingBlogs(false);
       }
     };
-    
+
     fetchBlogs();
   }, []);
 
@@ -996,7 +1173,7 @@ const Admin = () => {
           .from('whitepapers')
           .select('*')
           .order('created_at', { ascending: false });
-          
+
         if (error) {
           console.error("Error fetching whitepapers:", error);
           toast({
@@ -1006,7 +1183,7 @@ const Admin = () => {
           });
           return;
         }
-        
+
         setWhitepapers(data || []);
       } catch (err) {
         console.error("Failed to fetch whitepapers:", err);
@@ -1019,7 +1196,7 @@ const Admin = () => {
         setLoadingWhitepapers(false);
       }
     };
-    
+
     fetchWhitepapers();
   }, []);
 
@@ -1033,21 +1210,21 @@ const Admin = () => {
     setViewBlogContent(blog.content);
     setViewBlogDialog(true);
   };
-  
+
   const handleDeleteClick = (blog) => {
     setSelectedBlog(blog);
     setConfirmDeleteDialog(true);
   };
-  
+
   const confirmDelete = async () => {
     if (!selectedBlog) return;
-    
+
     try {
       const { error } = await supabase
         .from('blogs')
         .delete()
         .eq('id', selectedBlog.id);
-        
+
       if (error) {
         console.error("Error deleting blog:", error);
         toast({
@@ -1057,15 +1234,15 @@ const Admin = () => {
         });
         return;
       }
-      
+
       setBlogs(blogs.filter(blog => blog.id !== selectedBlog.id));
-      
+
       toast({
         title: "Success",
         description: "Blog deleted successfully",
         variant: "default",
       });
-      
+
       setConfirmDeleteDialog(false);
     } catch (err) {
       console.error("Delete operation failed:", err);
@@ -1081,16 +1258,16 @@ const Admin = () => {
     setSelectedWhitepaper(whitepaper);
     setConfirmDeleteWhitepaperDialog(true);
   };
-  
+
   const confirmDeleteWhitepaper = async () => {
     if (!selectedWhitepaper) return;
-    
+
     try {
       const { error } = await supabase
         .from('whitepapers')
         .delete()
         .eq('id', selectedWhitepaper.id);
-        
+
       if (error) {
         console.error("Error deleting whitepaper:", error);
         toast({
@@ -1100,15 +1277,15 @@ const Admin = () => {
         });
         return;
       }
-      
+
       setWhitepapers(whitepapers.filter(wp => wp.id !== selectedWhitepaper.id));
-      
+
       toast({
         title: "Success",
         description: "Whitepaper deleted successfully",
         variant: "default",
       });
-      
+
       setConfirmDeleteWhitepaperDialog(false);
     } catch (err) {
       console.error("Delete operation failed:", err);
@@ -1127,7 +1304,7 @@ const Admin = () => {
         .from('blogs')
         .select('*')
         .order('created_at', { ascending: false });
-        
+
       if (error) {
         console.error("Error refreshing blogs:", error);
         toast({
@@ -1137,9 +1314,9 @@ const Admin = () => {
         });
         return;
       }
-      
+
       setBlogs(data || []);
-      
+
       toast({
         title: "Refreshed",
         description: "Blog list updated",
@@ -1164,7 +1341,7 @@ const Admin = () => {
         .from('whitepapers')
         .select('*')
         .order('created_at', { ascending: false });
-        
+
       if (error) {
         console.error("Error refreshing whitepapers:", error);
         toast({
@@ -1174,9 +1351,9 @@ const Admin = () => {
         });
         return;
       }
-      
+
       setWhitepapers(data || []);
-      
+
       toast({
         title: "Refreshed",
         description: "Whitepaper list updated",
@@ -1193,19 +1370,19 @@ const Admin = () => {
       setLoadingWhitepapers(false);
     }
   };
-  
-  const filteredBlogs = blogs.filter(blog => 
-    blog.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    blog.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    blog.category.toLowerCase().includes(searchQuery.toLowerCase())
+
+  const filteredBlogs = blogs.filter(blog =>
+    (blog.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (blog.author || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (blog.category || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredWhitepapers = whitepapers.filter(wp => 
-    wp.title.toLowerCase().includes(wpSearchQuery.toLowerCase()) || 
-    wp.author.toLowerCase().includes(wpSearchQuery.toLowerCase()) ||
-    wp.category.toLowerCase().includes(wpSearchQuery.toLowerCase())
+  const filteredWhitepapers = whitepapers.filter(wp =>
+    (wp.title || '').toLowerCase().includes(wpSearchQuery.toLowerCase()) ||
+    (wp.author || '').toLowerCase().includes(wpSearchQuery.toLowerCase()) ||
+    (wp.wpCategory || wp.category || '').toLowerCase().includes(wpSearchQuery.toLowerCase())
   );
-  
+
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -1224,29 +1401,29 @@ const Admin = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
                 <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-                  <img 
-                    src="/lovable-uploads/Indrasol company logo_.png" 
-                    alt="Indrasol Logo" 
+                  <img
+                    src="/lovable-uploads/Indrasol company logo_.png"
+                    alt="Indrasol Logo"
                     className="h-8"
                   />
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={testSupabaseConnection}
                 className="text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700"
               >
                 <Database className="h-4 w-4 mr-2 text-indrasol-blue dark:text-indrasol-darkblue" />
                 Test Connection
               </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
+
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleLogout}
                 className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
@@ -1257,7 +1434,7 @@ const Admin = () => {
           </div>
         </div>
       </header>
-      
+
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Content Management</h1>
@@ -1282,7 +1459,7 @@ const Admin = () => {
           </div>
           <Separator className="mt-4 bg-gray-200 dark:bg-gray-700" />
         </div>
-        
+
         <Tabs defaultValue="upload" className="space-y-6">
           <TabsList className="bg-indrasol-blue-100 dark:bg-indrasol-darkblue-800 p-1">
             <TabsTrigger value="upload" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900">
@@ -1302,7 +1479,7 @@ const Admin = () => {
               Manage Whitepapers
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="upload" className="space-y-6">
             <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-md">
               <CardHeader className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 pb-4">
@@ -1314,7 +1491,7 @@ const Admin = () => {
                   Upload Word documents (DOCX) to create blog posts. The document will be automatically processed and converted.
                 </CardDescription>
               </CardHeader>
-              
+
               <CardContent className="pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-5">
@@ -1331,7 +1508,7 @@ const Admin = () => {
                         className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="author" className="text-sm font-medium flex items-center">
                         <User className="h-4 w-4 mr-2 text-gray-500" />
@@ -1347,7 +1524,7 @@ const Admin = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="author" className="text-sm font-medium flex items-center">
-                        <User className="h-4 w-4 mr-2 text-gray-500" />
+                        <NotebookPen className="h-4 w-4 mr-2 text-gray-500" />
                         Author Description
                       </Label>
                       <Input
@@ -1360,7 +1537,7 @@ const Admin = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="author" className="text-sm font-medium flex items-center">
-                        <User className="h-4 w-4 mr-2 text-gray-500" />
+                        <Link className="h-4 w-4 mr-2 text-gray-500" />
                         Author Profile URL
                       </Label>
                       <Input
@@ -1372,7 +1549,7 @@ const Admin = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-5">
                     <div className="space-y-2">
                       <Label htmlFor="category" className="text-sm font-medium flex items-center">
@@ -1387,7 +1564,7 @@ const Admin = () => {
                         className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="file-upload" className="text-sm font-medium flex items-center">
                         <Upload className="h-4 w-4 mr-2 text-gray-500" />
@@ -1418,7 +1595,7 @@ const Admin = () => {
                   </div>
                 </div>
               </CardContent>
-              
+
               <CardFooter className="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                 <div className="flex flex-col">
                   <p className="text-sm text-gray-500">
@@ -1426,14 +1603,14 @@ const Admin = () => {
                   </p>
                   {uploadedBlogPath && (
                     <p className="text-xs text-green-600 mt-1">
-                      ✓ File uploaded successfully - Ready for preview
+                      ✓ File uploaded successfully - Ready for processing.
                     </p>
                   )}
                 </div>
-                
+
                 <div className="flex items-center gap-2">
-                  <Button 
-                    onClick={handleBlogUpload} 
+                  <Button
+                    onClick={handleBlogUpload}
                     disabled={uploading || !file || !title || !author || !category || !!uploadedBlogPath}
                     variant="outline"
                     className="flex items-center gap-2"
@@ -1453,7 +1630,7 @@ const Admin = () => {
                       </>
                     )}
                   </Button>
-                  
+
                   {/* <Button 
                     onClick={handleBlogPreview} 
                     disabled={!canPreviewBlog || previewingBlog}
@@ -1475,9 +1652,9 @@ const Admin = () => {
                       </>
                     )}
                   </Button> */}
-                  
-                  <Button 
-                    onClick={handleBlogPublish} 
+
+                  <Button
+                    onClick={handleBlogPublish}
                     disabled={!canPublishBlog || processing}
                     className="bg-indrasol-blue hover:bg-indrasol-darkblue text-white flex items-center gap-2"
                   >
@@ -1499,7 +1676,7 @@ const Admin = () => {
                 </div>
               </CardFooter>
             </Card>
-            
+
             {/* Tips Card */}
             <Card className="bg-blue-50 dark:bg-indrasol-darkblue border-indrasol-blue dark:border-indrasol-darkblue">
               <CardHeader className="pb-2">
@@ -1527,7 +1704,7 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="manage">
             <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-md">
               <CardHeader className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 pb-4">
@@ -1548,9 +1725,9 @@ const Admin = () => {
                   </Button>
                 </div>
                 <CardDescription>
-                  View, edit, and manage your existing blog posts
+                  View and manage your existing blog posts
                 </CardDescription>
-                
+
                 <div className="mt-4">
                   <div className="relative">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
@@ -1563,7 +1740,7 @@ const Admin = () => {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="p-0">
                 {loadingBlogs ? (
                   <div className="flex items-center justify-center p-8">
@@ -1599,7 +1776,7 @@ const Admin = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handlePreviewBlog(blog)} 
+                                  onClick={() => handlePreviewBlog(blog)}
                                   className="flex items-center gap-1 text-indrasol-blue hover:text-indrasol-darkblue border-indrasol-blue/20 hover:border-indrasol-blue/40"
                                   title="Preview blog post"
                                 >
@@ -1629,14 +1806,14 @@ const Admin = () => {
                       {searchQuery ? 'No matching blogs found' : 'No blogs yet'}
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400 mb-4">
-                      {searchQuery 
+                      {searchQuery
                         ? 'Try adjusting your search or clear the filter'
                         : 'Upload your first blog post to get started'
                       }
                     </p>
                     {searchQuery && (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setSearchQuery('')}
                         className="mx-auto"
                       >
@@ -1648,7 +1825,7 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           {/* Whitepaper Upload Tab */}
           <TabsContent value="wp-upload" className="space-y-6">
             <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-md">
@@ -1661,7 +1838,7 @@ const Admin = () => {
                   Upload Word documents (DOCX) to create whitepapers. Documents are automatically converted and processed.
                 </CardDescription>
               </CardHeader>
-              
+
               <CardContent className="pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-5">
@@ -1678,7 +1855,7 @@ const Admin = () => {
                         className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="wp-author" className="text-sm font-medium flex items-center">
                         <User className="h-4 w-4 mr-2 text-gray-500" />
@@ -1693,7 +1870,34 @@ const Admin = () => {
                       />
                     </div>
                   </div>
-                  
+
+                  <div className="space-y-2">
+                    <Label htmlFor="author" className="text-sm font-medium flex items-center">
+                      <NotebookPen className="h-4 w-4 mr-2 text-gray-500" />
+                      Author Description
+                    </Label>
+                    <Input
+                      id="wp-author_desc"
+                      value={wpAuthor_desc}
+                      onChange={(e) => setWpAuthor_desc(e.target.value)}
+                      placeholder="Enter author description"
+                      className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="author" className="text-sm font-medium flex items-center">
+                      <Link className="h-4 w-4 mr-2 text-gray-500" />
+                      Author Profile URL
+                    </Label>
+                    <Input
+                      id="wp-author_profile_url"
+                      value={wpAuthor_profile_url}
+                      onChange={(e) => setWpAuthor_profile_url(e.target.value)}
+                      placeholder="Enter author profile URL"
+                      className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                    />
+                  </div>
+
                   <div className="space-y-5">
                     <div className="space-y-2">
                       <Label htmlFor="wp-category" className="text-sm font-medium flex items-center">
@@ -1708,7 +1912,7 @@ const Admin = () => {
                         className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="wp-file-upload" className="text-sm font-medium flex items-center">
                         <Upload className="h-4 w-4 mr-2 text-gray-500" />
@@ -1739,11 +1943,11 @@ const Admin = () => {
                   </div>
                 </div>
               </CardContent>
-              
+
               <CardFooter className="flex justify-between items-center border-t border-gray-200 dark:border-gray-800 pt-6">
                 <div className="flex flex-col">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={resetWhitepaperForm}
                     disabled={wpProcessing || wpUploading}
                     className="flex items-center gap-2"
@@ -1757,10 +1961,10 @@ const Admin = () => {
                     </p>
                   )}
                 </div>
-                
+
                 <div className="flex items-center gap-2">
-                  <Button 
-                    onClick={handleWpUpload} 
+                  <Button
+                    onClick={handleWpUpload}
                     disabled={wpUploading || !wpFile || !wpTitle || !wpAuthor || !wpCategory || !!uploadedWpPath}
                     variant="outline"
                     className="flex items-center gap-2"
@@ -1780,9 +1984,9 @@ const Admin = () => {
                       </>
                     )}
                   </Button>
-                  
-                  <Button 
-                    onClick={handleWpPreview} 
+
+                  <Button
+                    onClick={handleWpPreview}
                     disabled={!canPreviewWp || previewingWp}
                     variant="outline"
                     className="flex items-center gap-2 text-indrasol-blue border-indrasol-blue/20"
@@ -1802,9 +2006,9 @@ const Admin = () => {
                       </>
                     )}
                   </Button>
-                  
-                  <Button 
-                    onClick={handleWpPublish} 
+
+                  <Button
+                    onClick={handleWpPublish}
                     disabled={!canPublishWp || wpProcessing}
                     className="bg-indrasol-blue hover:bg-indrasol-darkblue text-white flex items-center gap-2"
                   >
@@ -1826,7 +2030,7 @@ const Admin = () => {
                 </div>
               </CardFooter>
             </Card>
-            
+
             {/* Tips Card */}
             <Card className="bg-blue-50 dark:bg-indrasol-darkblue border-indrasol-blue dark:border-indrasol-darkblue">
               <CardHeader className="pb-2">
@@ -1854,7 +2058,7 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           {/* Manage Whitepapers Tab */}
           <TabsContent value="wp-manage">
             <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-md">
@@ -1878,7 +2082,7 @@ const Admin = () => {
                 <CardDescription>
                   View and manage your published whitepapers
                 </CardDescription>
-                
+
                 <div className="mt-4">
                   <div className="relative">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
@@ -1891,7 +2095,7 @@ const Admin = () => {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="p-0">
                 {loadingWhitepapers ? (
                   <div className="flex items-center justify-center p-8">
@@ -1915,7 +2119,7 @@ const Admin = () => {
                           <TableRow key={whitepaper.id}>
                             <TableCell className="font-medium">{whitepaper.title}</TableCell>
                             <TableCell>{whitepaper.author}</TableCell>
-                            <TableCell>{whitepaper.category}</TableCell>
+                            <TableCell>{whitepaper.wpCategory || whitepaper.category || 'General'}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3 text-gray-500" />
@@ -1927,7 +2131,7 @@ const Admin = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handlePreviewWhitepaper(whitepaper)} 
+                                  onClick={() => handlePreviewWhitepaper(whitepaper)}
                                   className="flex items-center gap-1 text-indrasol-blue hover:text-indrasol-darkblue border-indrasol-blue/20 hover:border-indrasol-blue/40"
                                   title="Preview whitepaper"
                                 >
@@ -1957,14 +2161,14 @@ const Admin = () => {
                       {wpSearchQuery ? 'No matching whitepapers found' : 'No whitepapers yet'}
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400 mb-4">
-                      {wpSearchQuery 
+                      {wpSearchQuery
                         ? 'Try adjusting your search or clear the filter'
                         : 'Upload your first whitepaper to get started'
                       }
                     </p>
                     {wpSearchQuery && (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setWpSearchQuery('')}
                         className="mx-auto"
                       >
@@ -1978,7 +2182,7 @@ const Admin = () => {
           </TabsContent>
         </Tabs>
       </main>
-      
+
       {/* Delete Confirmation Dialogs */}
       <Dialog open={confirmDeleteDialog} onOpenChange={setConfirmDeleteDialog}>
         <DialogContent className="max-w-md">
@@ -1991,20 +2195,20 @@ const Admin = () => {
               Are you sure you want to delete this blog post? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedBlog && (
             <div className="py-4">
               <p className="font-medium">{selectedBlog.title}</p>
               <p className="text-sm text-gray-500">by {selectedBlog.author} in {selectedBlog.category}</p>
             </div>
           )}
-          
+
           <DialogFooter className="flex items-center justify-end gap-2">
             <Button variant="outline" onClick={() => setConfirmDeleteDialog(false)}>
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
             >
@@ -2013,7 +2217,7 @@ const Admin = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       <Dialog open={confirmDeleteWhitepaperDialog} onOpenChange={setConfirmDeleteWhitepaperDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -2025,20 +2229,20 @@ const Admin = () => {
               Are you sure you want to delete this whitepaper? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedWhitepaper && (
             <div className="py-4">
               <p className="font-medium">{selectedWhitepaper.title}</p>
-              <p className="text-sm text-gray-500">by {selectedWhitepaper.author} in {selectedWhitepaper.category}</p>
+              <p className="text-sm text-gray-500">by {selectedWhitepaper.author} in {selectedWhitepaper.wpCategory || selectedWhitepaper.category || 'General'}</p>
             </div>
           )}
-          
+
           <DialogFooter className="flex items-center justify-end gap-2">
             <Button variant="outline" onClick={() => setConfirmDeleteWhitepaperDialog(false)}>
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={confirmDeleteWhitepaper}
               className="bg-red-600 hover:bg-red-700"
             >
@@ -2047,7 +2251,7 @@ const Admin = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* View Content Dialog (shared for blogs and whitepapers) */}
       <Dialog open={viewBlogDialog} onOpenChange={setViewBlogDialog}>
         <DialogContent className="max-w-7xl h-[80vh] overflow-y-auto bg-white dark:bg-gray-900">
@@ -2057,16 +2261,16 @@ const Admin = () => {
                 <Eye className="h-5 w-5 mr-2 text-indrasol-blue-600 dark:text-indrasol-darkblue-400" />
                 Content Preview
               </DialogTitle>
-              
+
               {(selectedBlog || selectedWhitepaper) && (
                 <div className="flex items-center">
                   <span className="px-2 py-1 bg-indrasol-blue/10 text-indrasol-blue text-xs font-medium rounded-full">
-                    {(selectedBlog || selectedWhitepaper)?.category}
+                    {selectedBlog ? selectedBlog.category : (selectedWhitepaper?.wpCategory || selectedWhitepaper?.category || 'General')}
                   </span>
                 </div>
               )}
             </div>
-            
+
             {(selectedBlog || selectedWhitepaper) && (
               <div className="mt-2">
                 <h3 className="text-lg font-medium">{(selectedBlog || selectedWhitepaper)?.title}</h3>
@@ -2080,12 +2284,12 @@ const Admin = () => {
               </div>
             )}
           </DialogHeader>
-          
-          <div 
-            className="preview-container mt-4 prose prose-indrasol-blue dark:prose-invert max-w-none" 
+
+          <div
+            className="preview-container mt-4 prose prose-indrasol-blue dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{ __html: viewBlogContent }}
           />
-          
+
           <DialogFooter className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-800">
             <div className="flex w-full justify-between items-center">
               <div className="flex items-center gap-2">
@@ -2108,14 +2312,14 @@ const Admin = () => {
                       }
                     }
                   }}
-                  disabled={(!selectedBlog || blogs.findIndex(blog => blog.id === selectedBlog?.id) <= 0) && 
-                           (!selectedWhitepaper || whitepapers.findIndex(wp => wp.id === selectedWhitepaper?.id) <= 0)}
+                  disabled={(!selectedBlog || blogs.findIndex(blog => blog.id === selectedBlog?.id) <= 0) &&
+                    (!selectedWhitepaper || whitepapers.findIndex(wp => wp.id === selectedWhitepaper?.id) <= 0)}
                   className="flex items-center gap-1"
                 >
                   <ArrowRight className="h-4 w-4 rotate-180" />
                   Previous
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -2136,14 +2340,14 @@ const Admin = () => {
                     }
                   }}
                   disabled={(!selectedBlog || blogs.findIndex(blog => blog.id === selectedBlog?.id) >= blogs.length - 1) &&
-                           (!selectedWhitepaper || whitepapers.findIndex(wp => wp.id === selectedWhitepaper?.id) >= whitepapers.length - 1)}
+                    (!selectedWhitepaper || whitepapers.findIndex(wp => wp.id === selectedWhitepaper?.id) >= whitepapers.length - 1)}
                   className="flex items-center gap-1"
                 >
                   Next
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="destructive"
@@ -2163,9 +2367,9 @@ const Admin = () => {
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete
                 </Button>
-                
-                <Button 
-                  variant="outline" 
+
+                <Button
+                  variant="outline"
                   onClick={() => setViewBlogDialog(false)}
                   className="h-9"
                 >
@@ -2176,7 +2380,7 @@ const Admin = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* ADD PREVIEW MODAL HERE */}
       {showPreview && previewDocument && (
         <PreviewModal

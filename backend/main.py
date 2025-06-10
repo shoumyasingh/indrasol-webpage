@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import threading
 # from indra_bot import WebContentProcessor
 from routes_register import router as api_router
+from routes.router import router as api_router_v1
 from contextlib import asynccontextmanager
 from services.bot_service import initialize_pinecone, get_pinecone_index, load_hashes, check_for_updates, get_urls, check_index_stats
 import pinecone

@@ -234,7 +234,7 @@ class RefreshRequest(BaseModel):
     refresh_urls: list[str] = []
 
 # Retrieve relevant chunks from Pinecone
-def retrieve_relevant_chunks(query, top_k=3):
+def retrieve_relevant_chunks(query, top_k=5):
     index = get_pinecone_index()
     query_embedding = create_embedding(query)
     results = index.query(vector=query_embedding, top_k=top_k, include_metadata=True)

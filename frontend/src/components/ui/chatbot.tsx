@@ -507,18 +507,55 @@
 //     </>
 //   );
 // };
+ 
 
+
+//firstattempt(vasavi)
 
 import React, { useState, useEffect, useRef } from "react";
 import { X, Send } from "lucide-react";
 import { chatService } from "../../services/chatService";
 import { Message as BaseMessage } from "../../types/chat";
-import parse from "html-react-parser";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Extend Message type to include optional originalText and isTyping
 type Message = BaseMessage & {
   originalText?: string;
   isTyping?: boolean;
+  processedText?: string;
+};
+
+// Utility function to detect and convert email addresses to mailto links
+const convertEmailsToLinks = (text: string): string => {
+  const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+  return text.replace(emailRegex, (email) => {
+    return `[${email}](mailto:${email})`;
+  });
+};
+
+// Utility function to process URLs in markdown
+const convertUrlsToMarkdown = (text: string): string => {
+  const urlRegex = /(https?:\/\/[^\s()]+?)(?=[.,;:!?]?(?:\s|$))/g;
+  return text.replace(urlRegex, (url) => {
+    let displayText = '';
+    if (url.endsWith('.com')) {
+      const parts = url.split('.');
+      displayText = parts[parts.length - 2].split('/').pop() || 'link';
+    } else {
+      const parts = url.split('/');
+      displayText = parts[parts.length - 1] || 'link';
+    }
+    return `[${displayText}](${url})`;
+  });
+};
+
+// Process text to convert both emails and URLs to markdown format
+const processTextToMarkdown = (text: string): string => {
+  let processedText = text;
+  processedText = convertEmailsToLinks(processedText);
+  processedText = convertUrlsToMarkdown(processedText);
+  return processedText;
 };
 
 // TypeWriter component for animated text display
@@ -542,8 +579,23 @@ const TypeWriter: React.FC<{ text: string; delay?: number; onComplete?: () => vo
     }
   }, [currentIndex, text, delay, onComplete]);
 
-  // Parse the display text to handle HTML content properly during typing
-  return <>{parse(displayText)}</>;
+  return (
+    <ReactMarkdown 
+      remarkPlugins={[remarkGfm]}
+      components={{
+        a: ({ node, ...props }) => (
+          <a 
+            {...props} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-blue-500 underline hover:text-blue-600"
+          />
+        )
+      }}
+    >
+      {displayText}
+    </ReactMarkdown>
+  );
 };
 
 // Helper function to convert URLs into hyperlinks (fixed regex to exclude punctuation)
@@ -626,15 +678,17 @@ export const ChatBot: React.FC = () => {
     try {
       const botResponse = await chatService.sendMessage(newMessage);
       
-      // Store both original and processed text
-      const processedResponse = {
+      // Process the response text to convert URLs and emails to markdown format
+      const processedText = processTextToMarkdown(botResponse.text);
+      
+      const typingResponse: Message = {
         ...botResponse,
-        originalText: botResponse.text, // Keep original for typing animation
-        text: convertLinksToHyperlinks(botResponse.text), // Processed for final display
+        originalText: botResponse.text,
+        text: processedText,
         isTyping: true
       };
 
-      setMessages(prev => [...prev, processedResponse]);
+      setMessages(prev => [...prev, typingResponse]);
 
       setTimeout(() => {
         setMessages(prev =>
@@ -657,7 +711,7 @@ export const ChatBot: React.FC = () => {
     }
   };
 
-  // Handle pre-defined suggestion clicks
+  // Handle suggestion click
   const handleSuggestion = async (text: string): Promise<void> => {
     const userMessage: Message = {
       id: messages.length + 1,
@@ -671,15 +725,17 @@ export const ChatBot: React.FC = () => {
     try {
       const botResponse = await chatService.sendMessage(text);
       
-      // Store both original and processed text
-      const processedResponse = {
+      // Process the response text to convert URLs and emails to markdown format
+      const processedText = processTextToMarkdown(botResponse.text);
+      
+      const typingResponse: Message = {
         ...botResponse,
-        originalText: botResponse.text, // Keep original for typing animation
-        text: convertLinksToHyperlinks(botResponse.text), // Processed for final display
+        originalText: botResponse.text,
+        text: processedText,
         isTyping: true
       };
 
-      setMessages(prev => [...prev, processedResponse]);
+      setMessages(prev => [...prev, typingResponse]);
 
       setTimeout(() => {
         setMessages(prev =>
@@ -836,18 +892,32 @@ export const ChatBot: React.FC = () => {
                             : "bg-white text-gray-800 border border-gray-200 rounded-2xl rounded-bl-none"
                         }`}
                       >
-                        <p className="text-sm md:text-base leading-relaxed">
+                        <div className="text-sm md:text-base leading-relaxed">
                           {message.sender === "bot" && message.isTyping ? (
                             <>
-                              <TypeWriter text={message.originalText || message.text} />
+                              <TypeWriter text={message.text} />
                               <span className="typing-cursor animate-blink">|</span>
                             </>
                           ) : message.sender === "bot" ? (
-                            <span>{parse(message.text)}</span>
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                a: ({ node, ...props }) => (
+                                  <a 
+                                    {...props} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className={`${message.sender === "user" ? "text-white" : "text-blue-500"} underline hover:opacity-80`}
+                                  />
+                                )
+                              }}
+                            >
+                              {message.text}
+                            </ReactMarkdown>
                           ) : (
                             message.text
                           )}
-                        </p>
+                        </div>
                       </div>
                     </div>
                   ))}

@@ -21,7 +21,7 @@ async def chat(request: QueryRequest):
     client = get_openai_client()
     
     # Retrieve relevant content
-    relevant_chunks = retrieve_relevant_chunks(query, top_k=5)
+    relevant_chunks = await retrieve_relevant_chunks(query, namespace="sales", top_k=5)
     logging.info(f"Retrieved chunks for query '{query}': {relevant_chunks}")
     context = "\n".join(relevant_chunks)
 #     system_message = """

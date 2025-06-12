@@ -1,17 +1,15 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-import threading
+import asyncio
 # from indra_bot import WebContentProcessor
 from routes_register import router as api_router
-from routes.router import router as api_router_v1
 from contextlib import asynccontextmanager
-from services.bot_service import initialize_pinecone, get_pinecone_index, load_hashes, check_for_updates, get_urls, check_index_stats
-import pinecone
+from services.bot_service import initialize_website_content, initialize_sales_content, get_pinecone_index, load_hashes, check_for_updates, get_urls, check_index_stats
 # from backend.config.settings import PINECONE_API_KEY
 from apscheduler.schedulers.background import BackgroundScheduler   
 import logging
 from fastapi.responses import Response
-# from backend.config.settings import PINECONE_API_KEY, OPENAI_API_KEY
+from services.sales_content_check import sales_content_changed
 
 
 logging.basicConfig(level=logging.INFO)
@@ -24,14 +22,28 @@ async def lifespan(app: FastAPI):
         hashes = load_hashes()
         index = get_pinecone_index()
         stats = index.describe_index_stats()
+        website_count = stats["namespaces"].get("website", {}).get("vector_count", 0)
+        sales_count   = stats["namespaces"].get("sales",   {}).get("vector_count", 0)
         logging.info(f"Vector count : {stats['total_vector_count']}")
-        if stats["total_vector_count"] == 0:
-            logging.info("Initializing pinecone")
-            initialize_pinecone()
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(check_for_updates, 'interval', seconds=86400)  # Every day
-        scheduler.start()
-        app.state.scheduler = scheduler  # Prevent garbage collection
+        if website_count == 0:
+            await initialize_website_content()
+        if sales_count == 0:
+            await initialize_sales_content()
+        # if website_count == 0 and sales_count == 0:
+        #     logging.info("Initializing pinecone")
+        #     await initialize_website_content()
+        #     await initialize_sales_content()
+        if await sales_content_changed():
+            logging.info("Sales content changed, refreshing...")
+            await initialize_sales_content()
+        # Periodic refresh (async)
+        async def refresh_task():
+            while True:
+                await check_for_updates() 
+                await asyncio.sleep(86_400) 
+
+        loop = asyncio.get_event_loop()
+        loop.create_task(refresh_task())
         yield
     except Exception as e:
         logging.error(f"Error during lifespan startup: {e}")

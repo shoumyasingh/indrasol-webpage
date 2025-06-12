@@ -1,10 +1,10 @@
 import os
+from pathlib import Path
 from services.openai_service import run_openai_prompt
-#from prompts.engagement_prompt import engagaement_prompt
 
-PROMPT_PATH = "/prompts/engagement_prompt.txt"
+PROMPT_PATH = Path(__file__).parent.parent / "prompts/engagement_prompt.txt"
 
-async def run_engagement_agent(user_message: str) -> str:
+async def run_engagement_agent(user_message: str, context: str = "", history: str = "") -> str:
     with open(PROMPT_PATH, "r") as file:
         prompt_template = file.read()
 

@@ -661,49 +661,61 @@ export const ChatBot: React.FC = () => {
   }, [isOpen, messages]);
 
   // Handle sending a message
-  const handleSendMessage = async (e: React.FormEvent): Promise<void> => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMessage.trim() === "") return;
-
+    if (newMessage.trim() === '') return;
+  
+    /* 1️⃣  Build user message & optimistic UI update */
     const userMessage: Message = {
-      id: messages.length + 1,
-      text: newMessage,
-      sender: "user"
+      id: Date.now(),          // unique enough for UI
+      text: newMessage.trim(),
+      sender: 'user'
     };
-
-    setMessages(prev => [...prev, userMessage]);
-    setNewMessage("");
+    const optimisticHistory = [...messages, userMessage];
+    setMessages(optimisticHistory);
+    setNewMessage('');
     setIsTyping(true);
-
+  
     try {
-      const botResponse = await chatService.sendMessage(newMessage);
-      
-      // Process the response text to convert URLs and emails to markdown format
-      const processedText = processTextToMarkdown(botResponse.text);
-      
-      const typingResponse: Message = {
-        ...botResponse,
-        originalText: botResponse.text,
+      /* 2️⃣  Call backend with full history so far            *
+       *     chatService will return { botReply, newHistory }  */
+      const { botReply, newHistory } = await chatService.sendMessage(
+        newMessage.trim(),
+        optimisticHistory        // pass the current transcript
+      );
+  
+      /* 3️⃣  Markdown-link processing for bot text */
+      const processedText = processTextToMarkdown(botReply.text);
+      const typingBotMessage: Message = {
+        ...botReply,
+        originalText: botReply.text,
         text: processedText,
         isTyping: true
       };
-
-      setMessages(prev => [...prev, typingResponse]);
-
+  
+      /* 4️⃣  Show “typing” bubble, then settle */
+      setMessages([...optimisticHistory, typingBotMessage]);
+  
+      const msPerChar = 30;
+      const minDelay  = 500;
+      const delay     = Math.max(minDelay, botReply.text.length * msPerChar);
+  
       setTimeout(() => {
-        setMessages(prev =>
-          prev.map(msg =>
-            msg.id === botResponse.id ? { ...msg, isTyping: false } : msg
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === botReply.id ? { ...msg, isTyping: false } : msg
           )
         );
-      }, botResponse.text.length * 30 + 500);
-    } catch (error) {
-      setMessages(prev => [
+      }, delay);
+    } catch (err) {
+      console.error(err);
+      /* 5️⃣  Network / server failure fallback */
+      setMessages((prev) => [
         ...prev,
         {
-          id: messages.length + 2,
-          text: "Sorry! Something went wrong. Please try again.",
-          sender: "bot"
+          id: Date.now() + 1,
+          text: 'Sorry! Something went wrong. Please try again.',
+          sender: 'bot'
         }
       ]);
     } finally {
@@ -712,45 +724,55 @@ export const ChatBot: React.FC = () => {
   };
 
   // Handle suggestion click
-  const handleSuggestion = async (text: string): Promise<void> => {
-    const userMessage: Message = {
-      id: messages.length + 1,
-      text: text,
-      sender: "user"
+  const handleSuggestion = async (suggestionText: string): Promise<void> => {
+    /* 1️⃣  Push the suggestion as a user message immediately */
+    const userMsg: Message = {
+      id: Date.now(),
+      text: suggestionText,
+      sender: 'user'
     };
-    
-    setMessages(prev => [...prev, userMessage]);
+    const optimistic = [...messages, userMsg];
+    setMessages(optimistic);
     setIsTyping(true);
-    
+  
     try {
-      const botResponse = await chatService.sendMessage(text);
-      
-      // Process the response text to convert URLs and emails to markdown format
-      const processedText = processTextToMarkdown(botResponse.text);
-      
-      const typingResponse: Message = {
-        ...botResponse,
-        originalText: botResponse.text,
+      /* 2️⃣  Send full history to backend */
+      const { botReply, newHistory } = await chatService.sendMessage(
+        suggestionText,
+        optimistic
+      );
+  
+      /* 3️⃣  Convert URLs/emails in bot text */
+      const processedText = processTextToMarkdown(botReply.text);
+      const typingBotMsg: Message = {
+        ...botReply,
+        originalText: botReply.text,
         text: processedText,
         isTyping: true
       };
-
-      setMessages(prev => [...prev, typingResponse]);
-
+  
+      /* 4️⃣  Show typing bubble */
+      setMessages([...optimistic, typingBotMsg]);
+  
+      const msPerChar = 30;
+      const minDelay  = 500;
+      const delay     = Math.max(minDelay, botReply.text.length * msPerChar);
+  
       setTimeout(() => {
-        setMessages(prev =>
-          prev.map(msg =>
-            msg.id === botResponse.id ? { ...msg, isTyping: false } : msg
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === botReply.id ? { ...m, isTyping: false } : m
           )
         );
-      }, botResponse.text.length * 30 + 500);
-    } catch (error) {
-      setMessages(prev => [
+      }, delay);
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
         ...prev,
         {
-          id: messages.length + 2,
-          text: "Sorry! Something went wrong. Please try again.",
-          sender: "bot"
+          id: Date.now() + 1,
+          text: 'Sorry! Something went wrong. Please try again.',
+          sender: 'bot'
         }
       ]);
     } finally {

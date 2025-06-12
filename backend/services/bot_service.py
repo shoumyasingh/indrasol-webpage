@@ -9,12 +9,15 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 # from config.settings import PINECONE_API_KEY, OPENAI_API_KEY
+from knowledge_base.website_content import scrapped_website_content,get_urls
+from knowledge_base.sales_content import get_sales_content
 import logging
 import os
 import json
 import hashlib
 from pydantic import BaseModel
 import time
+from services.pinecone_service import store_documents
 
 app = FastAPI()
 
@@ -48,52 +51,52 @@ def get_openai_client():
 def get_pinecone_index():
     return index
 
-def get_urls():
-    urls = [
-    "https://indrasol.com/",
-    "http://indrasol.com/services",
-    "http://indrasol.com/services/aisolutions",
-    "https://indrasol.com/services/cloud-engineering",
-    "https://indrasol.com/services/application-security",
-    "https://indrasol.com/services/data-engineering",
-    "https://indrasol.com/products",
-    "https://indrasol.com/Products/Bizradar",
-    "https://indrasol.com/Products/Securetrack",
-    "https://indrasol.com/Resources/blogs2",
-    "https://indrasol.com/Resources/whitepaper",
-    "https://indrasol.com/company",
-    "https://indrasol.com/contact",
-    "https://indrasol.com/company/locations"
-    ]
-    return urls 
+# def get_urls():
+#     urls = [
+#     "https://indrasol.com/",
+#     "http://indrasol.com/services",
+#     "http://indrasol.com/services/aisolutions",
+#     "https://indrasol.com/services/cloud-engineering",
+#     "https://indrasol.com/services/application-security",
+#     "https://indrasol.com/services/data-engineering",
+#     "https://indrasol.com/products",
+#     "https://indrasol.com/Products/Bizradar",
+#     "https://indrasol.com/Products/Securetrack",
+#     "https://indrasol.com/Resources/blogs2",
+#     "https://indrasol.com/Resources/whitepaper",
+#     "https://indrasol.com/company",
+#     "https://indrasol.com/contact",
+#     "https://indrasol.com/company/locations"
+#     ]
+#     return urls 
 
 
 
-# Scrape URL and convert to markdown
-def scrape_url(url):
-    try:
-        # Set up Selenium WebDriver
-        options = Options()
-        options.add_argument("--headless")  # Run without opening a browser window
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-        driver.get(url)
-        time.sleep(5)  # Wait for JavaScript to load (adjust as needed)
-        page_source = driver.page_source
-        driver.quit()
-        soup = BeautifulSoup(page_source, "html.parser")
-        for elem in soup(["nav", "footer"]):
-            elem.decompose()
-        h = html2text.HTML2Text()
-        h.ignore_links = True
-        markdown_content = h.handle(str(soup))
-        logging.info(f"Scraped {len(markdown_content)} characters from {url}")
-        return markdown_content
-    except requests.RequestException as e:
-        logging.error(f"Failed to scrape {url}: {e}")
-        return ""
+# # Scrape URL and convert to markdown
+# async def scrape_url(url):
+#     try:
+#         # Set up Selenium WebDriver
+#         options = Options()
+#         options.add_argument("--headless")  # Run without opening a browser window
+#         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+#         driver.get(url)
+#         time.sleep(5)  # Wait for JavaScript to load (adjust as needed)
+#         page_source = driver.page_source
+#         driver.quit()
+#         soup = BeautifulSoup(page_source, "html.parser")
+#         for elem in soup(["nav", "footer"]):
+#             elem.decompose()
+#         h = html2text.HTML2Text()
+#         h.ignore_links = True
+#         markdown_content = h.handle(str(soup))
+#         logging.info(f"Scraped {len(markdown_content)} characters from {url}")
+#         return markdown_content
+#     except requests.RequestException as e:
+#         logging.error(f"Failed to scrape {url}: {e}")
+#         return ""
 
 # Split content into smaller chunks
-def split_content(content, chunk_size=500):
+async def split_content(content, chunk_size=500):
     if not content:
         logging.warning("No content to split")
         return []
@@ -116,9 +119,9 @@ def split_content(content, chunk_size=500):
     return [chunk.strip() for chunk in final_chunks if chunk.strip()]
 
 # Create embeddings using OpenAI
-def create_embedding(text):
+async def create_embedding(text):
     client = get_openai_client()
-    response = client.embeddings.create(input=text, model="text-embedding-ada-002")
+    response =  client.embeddings.create(input=text, model="text-embedding-ada-002")
     return response.data[0].embedding
 
 
@@ -143,48 +146,117 @@ def save_hashes():
     with open('hashes.json', 'w') as f:
         json.dump(hashes, f)
 
-# Store embeddings in Pinecone
-def store_embeddings(chunks, url):
+# Modified store_embeddings
+async def store_embeddings(chunks: list[str], namespace: str, source_id: str):
+    """
+    Stores a list of text chunks as vector embeddings in Pinecone under a given namespace.
+    
+    Args:
+        chunks (list[str]): The text chunks to embed and store.
+        namespace (str): Pinecone namespace (e.g., "website", "sales").
+        source_id (str): A unique identifier for the source (URL, title, etc.).
+    """
     for i, chunk in enumerate(chunks):
         try:
-            embedding = create_embedding(chunk)
-            vector_id = f"{url.replace('/', '_')}_{i}"
-            index.upsert([(vector_id, embedding, {"text": chunk, "url": url})])
-            logging.info(f"Upserted vector {vector_id} for {url}")
+            embedding = await create_embedding(chunk)
+            vector_id = f"{source_id.replace('/', '_')}_{i}"
+            index.upsert(
+                vectors=[{
+                    "id": vector_id,
+                    "values": embedding,
+                    "metadata": {
+                        "text": chunk,
+                        "source": source_id
+                    }
+                }],
+                namespace=namespace
+            )
+            logging.info(f"Upserted vector {vector_id} in namespace '{namespace}'")
         except Exception as e:
-            logging.error(f"Failed to upsert vector for {url}, chunk {i}: {e}")
+            logging.error(f"Failed to upsert vector for {source_id}, chunk {i}: {e}")
 
-# Initialize Pinecone with website content on startup
-def initialize_pinecone():
-    logging.info("Scraping and storing website content...")
+
+def split_overlap(text: str, size: int = 400, overlap: int = 50):
+    words = text.split()
+    for start in range(0, len(words), size - overlap):
+        yield " ".join(words[start:start + size])
+
+
+# Website content initialization
+async def initialize_website_content():
     urls = get_urls()
     for url in urls:
-        logging.info(f"Processing {url}...")
-        content = scrape_url(url)
-        chunks = split_content(content)
-        store_embeddings(chunks, url)
-        hash_value = compute_hash(content)
-        hashes[url] = hash_value
+        content = await scrapped_website_content(url)
+        chunks  = list(split_overlap(content))
+        await store_documents(
+                chunks=chunks,
+                namespace="website",
+                source_id=url,
+                category="Website"
+            )
+        hashes[url] = compute_hash(content)
     save_hashes()
-    logging.info("All content stored in Pinecone and hashes saved.")
+
+#  Sales content initialization
+async def initialize_sales_content():
+    sales_items = await get_sales_content()
+    for item in sales_items:
+        chunks = list(split_overlap(item["content"]))
+        await store_documents(
+            chunks=chunks,
+            namespace="sales",
+            source_id=item["title"],
+            category=item["title"],   # e.g., Cloud Engineering
+            doc_type="benefit"
+        )
 
 def check_index_stats():
     stats = index.describe_index_stats()
     logging.info(f"Pinecone index stats: {stats}")
 
-# Refresh embeddings for a URL
-def refresh_url(url, content):
-    """Refresh embeddings for a given URL using provided content."""
+# Refresh embeddings for a single URL
+async def refresh_url(url: str, content: str | None = None):
+    """Refresh Pinecone embeddings for a given URL.
+
+    Args:
+        url (str): The page URL.
+        content (str | None): Pre-fetched page content. If ``None`` the URL will be scraped internally.
+    """
+    # Fetch latest content if not provided
+    if content is None:
+        content = await scrapped_website_content(url)
+
+    # Guard against empty scrape results
+    if not content:
+        logging.warning(f"No content found for {url}. Skipping refresh.")
+        return
+
     index = get_pinecone_index()
-    chunks = split_content(content)
+
+    # ----- Chunk + embed -----
+    try:
+        chunks: list[str] = await split_content(content)
+    except TypeError:
+        # Fallback if split_content still returns coroutine when forgotten to await elsewhere
+        chunks = await split_content(content)
+
+    if not chunks:
+        logging.warning(f"No chunks generated for {url}. Skipping refresh.")
+        return
+
     stats = index.describe_index_stats()
-    dimension = stats["dimension"]
+    dimension = stats.get("dimension", 1536)
+
     new_vectors = []
     for i, chunk in enumerate(chunks):
-        embedding = create_embedding(chunk)
+        embedding = await create_embedding(chunk)
         vector_id = f"{url.replace('/', '_')}_{i}"
-        new_vectors.append((vector_id, embedding, {"text": chunk, "url": url}))
-    
+        new_vectors.append({
+            "id": vector_id,
+            "values": embedding,
+            "metadata": {"text": chunk, "url": url}
+        })
+
     # Delete existing vectors for this URL
     dummy_vector = [0] * dimension
     results = index.query(
@@ -199,7 +271,7 @@ def refresh_url(url, content):
         index.delete(ids=existing_ids)
     
     # Upsert new vectors
-    index.upsert(new_vectors)
+    index.upsert(vectors=new_vectors, namespace="website")
     
     # Update hash
     hash_value = compute_hash(content)
@@ -207,26 +279,26 @@ def refresh_url(url, content):
     save_hashes()
 
 # Check for updates periodically
-def check_for_updates():
+async def check_for_updates():
     """Periodically check for content changes and refresh embeddings."""
     urls = get_urls()
     for url in urls:
         try:
-            content = scrape_url(url)
+            content = await scrapped_website_content(url)
             new_hash = compute_hash(content)
             if new_hash != hashes.get(url):
                 logging.info(f"Change detected for {url}, refreshing...")
-                refresh_url(url, content)
+                await refresh_url(url, content)
             else:
                 logging.info(f"No change for {url}")
         except Exception as e:
             logging.error(f"Failed to check {url}: {e}")
 
 # Refresh multiple URLs
-def refresh_urls(urls_to_refresh):
+async def refresh_urls(urls_to_refresh: list[str]):
     for url in urls_to_refresh:
         logging.info(f"Refreshing {url}")
-        refresh_url(url)
+        await refresh_url(url)
         logging.info(f"Finished refreshing {url}")
 
 # Pydantic model for refresh request
@@ -234,11 +306,12 @@ class RefreshRequest(BaseModel):
     refresh_urls: list[str] = []
 
 # Retrieve relevant chunks from Pinecone
-def retrieve_relevant_chunks(query, top_k=5):
+async def retrieve_relevant_chunks(query, top_k=5):
     index = get_pinecone_index()
-    query_embedding = create_embedding(query)
+    query_embedding = await create_embedding(query)
     results = index.query(vector=query_embedding, top_k=top_k, include_metadata=True)
     return [match["metadata"]["text"] for match in results["matches"]]
+
 def export_pinecone_to_markdown(output_file="pinecone_content.md"):
     try:
         index = get_pinecone_index()
@@ -247,7 +320,7 @@ def export_pinecone_to_markdown(output_file="pinecone_content.md"):
 
         all_texts_by_url = {}
 
-        # You’ll need to paginate through all items in Pinecone (simulate with a dummy vector if needed)
+        # You'll need to paginate through all items in Pinecone (simulate with a dummy vector if needed)
         dummy_vector = [0.0] * stats['dimension']
         results = index.query(
             vector=dummy_vector,

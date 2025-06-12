@@ -1,19 +1,16 @@
 from services.openai_service import run_openai_prompt
-#from prompts.intent_prompt import intent_prompt
+from pathlib import Path
 
-PROMPT_PATH = "app/prompts/intent_prompt.txt"
+PROMPT_PATH = Path(__file__).parent.parent / "prompts/intent_prompt.txt"
 
-async def run_intent_agent(user_message: str, history: list) -> str:
+async def run_intent_agent(user_message: str, history: str) -> str:
     with open(PROMPT_PATH, "r") as file:
         prompt_template = file.read()
-
-    # Combine last few history lines for context
-    history_context = " | ".join(history[-3:]) if history else "[]"
 
     prompt = (
         f"{prompt_template}\n\n"
         f"User: {user_message}\n"
-        f"History: {history_context}\n→"
+        f"History: {history}\n→"
     )
     response = await run_openai_prompt(prompt)
     return response

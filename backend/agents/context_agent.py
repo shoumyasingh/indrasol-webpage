@@ -1,12 +1,9 @@
-# from services.pinecone_service import search_pinecone
+from services.pinecone_service import query_pinecone
 
-# async def retrieve_context(user_query: str) -> str:
-#     # You can add dynamic filters here if needed based on earlier agents
-#     filters = {}  # Example: {"category": {"$in": ["SecureTrack", "BizRadar"]}}
-
-#     matched_chunks = await search_pinecone(user_query, top_k=5, filters=filters)
-
-#     if not matched_chunks:
-#         return "No relevant context found."
-
-#     return "\n\n".join(matched_chunks)
+async def retrieve_context(user_query: str, target_category: str | None = None):
+    filters = {"category": {"$in": [target_category]}} if target_category else {}
+    # Try website first
+    matches = await query_pinecone(user_query, namespace="website", filters=filters)
+    if not matches:
+        matches = await query_pinecone(user_query, namespace="sales", filters=filters)
+    return {"chunks": [m["text"] for m in matches], "meta": matches}

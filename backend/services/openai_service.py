@@ -1,19 +1,50 @@
-import os
-import openai
-import asyncio
+import os, asyncio,backoff, logging
+from config.logging import setup_logging
+from config.settings import OPENAI_API_KEY
+from openai import OpenAI, APIError, APIConnectionError, APITimeoutError
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+setup_logging()
 
-async def run_openai_prompt(prompt: str) -> str:
-    response = await asyncio.to_thread(
-        lambda: openai.ChatCompletion.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are a helpful AI assistant."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=300
-        )
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
+
+    
+def _log_backoff(details):
+    logging.warning(
+        "OpenAI retry %s for %s: %s",
+        details["tries"],
+        details["target"].__name__,
+        details["exception"]
     )
-    return response.choices[0].message.content.strip()
+
+@backoff.on_exception(
+    backoff.expo,                                 # exponential 1,2,4,8…
+    (APITimeoutError, APIError, APIConnectionError),
+    max_time=20,
+    jitter=backoff.full_jitter,
+    on_backoff=logging.exception
+)
+def _sync_completion(model: str, messages: list, temperature: float, max_tokens: int):
+    return openai_client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=max_tokens
+    )
+
+async def run_openai_prompt(
+    prompt: str,
+    model: str = "gpt-4o",
+    temperature: float = 0.7,
+    max_tokens: int = 300
+) -> str:
+    resp = await asyncio.to_thread(
+        _sync_completion,
+        model=model,
+        messages=[
+            {"role": "system", "content": "You are a helpful AI assistant."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=temperature,
+        max_tokens=max_tokens
+    )
+    return resp.choices[0].message.content.strip()

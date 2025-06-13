@@ -1,65 +1,65 @@
-name: Build & Deploy – indrasol‑prd
+name: Build and Deploy to Azure Web App
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
+
+env:
+  ACR_NAME: securetrack
+  WEBAPP_NAME: indrasol-website
+  RG_NAME: RG-EU-STB-PRD-01
+  IMAGE_NAME: ind_backend
 
 permissions:
   contents: read
-  id-token: write     # for azure/login OIDC
-
-env:
-  APP_NAME: indrasol-prd
-  PYTHON_VERSION: '3.11'
+  id-token: write
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      # 1) Checkout the repo
+      - name: "Checkout GitHub repository"
+        uses: actions/checkout@v4
 
-    # ─── BUILD (local) ───────────────────────────────────────────────────────────
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
+      # 2) Login to Azure using the service principal
+      - name: "Login to Azure"
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTION_ID }}
 
-    - name: Prepare deployment folder
-      run: |
-        # 1.  make a clean folder for everything that must go to the server
-        mkdir deploy
-    
-        # 2.  copy your source package exactly as-is
-        cp -r backend deploy/
-    
-        # 3.  vendor all dependencies **into the deploy root**
-        pip install --upgrade pip
-        pip install --no-cache-dir -r backend/requirements.txt -t deploy
-    
-        # 4.  create the zip from inside deploy/
-        cd deploy
-        zip -r ../site.zip .
+      # 3) Setup buildx
+      - uses: docker/setup-buildx-action@v2
 
-    - name: Upload artifact (for troubleshooting)
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-output
-        path: site.zip
+      # 4) Log in to ACR
+      - name: "Log in to ACR"
+        run: |
+          az acr login --name ${{ env.ACR_NAME }}
 
-    # ─── DEPLOY ─────────────────────────────────────────────────────────────────
-    - name: Azure login (OIDC)
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZUREAPPSERVICE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTION_ID }}
+      - name: Fetch ACR loginServer
+        id: acr
+        run: |
+          echo "LOGIN_SERVER=$(az acr show --name ${{ env.ACR_NAME }} \
+                            --query loginServer --output tsv)" >> $GITHUB_ENV
 
-    - name: Deploy to Web App
-      id: deploy
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name:   ${{ env.APP_NAME }}
-        package:    site.zip             # <── a single ZIP file
+      # 5) Build+push multi-arch (we only target amd64 here)
+      - name: Build & push amd64 image
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --tag $LOGIN_SERVER/${{ env.IMAGE_NAME }}:latest \
+            --tag $LOGIN_SERVER/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            .
+
+      # 6) Deploy the new image to Azure Web App
+      - name: "Deploy to Azure Web App"
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.WEBAPP_NAME }}
+          # slot-name: production
+          # images: ${{ env.ACR_NAME }}-dzc8a3deejhje7d4.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          images: ${{ env.LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest

@@ -1,6 +1,6 @@
 from models.request_models import ContactForm
 from services.openai_service import run_openai_prompt
-from config.settings import FROM_EMAIL, TO_EMAIL, SENDGRID_API_KEY, MAILERSEND_API_KEY, MAILERSEND_API, FROM_NAME
+from config.settings import FROM_EMAIL, TO_EMAIL, MAILERSEND_API_KEY, FROM_NAME
 import logging
 from pydantic import EmailStr
 import logging, html2text

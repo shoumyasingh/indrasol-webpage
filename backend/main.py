@@ -1,17 +1,16 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-import threading
+import asyncio
 # from indra_bot import WebContentProcessor
 from routes_register import router as api_router
 from contextlib import asynccontextmanager
-from services.bot_service import initialize_pinecone, get_pinecone_index, load_hashes, check_for_updates, get_urls, check_index_stats
-import pinecone
+from services.bot_service import initialize_website_content, initialize_sales_content, get_pinecone_index, load_hashes, check_for_updates, get_urls, check_index_stats
 # from backend.config.settings import PINECONE_API_KEY
 from apscheduler.schedulers.background import BackgroundScheduler   
 import logging
 from fastapi.responses import Response
-# from backend.config.settings import PINECONE_API_KEY, OPENAI_API_KEY
-
+from services.sales_content_check import sales_content_changed
+import uvicorn
 
 logging.basicConfig(level=logging.INFO)
 
@@ -23,14 +22,35 @@ async def lifespan(app: FastAPI):
         hashes = load_hashes()
         index = get_pinecone_index()
         stats = index.describe_index_stats()
+        website_count = stats["namespaces"].get("website", {}).get("vector_count", 0)
+        sales_count   = stats["namespaces"].get("sales",   {}).get("vector_count", 0)
         logging.info(f"Vector count : {stats['total_vector_count']}")
-        if stats["total_vector_count"] == 0:
-            logging.info("Initializing pinecone")
-            initialize_pinecone()
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(check_for_updates, 'interval', seconds=86400)  # Every day
-        scheduler.start()
-        app.state.scheduler = scheduler  # Prevent garbage collection
+        if website_count == 0:
+            await initialize_website_content()
+        if sales_count == 0:
+            await initialize_sales_content()
+        # if website_count == 0 and sales_count == 0:
+        #     logging.info("Initializing pinecone")
+        #     await initialize_website_content()
+        #     await initialize_sales_content()
+        if await sales_content_changed():
+            logging.info("Sales content changed, refreshing...")
+            await initialize_sales_content()
+        # Periodic refresh (async)
+        async def refresh_task():
+            logging.info("Starting periodic refresh task...")
+            while True:
+                logging.info("Sleeping for 24 hours before checking for updates...")
+                await asyncio.sleep(86400)  # Wait 24 hours before each check
+                logging.info("Checking for updates...")
+                try:
+                    await check_for_updates()
+                    logging.info("Update check completed successfully.")
+                except Exception as e:
+                    logging.error(f"Error during periodic update check: {e}") 
+
+        loop = asyncio.get_event_loop()
+        loop.create_task(refresh_task())
         yield
     except Exception as e:
         logging.error(f"Error during lifespan startup: {e}")
@@ -112,25 +132,3 @@ urls = get_urls()
 
 # Include API router
 app.include_router(api_router, prefix="/v1/routes")
-
-# @app.on_event("startup")
-# async def startup_event():
-#     global startup_ran
-#     if not startup_ran:
-#         print("Starting URL processing in a separate thread...")
-#         thread = threading.Thread(target=bot.process_urls, args=(urls,))
-#         thread.start()
-#         startup_ran = True
-#         print("URL processing thread started.")
-
-# @app.get("/extract/query")
-# async def query_bot(text: str = Query(..., description="Query text for IndraBot")):
-#     if not text.strip():
-#         raise HTTPException(status_code=400, detail="Missing 'text' parameter")
-
-#     try:
-#         response = bot.query(text)
-#         return {"response": response}
-#     except Exception as e:
-#         print(f"Error in /extract/query: {e}")
-#         raise HTTPException(status_code=500, detail="Internal server error")

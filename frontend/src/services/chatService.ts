@@ -1,70 +1,101 @@
+// src/services/chatService.ts
 import { Message } from '../types/chat';
 import { API_ENDPOINTS } from '../config';
 
 export interface SendMessageResponse {
   response: string;
+  intent: string;
+  routed_agent: string;
 }
 
+const STORAGE_KEYS = {
+  USER_ID: 'indra_user_id',
+  HISTORY: 'indra_chat_history'          // persisted chat
+};
+
+/** Helper : generate stable UUID (crypto if available) */
+const genUUID = () =>
+  typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `user-${Date.now()}`;
+
+/** ---- INITIALISE session (returns userId + cached history) ---- */
+export const bootstrapChat = (): { userId: string; history: Message[] } => {
+  let userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+  if (!userId) {
+    userId = genUUID();
+    localStorage.setItem(STORAGE_KEYS.USER_ID, userId);
+  }
+
+  const historyJSON = localStorage.getItem(STORAGE_KEYS.HISTORY);
+  const history: Message[] = historyJSON ? JSON.parse(historyJSON) : [];
+
+  return { userId, history };
+};
+
+/** ---- Persist history after every turn ---- */
+const saveHistory = (history: Message[]) =>
+  localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(history));
+
+/** ---- Convert Message[] ➜ string[] expected by backend ---- */
+const toPlainHistory = (history: Message[]): string[] =>
+  history.map((m) => m.text);
+
+/** ----------------  MAIN SERVICE  ---------------- */
 export const chatService = {
-  /**
-   * Send a message to the backend API
-   * @param message The message text to send
-   * @returns Promise with the bot's response message
-   */
-  sendMessage: async (message: string): Promise<Message> => {
+  /** Send a message & update local history */
+  sendMessage: async (
+    messageText: string,
+    history: Message[]
+  ): Promise<{ botReply: Message; newHistory: Message[] }> => {
+    const { userId } = bootstrapChat();
+
+    // 1️⃣  Add the user message optimistically
+    const userMsg: Message = { id: Date.now(), text: messageText, sender: 'user' };
+    const updatedHistory = [...history, userMsg];
+
     try {
-      const response = await fetch(API_ENDPOINTS.SEND_MESSAGE, {
+      const res = await fetch(API_ENDPOINTS.SEND_MESSAGE, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query: message }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          query: messageText,
+          history: toPlainHistory(updatedHistory) // send FULL transcript
+        }),
+        signal: AbortSignal.timeout?.(15000)      // native timeout (Chrome 117+)
       });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const data: SendMessageResponse = await response.json();
-      return {
-        id: Date.now(),
-        text: data.response,
-        sender: "bot"
+      const data: SendMessageResponse = await res.json();
+      const botMsg: Message = { id: Date.now() + 1, text: data.response, sender: 'bot' };
+
+      const finalHistory = [...updatedHistory, botMsg];
+      saveHistory(finalHistory);
+
+      return { botReply: botMsg, newHistory: finalHistory };
+    } catch (err) {
+      console.error('chatService error', err);
+      const fallback: Message = {
+        id: Date.now() + 1,
+        text: "Sorry, I'm having trouble connecting. Please try again shortly.",
+        sender: 'bot'
       };
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // Return a fallback error message
-      return {
-        id: Date.now(),
-        text: "Sorry, I'm having trouble connecting to the server. Please try again later.",
-        sender: "bot"
-      };
+      const errorHistory = [...updatedHistory, fallback];
+      saveHistory(errorHistory);
+      return { botReply: fallback, newHistory: errorHistory };
     }
   },
 
-  /**
-   * Get conversation history
-   * @returns Promise with array of messages
-   */
-  getConversationHistory: async (): Promise<Message[]> => {
-    try {
-      const response = await fetch(API_ENDPOINTS.GET_CONVERSATION);
-      
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
+  /** Retrieve cached conversation (widget init) */
+  getCachedHistory: (): Message[] => {
+    const json = localStorage.getItem(STORAGE_KEYS.HISTORY);
+    return json ? (JSON.parse(json) as Message[]) : [];
+  },
 
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching conversation history:', error);
-      // Return default welcome message on error
-      return [
-        { 
-          id: 1, 
-          text: "Hello! I'm IndraBot, your friendly assistant. How can I help you today?", 
-          sender: "bot" 
-        }
-      ];
-    }
+  /** Reset chat (optional UI ctrl) */
+  resetConversation: () => {
+    localStorage.removeItem(STORAGE_KEYS.HISTORY);
   }
 };

@@ -1378,8 +1378,8 @@ const Admin = () => {
   );
 
   const filteredWhitepapers = whitepapers.filter(wp =>
-    (wp.title || '').toLowerCase().includes(wpSearchQuery.toLowerCase()) ||
-    (wp.author || '').toLowerCase().includes(wpSearchQuery.toLowerCase()) ||
+    (wp.wpTitle || wp.title || '').toLowerCase().includes(wpSearchQuery.toLowerCase()) ||
+    (wp.wpAuthor || wp.author || '').toLowerCase().includes(wpSearchQuery.toLowerCase()) ||
     (wp.wpCategory || wp.category || '').toLowerCase().includes(wpSearchQuery.toLowerCase())
   );
 
@@ -1773,7 +1773,7 @@ const Admin = () => {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-2">
-                                <Button
+                                {/* <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handlePreviewBlog(blog)}
@@ -1782,7 +1782,7 @@ const Admin = () => {
                                 >
                                   <Eye className="h-4 w-4" />
                                   Preview
-                                </Button>
+                                </Button> */}
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -1946,7 +1946,7 @@ const Admin = () => {
 
               <CardFooter className="flex justify-between items-center border-t border-gray-200 dark:border-gray-800 pt-6">
                 <div className="flex flex-col">
-                  <Button
+                  {/* <Button
                     variant="outline"
                     onClick={resetWhitepaperForm}
                     disabled={wpProcessing || wpUploading}
@@ -1954,10 +1954,10 @@ const Admin = () => {
                   >
                     <XCircle className="h-4 w-4" />
                     Clear Form
-                  </Button>
+                  </Button> */}
                   {uploadedWpPath && (
                     <p className="text-xs text-green-600 mt-2">
-                      ✓ Whitepaper uploaded - Ready for preview
+                      ✓ Whitepaper uploaded 
                     </p>
                   )}
                 </div>
@@ -1985,7 +1985,7 @@ const Admin = () => {
                     )}
                   </Button>
 
-                  <Button
+                  {/* <Button
                     onClick={handleWpPreview}
                     disabled={!canPreviewWp || previewingWp}
                     variant="outline"
@@ -2005,7 +2005,7 @@ const Admin = () => {
                         Preview
                       </>
                     )}
-                  </Button>
+                  </Button> */}
 
                   <Button
                     onClick={handleWpPublish}
@@ -2117,8 +2117,8 @@ const Admin = () => {
                       <TableBody>
                         {filteredWhitepapers.map((whitepaper) => (
                           <TableRow key={whitepaper.id}>
-                            <TableCell className="font-medium">{whitepaper.title}</TableCell>
-                            <TableCell>{whitepaper.author}</TableCell>
+                            <TableCell className="font-medium">{whitepaper.wpTitle || whitepaper.title}</TableCell>
+                            <TableCell>{whitepaper.wpAuthor || whitepaper.author}</TableCell>
                             <TableCell>{whitepaper.wpCategory || whitepaper.category || 'General'}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
@@ -2128,7 +2128,7 @@ const Admin = () => {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-2">
-                                <Button
+                                {/* <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handlePreviewWhitepaper(whitepaper)}
@@ -2137,7 +2137,7 @@ const Admin = () => {
                                 >
                                   <Eye className="h-4 w-4" />
                                   Preview
-                                </Button>
+                                </Button> */}
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -2232,8 +2232,8 @@ const Admin = () => {
 
           {selectedWhitepaper && (
             <div className="py-4">
-              <p className="font-medium">{selectedWhitepaper.title}</p>
-              <p className="text-sm text-gray-500">by {selectedWhitepaper.author} in {selectedWhitepaper.wpCategory || selectedWhitepaper.category || 'General'}</p>
+              <p className="font-medium">{selectedWhitepaper.wpTitle || selectedWhitepaper.title}</p>
+              <p className="text-sm text-gray-500">by {selectedWhitepaper.wpAuthor || selectedWhitepaper.author} in {selectedWhitepaper.wpCategory || selectedWhitepaper.category || 'General'}</p>
             </div>
           )}
 
@@ -2271,18 +2271,20 @@ const Admin = () => {
               )}
             </div>
 
-            {(selectedBlog || selectedWhitepaper) && (
-              <div className="mt-2">
-                <h3 className="text-lg font-medium">{(selectedBlog || selectedWhitepaper)?.title}</h3>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  <User className="h-3 w-3 mr-1" />
-                  <span>{(selectedBlog || selectedWhitepaper)?.author}</span>
-                  <span className="mx-2">•</span>
-                  <Calendar className="h-3 w-3 mr-1" />
-                  <span>{formatDate((selectedBlog || selectedWhitepaper)?.created_at)}</span>
+                          {(selectedBlog || selectedWhitepaper) && (
+                <div className="mt-2">
+                  <h3 className="text-lg font-medium">
+                    {selectedBlog?.title || selectedWhitepaper?.wpTitle || selectedWhitepaper?.title}
+                  </h3>
+                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <User className="h-3 w-3 mr-1" />
+                    <span>{selectedBlog?.author || selectedWhitepaper?.wpAuthor || selectedWhitepaper?.author}</span>
+                    <span className="mx-2">•</span>
+                    <Calendar className="h-3 w-3 mr-1" />
+                    <span>{formatDate((selectedBlog || selectedWhitepaper)?.created_at)}</span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </DialogHeader>
 
           <div

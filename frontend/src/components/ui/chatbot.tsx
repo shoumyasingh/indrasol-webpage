@@ -507,18 +507,55 @@
 //     </>
 //   );
 // };
+ 
 
+
+//firstattempt(vasavi)
 
 import React, { useState, useEffect, useRef } from "react";
 import { X, Send } from "lucide-react";
 import { chatService } from "../../services/chatService";
 import { Message as BaseMessage } from "../../types/chat";
-import parse from "html-react-parser";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Extend Message type to include optional originalText and isTyping
 type Message = BaseMessage & {
   originalText?: string;
   isTyping?: boolean;
+  processedText?: string;
+};
+
+// Utility function to detect and convert email addresses to mailto links
+const convertEmailsToLinks = (text: string): string => {
+  const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+  return text.replace(emailRegex, (email) => {
+    return `[${email}](mailto:${email})`;
+  });
+};
+
+// Utility function to process URLs in markdown
+const convertUrlsToMarkdown = (text: string): string => {
+  const urlRegex = /(https?:\/\/[^\s()]+?)(?=[.,;:!?]?(?:\s|$))/g;
+  return text.replace(urlRegex, (url) => {
+    let displayText = '';
+    if (url.endsWith('.com')) {
+      const parts = url.split('.');
+      displayText = parts[parts.length - 2].split('/').pop() || 'link';
+    } else {
+      const parts = url.split('/');
+      displayText = parts[parts.length - 1] || 'link';
+    }
+    return `[${displayText}](${url})`;
+  });
+};
+
+// Process text to convert both emails and URLs to markdown format
+const processTextToMarkdown = (text: string): string => {
+  let processedText = text;
+  processedText = convertEmailsToLinks(processedText);
+  processedText = convertUrlsToMarkdown(processedText);
+  return processedText;
 };
 
 // TypeWriter component for animated text display
@@ -542,8 +579,23 @@ const TypeWriter: React.FC<{ text: string; delay?: number; onComplete?: () => vo
     }
   }, [currentIndex, text, delay, onComplete]);
 
-  // Parse the display text to handle HTML content properly during typing
-  return <>{parse(displayText)}</>;
+  return (
+    <ReactMarkdown 
+      remarkPlugins={[remarkGfm]}
+      components={{
+        a: ({ node, ...props }) => (
+          <a 
+            {...props} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-blue-500 underline hover:text-blue-600"
+          />
+        )
+      }}
+    >
+      {displayText}
+    </ReactMarkdown>
+  );
 };
 
 // Helper function to convert URLs into hyperlinks (fixed regex to exclude punctuation)
@@ -609,47 +661,61 @@ export const ChatBot: React.FC = () => {
   }, [isOpen, messages]);
 
   // Handle sending a message
-  const handleSendMessage = async (e: React.FormEvent): Promise<void> => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMessage.trim() === "") return;
-
+    if (newMessage.trim() === '') return;
+  
+    /* 1️⃣  Build user message & optimistic UI update */
     const userMessage: Message = {
-      id: messages.length + 1,
-      text: newMessage,
-      sender: "user"
+      id: Date.now(),          // unique enough for UI
+      text: newMessage.trim(),
+      sender: 'user'
     };
-
-    setMessages(prev => [...prev, userMessage]);
-    setNewMessage("");
+    const optimisticHistory = [...messages, userMessage];
+    setMessages(optimisticHistory);
+    setNewMessage('');
     setIsTyping(true);
-
+  
     try {
-      const botResponse = await chatService.sendMessage(newMessage);
-      
-      // Store both original and processed text
-      const processedResponse = {
-        ...botResponse,
-        originalText: botResponse.text, // Keep original for typing animation
-        text: convertLinksToHyperlinks(botResponse.text), // Processed for final display
+      /* 2️⃣  Call backend with full history so far            *
+       *     chatService will return { botReply, newHistory }  */
+      const { botReply, newHistory } = await chatService.sendMessage(
+        newMessage.trim(),
+        optimisticHistory        // pass the current transcript
+      );
+  
+      /* 3️⃣  Markdown-link processing for bot text */
+      const processedText = processTextToMarkdown(botReply.text);
+      const typingBotMessage: Message = {
+        ...botReply,
+        originalText: botReply.text,
+        text: processedText,
         isTyping: true
       };
-
-      setMessages(prev => [...prev, processedResponse]);
-
+  
+      /* 4️⃣  Show “typing” bubble, then settle */
+      setMessages([...optimisticHistory, typingBotMessage]);
+  
+      const msPerChar = 30;
+      const minDelay  = 500;
+      const delay     = Math.max(minDelay, botReply.text.length * msPerChar);
+  
       setTimeout(() => {
-        setMessages(prev =>
-          prev.map(msg =>
-            msg.id === botResponse.id ? { ...msg, isTyping: false } : msg
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === botReply.id ? { ...msg, isTyping: false } : msg
           )
         );
-      }, botResponse.text.length * 30 + 500);
-    } catch (error) {
-      setMessages(prev => [
+      }, delay);
+    } catch (err) {
+      console.error(err);
+      /* 5️⃣  Network / server failure fallback */
+      setMessages((prev) => [
         ...prev,
         {
-          id: messages.length + 2,
-          text: "Sorry! Something went wrong. Please try again.",
-          sender: "bot"
+          id: Date.now() + 1,
+          text: 'Sorry! Something went wrong. Please try again.',
+          sender: 'bot'
         }
       ]);
     } finally {
@@ -657,44 +723,56 @@ export const ChatBot: React.FC = () => {
     }
   };
 
-  // Handle pre-defined suggestion clicks
-  const handleSuggestion = async (text: string): Promise<void> => {
-    const userMessage: Message = {
-      id: messages.length + 1,
-      text: text,
-      sender: "user"
+  // Handle suggestion click
+  const handleSuggestion = async (suggestionText: string): Promise<void> => {
+    /* 1️⃣  Push the suggestion as a user message immediately */
+    const userMsg: Message = {
+      id: Date.now(),
+      text: suggestionText,
+      sender: 'user'
     };
-    
-    setMessages(prev => [...prev, userMessage]);
+    const optimistic = [...messages, userMsg];
+    setMessages(optimistic);
     setIsTyping(true);
-    
+  
     try {
-      const botResponse = await chatService.sendMessage(text);
-      
-      // Store both original and processed text
-      const processedResponse = {
-        ...botResponse,
-        originalText: botResponse.text, // Keep original for typing animation
-        text: convertLinksToHyperlinks(botResponse.text), // Processed for final display
+      /* 2️⃣  Send full history to backend */
+      const { botReply, newHistory } = await chatService.sendMessage(
+        suggestionText,
+        optimistic
+      );
+  
+      /* 3️⃣  Convert URLs/emails in bot text */
+      const processedText = processTextToMarkdown(botReply.text);
+      const typingBotMsg: Message = {
+        ...botReply,
+        originalText: botReply.text,
+        text: processedText,
         isTyping: true
       };
-
-      setMessages(prev => [...prev, processedResponse]);
-
+  
+      /* 4️⃣  Show typing bubble */
+      setMessages([...optimistic, typingBotMsg]);
+  
+      const msPerChar = 30;
+      const minDelay  = 500;
+      const delay     = Math.max(minDelay, botReply.text.length * msPerChar);
+  
       setTimeout(() => {
-        setMessages(prev =>
-          prev.map(msg =>
-            msg.id === botResponse.id ? { ...msg, isTyping: false } : msg
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === botReply.id ? { ...m, isTyping: false } : m
           )
         );
-      }, botResponse.text.length * 30 + 500);
-    } catch (error) {
-      setMessages(prev => [
+      }, delay);
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
         ...prev,
         {
-          id: messages.length + 2,
-          text: "Sorry! Something went wrong. Please try again.",
-          sender: "bot"
+          id: Date.now() + 1,
+          text: 'Sorry! Something went wrong. Please try again.',
+          sender: 'bot'
         }
       ]);
     } finally {
@@ -836,18 +914,32 @@ export const ChatBot: React.FC = () => {
                             : "bg-white text-gray-800 border border-gray-200 rounded-2xl rounded-bl-none"
                         }`}
                       >
-                        <p className="text-sm md:text-base leading-relaxed">
+                        <div className="text-sm md:text-base leading-relaxed">
                           {message.sender === "bot" && message.isTyping ? (
                             <>
-                              <TypeWriter text={message.originalText || message.text} />
+                              <TypeWriter text={message.text} />
                               <span className="typing-cursor animate-blink">|</span>
                             </>
                           ) : message.sender === "bot" ? (
-                            <span>{parse(message.text)}</span>
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                a: ({ node, ...props }) => (
+                                  <a 
+                                    {...props} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className={`${message.sender === "user" ? "text-white" : "text-blue-500"} underline hover:opacity-80`}
+                                  />
+                                )
+                              }}
+                            >
+                              {message.text}
+                            </ReactMarkdown>
                           ) : (
                             message.text
                           )}
-                        </p>
+                        </div>
                       </div>
                     </div>
                   ))}

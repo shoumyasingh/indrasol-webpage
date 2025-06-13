@@ -19,3 +19,5 @@ webdriver-manager==4.0.2
 supabase==2.15.0
 backoff==2.2.1
 tenacity==8.5.0
+mailersend==0.6.0
+email_validator==2.2.0

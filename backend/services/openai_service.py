@@ -35,13 +35,14 @@ async def run_openai_prompt(
     prompt: str,
     model: str = "gpt-4o",
     temperature: float = 0.7,
-    max_tokens: int = 300
+    max_tokens: int = 300,
+    system_prompt: str = "You are a helpful AI assistant."
 ) -> str:
     resp = await asyncio.to_thread(
         _sync_completion,
         model=model,
         messages=[
-            {"role": "system", "content": "You are a helpful AI assistant."},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt}
         ],
         temperature=temperature,

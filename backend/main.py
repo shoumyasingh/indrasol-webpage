@@ -10,7 +10,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 from fastapi.responses import Response
 from services.sales_content_check import sales_content_changed
-
+import uvicorn
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,9 +38,16 @@ async def lifespan(app: FastAPI):
             await initialize_sales_content()
         # Periodic refresh (async)
         async def refresh_task():
+            logging.info("Starting periodic refresh task...")
             while True:
-                await check_for_updates() 
-                await asyncio.sleep(86_400) 
+                logging.info("Sleeping for 24 hours before checking for updates...")
+                await asyncio.sleep(86400)  # Wait 24 hours before each check
+                logging.info("Checking for updates...")
+                try:
+                    await check_for_updates()
+                    logging.info("Update check completed successfully.")
+                except Exception as e:
+                    logging.error(f"Error during periodic update check: {e}") 
 
         loop = asyncio.get_event_loop()
         loop.create_task(refresh_task())
@@ -125,25 +132,3 @@ urls = get_urls()
 
 # Include API router
 app.include_router(api_router, prefix="/v1/routes")
-
-# @app.on_event("startup")
-# async def startup_event():
-#     global startup_ran
-#     if not startup_ran:
-#         print("Starting URL processing in a separate thread...")
-#         thread = threading.Thread(target=bot.process_urls, args=(urls,))
-#         thread.start()
-#         startup_ran = True
-#         print("URL processing thread started.")
-
-# @app.get("/extract/query")
-# async def query_bot(text: str = Query(..., description="Query text for IndraBot")):
-#     if not text.strip():
-#         raise HTTPException(status_code=400, detail="Missing 'text' parameter")
-
-#     try:
-#         response = bot.query(text)
-#         return {"response": response}
-#     except Exception as e:
-#         print(f"Error in /extract/query: {e}")
-#         raise HTTPException(status_code=500, detail="Internal server error")

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Mail, Phone, Send, MapPin, ArrowRight, Linkedin, Twitter } from "lucide-react";
+import { API_ENDPOINTS } from '../../config';
 
 export function ContactSection() {
   const [formState, setFormState] = useState({
@@ -18,20 +19,24 @@ export function ContactSection() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormStatus("submitting");
 
-    // Simulate form submission
-    setTimeout(() => {
-      setFormStatus("success");
-      setFormState({
-        name: "",
-        email: "",
-        company: "",
-        message: ""
+    try {
+      const res = await fetch(API_ENDPOINTS.CONTACT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formState),
       });
-    }, 1500);
+  
+      if (!res.ok) throw new Error("Network error");
+      setFormStatus("success");
+      setFormState({ name: "", email: "", company: "", message: "" });
+    } catch (err) {
+      console.error(err);
+      setFormStatus("error");
+    }
   };
 
   return (

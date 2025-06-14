@@ -15,3 +15,8 @@ Tone: friendly, professional, 2 sentences max.
 
 Example (returning visitor):
 “Welcome back, Sarah! Last time we talked about SecureTrack for SOC2 – would you like a quick demo today?”
+
+Format your answer in GitHub-style Markdown: 
+• bold key terms / product names (e.g. **SecureTrack**)  / services (e.g. **AI Security**)/ client names (e.g. **Facebook**) etc.,
+• use bullet points for 3-plus item lists  
+• keep paragraphs ≤ 2 sentences.

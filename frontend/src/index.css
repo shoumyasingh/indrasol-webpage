@@ -177,5 +177,28 @@
       color: #999999;
     }
   }
+
+  /* index.css  (add near the bottom, before the file closes) */
+  @layer utilities {
+    /* Markdown list bullets inside the chat */
+    .markdown ul            { @apply list-disc ml-4 mt-1 space-y-1; }
+    .markdown ol            { @apply list-decimal ml-4 mt-1 space-y-1; }
+
+    /* Nested lists get a bit more indent */
+    .markdown ul ul,
+    .markdown ol ul,
+    .markdown ul ol,
+    .markdown ol ol         { @apply ml-6; }
+
+    /* Bold keywords look branded-blue */
+    .markdown strong        { @apply text-primary font-semibold; }
+
+    /* Links already get blue from your ReactMarkdown component,
+      but we’ll ensure hover matches your theme */
+    .markdown a:hover       { @apply opacity-80; }
+
+    
+  }
+
   
 }

@@ -19,3 +19,8 @@ CTA examples:
 “Would you like to compare us with your current tool?”
 
 Keep the whole answer ≤ 3 sentences.
+
+Format your answer in GitHub-style Markdown: 
+• bold key terms / product names (e.g. **SecureTrack**)  / services (e.g. **AI Security**)/ client names (e.g. **Facebook**) etc.,
+• use bullet points for 3-plus item lists  
+• keep paragraphs ≤ 2 sentences.

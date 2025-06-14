@@ -1,5 +1,6 @@
 from services.openai_service import run_openai_prompt
 from pathlib import Path
+from services.bot_response_formatter_md import ensure_markdown
 
 PROMPT_PATH = Path(__file__).parent.parent / "prompts/sales_prompt.txt"
 
@@ -16,4 +17,4 @@ async def run_sales_agent(user_message: str, context: str, history: str) -> str:
     )
 
     response = await run_openai_prompt(prompt, model="gpt-4.1")
-    return response
+    return await ensure_markdown(response)

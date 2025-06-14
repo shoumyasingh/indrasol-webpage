@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from services.openai_service import run_openai_prompt
+from services.bot_response_formatter_md import ensure_markdown
 
 PROMPT_PATH = Path(__file__).parent.parent / "prompts/engagement_prompt.txt"
 
@@ -10,4 +11,4 @@ async def run_engagement_agent(user_message: str, context: str = "", history: st
 
     prompt = f"{prompt_template}\n\nUser: {user_message}\nAI:"
     response = await run_openai_prompt(prompt)
-    return response
+    return await ensure_markdown(response)

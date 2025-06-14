@@ -96,8 +96,8 @@ def linkify_keywords(text: str) -> str:
             continue
         
         # Handle plain keywords: keyword -> [keyword](url)
-        # Only if not already part of a link
-        plain_pattern = rf"\b({escaped_kw})\b"
+        # Use strict word boundaries to avoid partial matches
+        plain_pattern = rf"(?<!\w)({escaped_kw})(?!\w)"
         matches = list(re.finditer(plain_pattern, result, flags=re.I))
         
         for match in matches:

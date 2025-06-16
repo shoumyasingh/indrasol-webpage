@@ -1,0 +1,32 @@
+# ------------------------------------------------------------------------------
+#  MCP manifest – Objection-handling skill
+# ------------------------------------------------------------------------------
+name: objection
+kind: domain
+priority: 90          # runs after sales (100) but before fallback (1000)
+timeout: 20            # seconds
+
+description_for_model: |
+  Calm, evidence-backed assistant that neutralises pricing, capability or timing
+  objections in 2–3 crisp paragraphs, then offers a single low-friction CTA.
+description_for_human: Handles “too expensive”, “not sure”, “we already have…”
+  style objections with facts & reassurance.
+
+parameters:
+  type: object
+  properties:
+    user_message:
+      type: string
+      description: Visitor’s objection or concern in plain text.
+    rag_context:
+      type: array
+      items:
+        type: string
+      description: 1-3 factual chunks containing proof points or customer wins.
+    memory_summary:
+      type: string
+      description: 3-4 sentence recap of the conversation so far.
+  required: [user_message, rag_context, memory_summary]
+
+output_format: markdown
+entrypoint: skills.objection.handler:skill

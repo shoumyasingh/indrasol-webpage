@@ -1,0 +1,37 @@
+# ---------------------------------------------------------------------
+# MCP manifest – Intent classifier
+# ---------------------------------------------------------------------
+name: intent_classifier
+kind: utility
+priority: 60
+timeout: 8
+
+description_for_model: |
+  Classifies the visitor’s latest message into one of:
+  • Cold Info Browse  
+  • Interested in Product  
+  • Interested in Services  
+  • Demo Request  
+  • Objection / Push-back  
+  • Other  
+  Returns JSON: {"intent":"…"}.
+
+description_for_human: Fast LLM-based intent tagger feeding downstream skills.
+
+parameters:
+  type: object
+  properties:
+    user_message:
+      type: string
+      description: Latest plain-text visitor message.
+    rag_context:
+      type: array
+      items: { type: string }
+      description: Optional factual chunks (can help disambiguate).
+    memory_summary:
+      type: string
+      description: Running 3-4 sentence conversation summary.
+  required: [user_message]
+
+output_format: application/json          # → {"intent":"..."}
+entrypoint: skills.intent_classifier.handler:skill

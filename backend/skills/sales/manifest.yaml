@@ -1,0 +1,32 @@
+# ------------------------------------------------------------------------------
+#  MCP manifest – Sales skill
+# ------------------------------------------------------------------------------
+name: sales
+kind: domain 
+priority: 100          
+timeout: 20              
+
+description_for_model: |
+  Persuasive yet consultative sales responder that follows Problem→Value→Proof→CTA.
+  Uses rag_context facts and the running memory_summary to craft 3-4 sentences.
+
+description_for_human: Turns “interested” questions into persuasive replies & CTAs.
+
+parameters:
+  type: object
+  properties:
+    user_message:
+      type: string
+      description: The visitor’s current question or pain-point.
+    rag_context:
+      type: array
+      items:
+        type: string
+      description: 1-3 factual chunks retrieved by the RAG layer.
+    memory_summary:
+      type: string
+      description: 3-4 sentence recap of the chat to date.
+  required: [user_message, rag_context, memory_summary]
+
+output_format: markdown
+entrypoint: skills.sales.handler:skill   # <-- remember we exposed `skill` in handler

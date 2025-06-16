@@ -1,0 +1,29 @@
+# ------------------------------------------------------------------------------
+#  MCP manifest – Follow-up / Demo-booking skill
+# ------------------------------------------------------------------------------
+name: follow_up
+kind: system
+priority: 110                 # executed before sales / objection
+timeout: 30                  # seconds
+
+description_for_model: |
+  Collects visitor info (name, email, company, message) one field at a time.
+  Once all four are captured, calls the internal booking endpoint and returns
+  a confirmation message.
+
+description_for_human: Wizard that books live demos (name → email → company → message).
+
+parameters:
+  type: object
+  properties:
+    user_message:
+      type: string
+      description: Latest plain-text message from the visitor.
+    history:
+      type: array
+      items: { type: string }
+      description: All prior turns in the current chat, oldest → newest.
+  required: [user_message, history]
+
+output_format: markdown
+entrypoint: skills.follow_up.handler:skill   # exported object above

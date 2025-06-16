@@ -90,6 +90,7 @@ async def process_contact(form: ContactForm):
             f"New Website Enquiry – {form.name}"
             + (f" ({form.company})" if form.company else "")
         )
+        TO_EMAIL = "rithinsai6@gmail.com"
         await send_mailersend(
             subject=subject,
             html_body=html_body,

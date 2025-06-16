@@ -6,6 +6,7 @@ import asyncio
 import httpx
 from concurrent.futures import ThreadPoolExecutor
 from config.logging import setup_logging
+import logging
 
 setup_logging()
 # Global thread pool for running Supabase operations asynchronously

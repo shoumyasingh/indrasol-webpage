@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 # Chat Request Model
@@ -8,9 +8,12 @@ class QueryRequest(BaseModel):
     query: str
     history: Optional[List[str]] = []
 
+class ChatRequest(BaseModel):
+    user_id: str | None = None
+    text: str
 
 class ContactForm(BaseModel):
     name: str
     email: EmailStr
-    company: str | None = None
+    company: Optional[str] = None
     message: str

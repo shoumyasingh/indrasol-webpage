@@ -173,6 +173,8 @@ export const ChatBot: React.FC = () => {
   const [waiting, setWaiting] = useState<boolean>(false);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [emailSending, setEmailSending] = useState<boolean>(false);
+  const [emailStage, setEmailStage] = useState<number>(0); // 0: collecting, 1: formatting, 2: sending, 3: sent
 
   // Reset chat when closed and reopened
   useEffect(() => {
@@ -180,6 +182,8 @@ export const ChatBot: React.FC = () => {
       setMessages([]);
       setNewMessage("");
       setIsTyping(false);
+      setEmailSending(false);
+      setEmailStage(0);
     }
   }, [isOpen]);
 
@@ -224,7 +228,7 @@ export const ChatBot: React.FC = () => {
     }
   }, [isOpen, messages, waiting]);
 
-  /* ─── helper: flip one message out of “typing” mode ─── */
+  /* ─── helper: flip one message out of "typing" mode ─── */
   const handleTypeDone = (id: number) =>
     setMessages((prev) =>
       prev.map((m) => (m.id === id ? { ...m, isTyping: false } : m))
@@ -241,12 +245,64 @@ export const ChatBot: React.FC = () => {
 
   const handleSend = async (text: string, optimistic: Message[]) => {
     try {
+      // Check if this might be the final demo booking step
+      const botMessages = optimistic.filter(msg => msg.sender === 'bot').map(msg => msg.text.toLowerCase());
+      const lastBotMessage = botMessages[botMessages.length - 1] || "";
+      
+      // More precise detection for final demo booking step ONLY
+      // Only trigger email animation if we're at the final message collection step
+      const isLikelyFinalDemoStep = (
+        // Must be responding to a bot message asking for challenges/goals/message/topics (final step)
+        (lastBotMessage.includes('challenges') || 
+         lastBotMessage.includes('goals') || 
+         lastBotMessage.includes('pain-point') ||
+         lastBotMessage.includes('topics') ||
+         lastBotMessage.includes('cover') ||
+         lastBotMessage.includes('focus on') ||
+         lastBotMessage.includes('session') ||
+         lastBotMessage.includes('particular') && lastBotMessage.includes('topics')) &&
+        // And this is a substantial user response
+        text.trim().length > 2 &&
+        // And we already have multiple exchanges (indicating we've collected name/email/company)
+        botMessages.length >= 4 &&
+        // And previous messages show we've collected basic info (name/email questions were asked)
+        botMessages.some(msg => 
+          msg.includes('name') && (msg.includes('personalise') || msg.includes('personalize')) ||
+          msg.includes('email') && msg.includes('reach')
+        )
+      );
+
+      if (isLikelyFinalDemoStep) {
+        setEmailSending(true);
+        setEmailStage(1); // Start with formatting stage
+        
+        // Progress through stages with realistic timing
+        setTimeout(() => setEmailStage(2), 1000); // Formatting -> Sending after 1s
+        setTimeout(() => setEmailStage(3), 2500); // Sending -> Sent after 2.5s more
+      }
+
       const { botReply } = await chatService.sendMessage(text, optimistic);
+      
+      // Check if this was a successful demo booking
+      const isBookingComplete = botReply.text.toLowerCase().includes('confirmation email') || 
+                               botReply.text.toLowerCase().includes('demo request') ||
+                               botReply.text.toLowerCase().includes('logged your request') ||
+                               botReply.text.toLowerCase().includes('processing your demo');
+      
+      if (isBookingComplete && emailSending) {
+        // Add a small delay to show the email sending animation
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+
+      setEmailSending(false);
+      setEmailStage(0);
       const botId = pushBotMessage(botReply.text);
       setWaiting(false);                  // global dots off
       /* row will self-finalise via TypeWriter.onComplete */
     } catch (error) {
       console.error('Error sending message:', error);
+      setEmailSending(false);
+      setEmailStage(0);
       setWaiting(false);
       // Add error message
       const errorMessage: Message = {
@@ -280,6 +336,43 @@ export const ChatBot: React.FC = () => {
     setNewMessage("");
     setShowSuggestions(false);
     setWaiting(true);
+    
+    // Check if this might be the final demo booking step - same precise logic as handleSend
+    const botMessages = optimistic.filter(msg => msg.sender === 'bot').map(msg => msg.text.toLowerCase());
+    const lastBotMessage = botMessages[botMessages.length - 1] || "";
+    
+    // More precise detection for final demo booking step ONLY
+    // Only trigger email animation if we're at the final message collection step
+    const isLikelyFinalDemoStep = (
+      // Must be responding to a bot message asking for challenges/goals/message/topics (final step)
+      (lastBotMessage.includes('challenges') || 
+       lastBotMessage.includes('goals') || 
+       lastBotMessage.includes('pain-point') ||
+       lastBotMessage.includes('topics') ||
+       lastBotMessage.includes('cover') ||
+       lastBotMessage.includes('focus on') ||
+       lastBotMessage.includes('session') ||
+       lastBotMessage.includes('particular') && lastBotMessage.includes('topics')) &&
+      // And this is a substantial user response
+      s.trim().length > 2 &&
+      // And we already have multiple exchanges (indicating we've collected name/email/company)
+      botMessages.length >= 4 &&
+      // And previous messages show we've collected basic info (name/email questions were asked)
+      botMessages.some(msg => 
+        msg.includes('name') && (msg.includes('personalise') || msg.includes('personalize')) ||
+        msg.includes('email') && msg.includes('reach')
+      )
+    );
+
+    if (isLikelyFinalDemoStep) {
+      setEmailSending(true);
+      setEmailStage(1); // Start with formatting stage
+      
+      // Progress through stages with realistic timing
+      setTimeout(() => setEmailStage(2), 1000); // Formatting -> Sending after 1s
+      setTimeout(() => setEmailStage(3), 2500); // Sending -> Sent after 2.5s more
+    }
+
     await handleSend(s, optimistic);
   };
 
@@ -300,134 +393,6 @@ export const ChatBot: React.FC = () => {
       setFilteredSuggestions([]);
     }
   };
-
-  // Handle sending a message
-  // const handleSendMessage = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (newMessage.trim() === '') return;
-  
-  //   /* 1️⃣  Build user message & optimistic UI update */
-  //   const userMessage: Message = {
-  //     id: Date.now(),          // unique enough for UI
-  //     text: newMessage.trim(),
-  //     sender: 'user'
-  //   };
-  //   const optimisticHistory = [...messages, userMessage];
-  //   setMessages(optimisticHistory);
-  //   setNewMessage('');
-  //   setIsTyping(true);
-  
-  //   try {
-  //     /* 2️⃣  Call backend with full history so far            *
-  //      *     chatService will return { botReply, newHistory }  */
-  //     const { botReply, newHistory } = await chatService.sendMessage(
-  //       newMessage.trim(),
-  //       optimisticHistory        // pass the current transcript
-  //     );
-  
-  //     /* 3️⃣  Markdown-link processing for bot text */
-  //     const botId        = Date.now();  
-  //     const processedText = processTextToMarkdown(botReply.text);
-  //     const typingBotMessage: Message = {
-  //       ...botReply,
-  //       id:   botId,
-  //       originalText: botReply.text,
-  //       text: processedText,
-  //       isTyping: true
-  //     };
-  
-  //     /* 4️⃣  Show “typing” bubble, then settle */
-  //     setMessages([...optimisticHistory, typingBotMessage]);
-  
-  //     const msPerChar = 30;
-  //     const minDelay  = 500;
-  //     // const delay     = Math.max(minDelay, processedText.length * msPerChar);
-  //     // use processed length to compute delay
-  //     const delay = Math.max(500, processedText.length * 30);
-  
-  //     setTimeout(() => {
-  //       setMessages((prev) =>
-  //         prev.map((msg) =>
-  //           msg.id === botId ? { ...msg, isTyping: false } : msg
-  //         )
-  //       );
-  //     }, delay);
-  //   } catch (err) {
-  //     console.error(err);
-  //     /* 5️⃣  Network / server failure fallback */
-  //     setMessages((prev) => [
-  //       ...prev,
-  //       {
-  //         id: Date.now() + 1,
-  //         text: 'Sorry! Something went wrong. Please try again.',
-  //         sender: 'bot'
-  //       }
-  //     ]);
-  //   } finally {
-  //     setIsTyping(false);
-  //   }
-  // };
-
-  // // Handle suggestion click
-  // const handleSuggestion = async (suggestionText: string): Promise<void> => {
-  //   /* 1️⃣  Push the suggestion as a user message immediately */
-  //   const userMsg: Message = {
-  //     id: Date.now(),
-  //     text: suggestionText,
-  //     sender: 'user'
-  //   };
-  //   const optimistic = [...messages, userMsg];
-  //   setMessages(optimistic);
-  //   setIsTyping(true);
-  
-  //   try {
-  //     /* 2️⃣  Send full history to backend */
-  //     const { botReply, newHistory } = await chatService.sendMessage(
-  //       suggestionText,
-  //       optimistic
-  //     );
-  
-  //     /* 3️⃣  Convert URLs/emails in bot text */
-  //     const botId        = Date.now(); 
-  //     const processedText = processTextToMarkdown(botReply.text);
-  //     const typingBotMsg: Message = {
-  //       ...botReply,
-  //       id:   botId, 
-  //       originalText: botReply.text,
-  //       text: processedText,
-  //       isTyping: true
-  //     };
-  
-  //     /* 4️⃣  Show typing bubble */
-  //     setMessages([...optimistic, typingBotMsg]);
-  //     setIsTyping(false); 
-  
-  //     const msPerChar = 30;
-  //     const minDelay  = 500;
-  //     // const delay     = Math.max(minDelay, processedText.length * msPerChar);
-  //     // const delay = Math.max(500, processedText.length * 30);
-  
-  //     // setTimeout(() => {
-  //     //   setMessages((prev) =>
-  //     //     prev.map((m) =>
-  //     //       m.id ===  botId ? { ...m, isTyping: false } : m
-  //     //     )
-  //     //   );
-  //     // }, delay);
-  //   } catch (err) {
-  //     console.error(err);
-  //     setMessages((prev) => [
-  //       ...prev,
-  //       {
-  //         id: Date.now() + 1,
-  //         text: 'Sorry! Something went wrong. Please try again.',
-  //         sender: 'bot'
-  //       }
-  //     ]);
-  //   } finally {
-  //     setIsTyping(false);
-  //   }
-  // };
 
   return (
     <>
@@ -583,36 +548,26 @@ export const ChatBot: React.FC = () => {
 
                           {message.sender === "user" && message.text}
                         </div>
-
-
-                        {/* <div className="text-sm md:text-base leading-relaxed">
-                          {message.sender === "bot" && message.isTyping ? (
-                            <>
-                              <TypeWriter text={message.text} />
-                              <span className="typing-cursor animate-blink">|</span>
-                            </>
-                          ) : message.sender === "bot" ? (
-                            <div className="markdown">
-                            <ReactMarkdown 
-                              remarkPlugins={[remarkGfm]}
-                              components={{
-                                a: ({ node, ...props }) => (
-                                  <a 
-                                    {...props} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className={`${message.sender === "user" ? "text-white" : "text-blue-500"} underline hover:opacity-80`}
-                                  />
-                                )
-                              }}
-                            >
-                              {message.text}
-                            </ReactMarkdown>
-                            </div>
-                          ) : (
-                            message.text
-                          )}
-                        </div> */}
+                        
+                        {/* Quick Reply Buttons */}
+                        {message.sender === "bot" && message.suggested && message.suggested.length > 0 && !message.isTyping && (
+                          <div className="mt-4 flex flex-wrap gap-2 animate-fadeIn">
+                            {message.suggested.map((suggestion, index) => (
+                              <button
+                                key={index}
+                                onClick={() => handleSuggestion(suggestion)}
+                                className="quick-reply-btn bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 hover:border-blue-400 text-blue-700 hover:text-blue-800 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-md"
+                              >
+                                <span className="flex items-center gap-2">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                  </svg>
+                                  {suggestion}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -633,6 +588,115 @@ export const ChatBot: React.FC = () => {
                             <div className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "300ms" }}></div>
                           </div>
                           <span className="text-xs text-gray-500 animate-pulse">IndraBot is thinking...</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {emailSending && (
+                    <div className="flex justify-start animate-fadeIn">
+                      <div className="w-8 h-8 mt-1 mr-2 flex-shrink-0">
+                        <img
+                          src="/lovable-uploads/indrabot-mascot.png"
+                          alt="Bot"
+                          className="w-full h-full animate-pulse"
+                        />
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-800 border-2 border-blue-200 rounded-2xl rounded-bl-none px-6 py-5 max-w-[85%] sm:max-w-[80%] md:max-w-[75%] shadow-xl relative overflow-hidden">
+                        {/* Animated background gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-100/50 via-indigo-100/50 to-purple-100/50 animate-gradient-x"></div>
+                        
+                        {/* Main content */}
+                        <div className="relative z-10">
+                          {/* Header with spinning loader and email icon */}
+                          <div className="flex items-center space-x-4 mb-4">
+                            <div className="relative">
+                              <div className="w-8 h-8 border-3 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+                              <div className="absolute inset-0 w-8 h-8 border-3 border-transparent border-r-indigo-400 rounded-full animate-spin-reverse"></div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-3">
+                              {/* Animated email icon */}
+                              <div className="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                {/* Flying paper airplane effect */}
+                                <div className="absolute -top-1 -right-1 w-3 h-3">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-indigo-500 animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                  </svg>
+                                </div>
+                              </div>
+                              
+                              <div className="flex flex-col">
+                                <span className="text-base font-semibold text-blue-700 animate-pulse">Sending your demo request</span>
+                                <span className="text-sm text-gray-600">Processing your booking...</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Progress steps */}
+                          <div className="space-y-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center animate-scale-up">
+                                <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <span className="text-sm text-gray-700">Information collected</span>
+                            </div>
+                            
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-all duration-500 ${
+                                emailStage >= 2 ? 'bg-green-500 animate-scale-up' : 
+                                emailStage >= 1 ? 'bg-blue-500 animate-pulse' : 'border-2 border-gray-300'
+                              }`}>
+                                {emailStage >= 2 ? (
+                                  <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                ) : emailStage >= 1 ? (
+                                  <div className="w-full h-full bg-blue-300 rounded-full animate-ping"></div>
+                                ) : null}
+                              </div>
+                              <span className={`text-sm transition-colors duration-300 ${
+                                emailStage >= 2 ? 'text-gray-700' : 
+                                emailStage >= 1 ? 'text-gray-700 animate-pulse' : 'text-gray-500'
+                              }`}>
+                                Formatting email content
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-all duration-500 ${
+                                emailStage >= 3 ? 'bg-green-500 animate-scale-up' : 
+                                emailStage >= 2 ? 'bg-blue-500 animate-pulse' : 'border-2 border-gray-300'
+                              }`}>
+                                {emailStage >= 3 ? (
+                                  <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                ) : emailStage >= 2 ? (
+                                  <div className="w-full h-full bg-blue-300 rounded-full animate-ping"></div>
+                                ) : null}
+                              </div>
+                              <span className={`text-sm transition-colors duration-300 ${
+                                emailStage >= 3 ? 'text-gray-700' : 
+                                emailStage >= 2 ? 'text-gray-700 animate-pulse' : 'text-gray-500'
+                              }`}>
+                                Sending to our team
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Floating particles effect */}
+                          <div className="absolute top-2 right-4">
+                            <div className="flex space-x-1">
+                              <div className="w-1 h-1 bg-blue-400 rounded-full animate-float-1"></div>
+                              <div className="w-1 h-1 bg-indigo-400 rounded-full animate-float-2"></div>
+                              <div className="w-1 h-1 bg-purple-400 rounded-full animate-float-3"></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -778,6 +842,53 @@ export const ChatBot: React.FC = () => {
         }
         .animate-subtle-bounce { animation: subtle-bounce 3s ease-in-out infinite; }
         
+        /* Enhanced Email Sending Animations */
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x {
+          background-size: 200% 200%;
+          animation: gradient-x 3s ease infinite;
+        }
+        
+        @keyframes spin-reverse {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
+        }
+        .animate-spin-reverse { animation: spin-reverse 1s linear infinite; }
+        
+        @keyframes scale-up {
+          0% { transform: scale(0); opacity: 0; }
+          50% { transform: scale(1.2); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-scale-up { animation: scale-up 0.6s ease-out; }
+        
+        @keyframes float-1 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+          33% { transform: translateY(-10px) rotate(120deg); opacity: 0.7; }
+          66% { transform: translateY(-5px) rotate(240deg); opacity: 0.4; }
+        }
+        .animate-float-1 { animation: float-1 2s ease-in-out infinite; }
+        
+        @keyframes float-2 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
+          33% { transform: translateY(-8px) rotate(100deg); opacity: 1; }
+          66% { transform: translateY(-12px) rotate(200deg); opacity: 0.6; }
+        }
+        .animate-float-2 { animation: float-2 2.5s ease-in-out infinite 0.5s; }
+        
+        @keyframes float-3 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+          33% { transform: translateY(-6px) rotate(80deg); opacity: 0.9; }
+          66% { transform: translateY(-9px) rotate(160deg); opacity: 1; }
+        }
+        .animate-float-3 { animation: float-3 3s ease-in-out infinite 1s; }
+        
+        /* Border width utilities */
+        .border-3 { border-width: 3px; }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb {
@@ -878,6 +989,32 @@ export const ChatBot: React.FC = () => {
         
         .indrasol-markdown a:hover {
           opacity: 0.8;
+        }
+        
+        /* Quick Reply Button Animations */
+        .quick-reply-btn {
+          animation: slideInQuick 0.3s ease-out forwards;
+          transform-origin: left center;
+        }
+        
+        @keyframes slideInQuick {
+          from { 
+            opacity: 0; 
+            transform: translateX(-10px) scale(0.95); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateX(0) scale(1); 
+          }
+        }
+        
+        .quick-reply-btn:hover {
+          transform: scale(1.05) translateY(-1px);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .quick-reply-btn:active {
+          transform: scale(0.98);
         }
       `}</style>
     </>

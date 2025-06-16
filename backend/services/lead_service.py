@@ -1,5 +1,6 @@
 
 
+from typing import Optional
 
 SERVICE_KEYWORDS = {
     "AI Security": ["ai security", "genai", "llm security", "aispm"],
@@ -8,7 +9,7 @@ SERVICE_KEYWORDS = {
     "Data Engineering": ["data engineering", "etl", "snowflake", "databricks"]
 }
 
-async def detect_service(text: str) -> str | None:
+async def detect_service(text: str) -> Optional[str]:
     """
     Returns the service pillar name if keywords found, else None.
     """

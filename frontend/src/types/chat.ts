@@ -3,6 +3,7 @@ export interface Message {
     text: string;
     sender: "user" | "bot";
     isTyping?: boolean;
+    suggested?: string[];
   }
   
   export interface ChatState {

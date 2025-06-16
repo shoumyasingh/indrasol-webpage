@@ -1,0 +1,28 @@
+# ---------------------------------------------------------------------
+# MCP manifest – Memory helper skill
+# ---------------------------------------------------------------------
+name: memory
+kind: helper
+priority: 900
+timeout: 8
+
+description_for_model: |
+  Reads and/or updates the per-visitor `conversation_memory` row in Supabase.
+  • If a "patch" object is provided it merges then upserts.
+  • If no patch, it simply returns the current row.
+
+description_for_human: Conversation-memory helper (get / patch).
+
+parameters:
+  type: object
+  properties:
+    user_id:
+      type: string
+      description: ID of the current visitor / chat session.
+    patch:
+      type: object
+      description: Partial memory dict to merge (e.g. {"intent":"Demo Booking"}).
+  required: [user_id]
+
+output_format: application/json
+entrypoint: skills.memory.handler:skill   # exports the Skill object

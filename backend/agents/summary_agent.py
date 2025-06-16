@@ -37,7 +37,7 @@ async def summarize_history(history: List[str]) -> str:
 
         summary = await run_openai_prompt(prompt)
 
-        logging.info(f"Generated conversation summary: {summary}")
+        # logging.info(f"Generated conversation summary: {summary}")
         return summary
 
     except Exception as e:

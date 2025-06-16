@@ -1,0 +1,28 @@
+# ---------------------------------------------------------------------
+# MCP manifest – RAG context fetcher
+# ---------------------------------------------------------------------
+name: rag_context
+kind: utility                 # produces data, no direct reply
+priority: 80                  # fetch before intent / summariser
+timeout: 8                    # seconds
+
+description_for_model: |
+  Retrieves the top-k factual chunks from the Pinecone vector DB that are
+  semantically similar to the visitor’s current question.  
+  Returns JSON: {"chunks":[text1, text2, ...]}
+
+description_for_human: Pulls RAG context for the current user turn.
+
+parameters:
+  type: object
+  properties:
+    user_message:
+      type: string
+      description: The visitor’s current plain-text message.
+    top_k:
+      type: integer
+      description: Maximum chunks to return (default 3).
+  required: [user_message]
+
+output_format: application/json          # → {"chunks":[...]}
+entrypoint: skills.rag_context.handler:skill

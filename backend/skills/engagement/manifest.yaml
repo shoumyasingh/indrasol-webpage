@@ -1,0 +1,27 @@
+# ------------------------------------------------------------------------------
+#  MCP manifest – Engagement (welcome) skill
+# ------------------------------------------------------------------------------
+name: engagement
+kind: system
+priority: 50
+timeout: 20
+
+description_for_model: |
+  First-turn greeter.  Responds with:
+    • a friendly emoji wave (👋) if visitor’s name unknown
+    • a one-sentence value prop of Indrasol
+    • bullet list of the two products & four services
+    • ONE discovery question that nudges toward a product or service pillar
+
+description_for_human: Greets first-time visitors & starts discovery.
+
+parameters:
+  type: object
+  properties:
+    user_message:
+      type: string
+      description: The visitor’s very first message.
+  required: [user_message]
+
+output_format: markdown
+entrypoint: skills.engagement.handler:skill   # exports `skill` object

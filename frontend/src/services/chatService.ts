@@ -6,8 +6,22 @@ export interface SendMessageResponse {
   response: string;
   intent: string;
   routed_agent: string;
+  suggested?: string[];
 }
 
+// ── 1.  Response shape from MCP router ──────────────────────────────
+export interface ChatResponse {
+  turn_id:      string;
+  text:         string; 
+  routed_skill: string;
+  finished:     boolean;
+  suggested?:   string[];
+  latency_ms:   number;
+  error?:       string | null;
+  meta?:        Record<string, any>;
+}
+
+// ── 2.  Local-storage keys ──────────────────────────────────────────
 const STORAGE_KEYS = {
   USER_ID: 'indra_user_id',
   HISTORY: 'indra_chat_history'          // persisted chat
@@ -39,7 +53,10 @@ const saveHistory = (history: Message[]) =>
 
 /** ---- Convert Message[] ➜ string[] expected by backend ---- */
 const toPlainHistory = (history: Message[]): string[] =>
-  history.map((m) => m.text);
+  history.map((m) => {
+    const prefix = m.sender === 'user' ? 'User:' : 'Bot:';
+    return `${prefix} ${m.text}`;
+  });
 
 /** ----------------  MAIN SERVICE  ---------------- */
 export const chatService = {
@@ -82,7 +99,8 @@ export const chatService = {
         text: "Sorry, I'm having trouble connecting. Please try again shortly.",
         sender: 'bot'
       };
-      const errorHistory = [...updatedHistory, fallback];
+      const userMsg: Message = { id: Date.now(), text: messageText, sender: 'user' };
+      const errorHistory = [...history, userMsg, fallback];
       saveHistory(errorHistory);
       return { botReply: fallback, newHistory: errorHistory };
     }

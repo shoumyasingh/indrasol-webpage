@@ -1,10 +1,11 @@
 import os
+from typing import List
 from pathlib import Path
 from services.openai_service import run_openai_prompt
 
 PROMPT_PATH = Path(__file__).parent.parent / "prompts/info_prompt.txt"
 
-async def run_info_agent(user_message: str, context_chunks: list[str]) -> str:
+async def run_info_agent(user_message: str, context_chunks: List[str]) -> str:
     """
     Answers factual / company-info questions using the RAG chunks.
     """

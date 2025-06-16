@@ -1,0 +1,46 @@
+# ---------------------------------------------------------------------
+# MCP manifest – Lead-sync helper
+# ---------------------------------------------------------------------
+name: lead_sync
+kind: helper
+priority: 900
+timeout: 10
+
+description_for_model: |
+  Inserts a row into `lead_logs` (and optionally `qualified_leads` when
+  `qualified=true`).  Skips duplicates: same lowercase(email) AND any
+  overlapping channel within the past 24 h.
+
+description_for_human: Persists sales-ready leads to Supabase.
+
+parameters:
+  type: object
+  properties:
+    user_id:
+      type: string
+      description: Visitor/session UUID.
+    name:
+      type: string
+      description: Lead’s name.
+    email:
+      type: string
+      description: Lead’s email (will be lower-cased).
+    company:
+      type: string
+      description: Company (optional).
+    message:
+      type: string
+      description: User’s note / interest (optional).
+    channel:
+      type: array
+      items:
+        type: string
+        enum: [email, indrabot, teams]
+      description: One or more channels the lead came from.
+    qualified:
+      type: boolean
+      description: Mirror to `qualified_leads` when true.
+  required: [user_id, name, email, channel]
+
+output_format: application/json
+entrypoint: skills.lead_sync.handler:skill   # exported Skill object

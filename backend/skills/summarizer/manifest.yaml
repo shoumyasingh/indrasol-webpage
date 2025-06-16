@@ -1,0 +1,27 @@
+# ---------------------------------------------------------------------
+# MCP manifest – Conversation summariser
+# ---------------------------------------------------------------------
+name: summariser                # keep British spelling if you like
+kind: utility
+priority: 85                   # after RAG, before Sales / Follow-up
+timeout: 10                     # seconds
+
+description_for_model: |
+  Condenses the entire conversation history into a 3-4 sentence summary
+  covering (1) visitor goals / pain-points, (2) objections, and
+  (3) buying stage.  
+  Returns JSON: {"summary":"…"}.
+
+description_for_human: Maintains a rolling conversation summary.
+
+parameters:
+  type: object
+  properties:
+    history:
+      type: array
+      items: { type: string }
+      description: Full turn-by-turn history, oldest → newest.
+  required: [history]
+
+output_format: application/json          # → {"summary": "..."}
+entrypoint: skills.summarizer.handler:skill

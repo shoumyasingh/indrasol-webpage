@@ -73,123 +73,197 @@ const SpeechOverlay: React.FC<SpeechOverlayProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 rounded-3xl">
-      <div className="bg-white/95 backdrop-blur-md rounded-3xl p-8 mx-4 max-w-lg w-full shadow-2xl border border-blue-100 animate-scaleUp">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="relative">
-              {isListening ? (
-                <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center animate-pulse">
-                  <Mic className="w-6 h-6 text-white" />
-                  <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping"></div>
-                </div>
-              ) : (
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                  <Mic className="w-6 h-6 text-white" />
-                </div>
-              )}
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-800">Voice Input</h3>
-              <p className="text-sm text-gray-600">
-                {isListening ? "Listening..." : "Ready to listen"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+    <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-blue-900/30 to-black/60 backdrop-blur-md flex items-center justify-center z-50 rounded-3xl animate-fadeIn">
+      <div className="bg-gradient-to-br from-white via-blue-50/50 to-indigo-50/30 backdrop-blur-xl rounded-3xl p-8 mx-4 max-w-lg w-full shadow-2xl border border-blue-200/50 animate-modalSlideUp relative overflow-hidden">
+        
+        {/* Animated background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-indigo-50/30 to-purple-50/20 animate-gradient-shift"></div>
+        
+        {/* Floating particles */}
+        <div className="absolute top-4 right-8 flex space-x-2">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="w-1.5 h-1.5 bg-blue-400/60 rounded-full animate-float"
+              style={{ animationDelay: `${i * 0.5}s` }}
+            />
+          ))}
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl">
-            <div className="flex items-center space-x-2">
-              <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                <X className="w-3 h-3 text-white" />
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                {isListening ? (
+                  <div className="relative">
+                    {/* Outer glow rings */}
+                    <div className="absolute inset-0 w-16 h-16 bg-gradient-to-r from-blue-400/30 to-indigo-500/30 rounded-full animate-ping-slow"></div>
+                    <div className="absolute inset-1 w-14 h-14 bg-gradient-to-r from-blue-500/40 to-indigo-600/40 rounded-full animate-pulse-ring"></div>
+                    
+                    {/* Main microphone */}
+                    <div className="relative w-16 h-16 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-full flex items-center justify-center shadow-xl animate-mic-pulse">
+                      <Mic className="w-8 h-8 text-white animate-bounce-subtle" />
+                      
+                      {/* Inner glow */}
+                      <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/20 to-transparent"></div>
+                    </div>
+                    
+                    {/* Sound waves */}
+                    <div className="absolute -right-2 top-1/2 transform -translate-y-1/2">
+                      {[...Array(3)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute w-1 bg-blue-400 rounded-full animate-sound-wave"
+                          style={{
+                            height: `${12 + i * 4}px`,
+                            right: `${i * 6}px`,
+                            animationDelay: `${i * 0.1}s`
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <Mic className="w-8 h-8 text-white" />
+                    <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/20 to-transparent"></div>
+                  </div>
+                )}
               </div>
-              <span className="text-red-700 text-sm font-medium">Error: {error}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Not Supported Message */}
-        {!isSupported && (
-          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl">
-            <div className="flex items-center space-x-2">
-              <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
-                <MicOff className="w-3 h-3 text-white" />
+              <div>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-700 to-indigo-800 bg-clip-text text-transparent">
+                  Voice Input
+                </h3>
+                <p className="text-sm text-blue-600/80 font-medium">
+                  {isListening ? (
+                    <span className="flex items-center">
+                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
+                      Listening...
+                    </span>
+                  ) : (
+                    "Ready to listen"
+                  )}
+                </p>
               </div>
-              <span className="text-yellow-700 text-sm font-medium">
-                Voice recognition is not supported in your browser
-              </span>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-3 hover:bg-blue-100/50 rounded-full transition-all duration-300 transform hover:scale-110 hover:rotate-90 group"
+            >
+              <X className="w-5 h-5 text-blue-600 group-hover:text-blue-800" />
+            </button>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200/50 rounded-2xl animate-slideIn shadow-sm">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <X className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-red-700 text-sm font-medium">Error: {error}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Not Supported Message */}
+          {!isSupported && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200/50 rounded-2xl animate-slideIn shadow-sm">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <MicOff className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-yellow-700 text-sm font-medium">
+                  Voice recognition is not supported in your browser
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Enhanced Voice Visualization */}
+          {isListening && (
+            <div className="mb-8 flex justify-center relative">
+              <div className="flex space-x-2 items-end p-6 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-2xl border border-blue-200/30">
+                {[...Array(7)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-gradient-to-t from-blue-500 via-blue-400 to-indigo-500 rounded-full animate-voice-wave"
+                    style={{
+                      width: '4px',
+                      height: `${Math.random() * 30 + 15}px`,
+                      animationDelay: `${i * 0.1}s`,
+                      animationDuration: `${0.8 + Math.random() * 0.4}s`
+                    }}
+                  />
+                ))}
+              </div>
+              
+              {/* Surrounding glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-200/20 via-indigo-200/30 to-blue-200/20 rounded-2xl animate-pulse-glow"></div>
+            </div>
+          )}
+
+          {/* Enhanced Transcript Display */}
+          <div className="mb-8">
+            <label className="block text-sm font-semibold text-blue-800 mb-3 flex items-center">
+              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+              Transcript
+            </label>
+            <div className="min-h-[120px] max-h-[200px] overflow-y-auto p-6 bg-gradient-to-br from-gray-50/80 to-blue-50/30 border border-blue-200/40 rounded-2xl relative backdrop-blur-sm shadow-inner">
+              
+              {/* Subtle pattern overlay */}
+              <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl"></div>
+              
+              <div className="relative z-10">
+                {transcript ? (
+                  <p className="text-gray-800 leading-relaxed text-base animate-typeIn">{transcript}</p>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-blue-500/70 italic text-center">
+                      {isListening ? (
+                        <span className="flex items-center justify-center space-x-2">
+                          <span className="animate-pulse">🎤</span>
+                          <span>Speak now...</span>
+                        </span>
+                      ) : (
+                        "Click the microphone to start speaking"
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Voice Visualization */}
-        {isListening && (
-          <div className="mb-6 flex justify-center">
-            <div className="flex space-x-1 items-end">
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-1 bg-gradient-to-t from-blue-400 to-blue-600 rounded-full animate-bounce"
-                  style={{
-                    height: `${Math.random() * 20 + 10}px`,
-                    animationDelay: `${i * 100}ms`,
-                    animationDuration: '0.6s'
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Transcript Display */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Transcript:
-          </label>
-          <div className="min-h-[100px] max-h-[200px] overflow-y-auto p-4 bg-gray-50 border border-gray-200 rounded-2xl">
-            {transcript ? (
-              <p className="text-gray-800 leading-relaxed">{transcript}</p>
-            ) : (
-              <p className="text-gray-500 italic">
-                {isListening ? "Speak now..." : "Click the microphone to start speaking"}
-              </p>
+          {/* Enhanced Action Buttons */}
+          <div className="flex space-x-4">
+            <button
+              onClick={onClose}
+              className="flex-1 py-4 px-6 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            >
+              Cancel
+            </button>
+            {transcript.trim() && (
+              <button
+                onClick={handleSend}
+                className="flex-1 py-4 px-6 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl flex items-center justify-center space-x-2 relative overflow-hidden group"
+              >
+                {/* Button shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                
+                <Send className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" />
+                <span>Send Message</span>
+              </button>
             )}
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex space-x-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl font-medium transition-colors"
-          >
-            Cancel
-          </button>
-          {transcript.trim() && (
-            <button
-              onClick={handleSend}
-              className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
-            >
-              <Send className="w-4 h-4" />
-              <span>Send</span>
-            </button>
-          )}
-        </div>
-
-        {/* Instructions */}
-        <div className="mt-4 text-center">
-          <p className="text-xs text-gray-500">
-            {isSupported ? "Tap the microphone and speak clearly" : "Please use the text input instead"}
-          </p>
+          {/* Enhanced Instructions */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-blue-600/70 font-medium">
+              {isSupported ? "🎯 Speak clearly for best results" : "Please use the text input instead"}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -1035,7 +1109,7 @@ export const ChatBot: React.FC = () => {
                     onClick={startListening}
                     className={`rounded-full p-3 transition-all duration-300 transform hover:scale-105 shadow-md ${
                       isSpeechSupported 
-                        ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" 
+                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white hover:shadow-lg" 
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                     disabled={!isSpeechSupported}
@@ -1378,6 +1452,188 @@ export const ChatBot: React.FC = () => {
         
         .mic-bounce {
           animation: mic-bounce 1s ease-in-out infinite;
+        }
+        
+        /* Enhanced Voice Overlay Animations */
+        @keyframes modalSlideUp {
+          from { 
+            opacity: 0; 
+            transform: translateY(30px) scale(0.95); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+          }
+        }
+        
+        .animate-modalSlideUp {
+          animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        @keyframes gradient-shift {
+          0%, 100% { 
+            background-position: 0% 50%; 
+          }
+          50% { 
+            background-position: 100% 50%; 
+          }
+        }
+        
+        .animate-gradient-shift {
+          background-size: 200% 200%;
+          animation: gradient-shift 4s ease infinite;
+        }
+        
+        @keyframes float {
+          0%, 100% { 
+            transform: translateY(0) rotate(0deg); 
+            opacity: 0.7; 
+          }
+          50% { 
+            transform: translateY(-10px) rotate(180deg); 
+            opacity: 1; 
+          }
+        }
+        
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes ping-slow {
+          0% { 
+            transform: scale(1); 
+            opacity: 0.8; 
+          }
+          50% { 
+            transform: scale(1.1); 
+            opacity: 0.4; 
+          }
+          100% { 
+            transform: scale(1.2); 
+            opacity: 0; 
+          }
+        }
+        
+        .animate-ping-slow {
+          animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+          0% { 
+            transform: scale(0.95); 
+            opacity: 0.7; 
+          }
+          50% { 
+            transform: scale(1.05); 
+            opacity: 0.4; 
+          }
+          100% { 
+            transform: scale(0.95); 
+            opacity: 0.7; 
+          }
+        }
+        
+        .animate-pulse-ring {
+          animation: pulse-ring 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes mic-pulse {
+          0%, 100% { 
+            transform: scale(1); 
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+          }
+          50% { 
+            transform: scale(1.05); 
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.5);
+          }
+        }
+        
+        .animate-mic-pulse {
+          animation: mic-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce-subtle {
+          0%, 100% { 
+            transform: translateY(0); 
+          }
+          50% { 
+            transform: translateY(-2px); 
+          }
+        }
+        
+        .animate-bounce-subtle {
+          animation: bounce-subtle 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes sound-wave {
+          0%, 100% { 
+            height: 8px; 
+            opacity: 0.6; 
+          }
+          50% { 
+            height: 20px; 
+            opacity: 1; 
+          }
+        }
+        
+        .animate-sound-wave {
+          animation: sound-wave 0.8s ease-in-out infinite;
+        }
+        
+        @keyframes voice-wave {
+          0%, 100% { 
+            transform: scaleY(0.5); 
+            opacity: 0.7; 
+          }
+          50% { 
+            transform: scaleY(1.2); 
+            opacity: 1; 
+          }
+        }
+        
+        .animate-voice-wave {
+          animation: voice-wave 0.6s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+          0%, 100% { 
+            opacity: 0.3; 
+          }
+          50% { 
+            opacity: 0.6; 
+          }
+        }
+        
+        .animate-pulse-glow {
+          animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes slideIn {
+          from { 
+            opacity: 0; 
+            transform: translateX(-20px); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateX(0); 
+          }
+        }
+        
+        .animate-slideIn {
+          animation: slideIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes typeIn {
+          from { 
+            opacity: 0; 
+          }
+          to { 
+            opacity: 1; 
+          }
+        }
+        
+        .animate-typeIn {
+          animation: typeIn 0.5s ease-out forwards;
         }
       `}</style>
     </>

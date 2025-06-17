@@ -87,8 +87,10 @@ async def process_contact(form: ContactForm, is_bot: bool = True):
     try:
         html_body  = await draft_email_body_html(form)
         if is_bot:
-            subject = f"New Business Enquiry through IndraBot – {form.name}"
-            + (f" ({form.company})" if form.company else "")
+            subject = (
+                f"New Business Enquiry through IndraBot – {form.name}"
+                    + (f" ({form.company})" if form.company else "")
+            )
         else:
             subject = (
                 f"New Business Enquiry through Contact US Form {form.name}"

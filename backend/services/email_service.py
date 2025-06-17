@@ -83,13 +83,17 @@ async def draft_email_body_html(form: ContactForm) -> str:
     html_body = m.group(1) if m else html_body
     return html_body.strip()
 
-async def process_contact(form: ContactForm):
+async def process_contact(form: ContactForm, is_bot: bool = True):
     try:
         html_body  = await draft_email_body_html(form)
-        subject = (
-            f"New Website Enquiry – {form.name}"
+        if is_bot:
+            subject = f"New Business Enquiry through IndraBot – {form.name}"
             + (f" ({form.company})" if form.company else "")
-        )
+        else:
+            subject = (
+                f"New Business Enquiry through Contact US Form {form.name}"
+                + (f" ({form.company})" if form.company else "")
+            ) 
         TO_EMAIL = "rithinsai6@gmail.com"
         await send_mailersend(
             subject=subject,

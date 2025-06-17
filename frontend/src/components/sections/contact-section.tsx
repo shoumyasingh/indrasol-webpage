@@ -24,13 +24,28 @@ export function ContactSection() {
     setFormStatus("submitting");
 
     try {
-      const res = await fetch(API_ENDPOINTS.CONTACT, {
+      // Email Contact
+      const res = await fetch(API_ENDPOINTS.EMAIL_CONTACT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formState),
       });
   
       if (!res.ok) throw new Error("Network error");
+      const data = await res.json();
+      console.log(data);
+
+      // Notify Teams
+      const res2 = await fetch(API_ENDPOINTS.NOTIFY_TEAMS, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formState),
+      });
+
+      if (!res2.ok) throw new Error("Network error");
+      const data2 = await res2.json();
+      console.log(data2);
+  
       setFormStatus("success");
       setFormState({ name: "", email: "", company: "", message: "" });
     } catch (err) {

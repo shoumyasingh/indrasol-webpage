@@ -10,5 +10,6 @@ export const API_ENDPOINTS = {
   SEND_MESSAGE: `${API_BASE_URL}/message`,
   // SEND_MESSAGE: `${API_BASE_URL}/mcp/message`,
   GET_CONVERSATION: `${API_BASE_URL}/message/conversation`,
-  CONTACT: `${API_BASE_URL}/contact`,
+  EMAIL_CONTACT: `${API_BASE_URL}/email_contact`,
+  NOTIFY_TEAMS: `${API_BASE_URL}/notify_teams`,
 };

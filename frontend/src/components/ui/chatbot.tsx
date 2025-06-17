@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, Send } from "lucide-react";
+import { X, Send, Mic, MicOff } from "lucide-react";
 import { chatService } from "../../services/chatService";
 import { Message as BaseMessage } from "../../types/chat";
 import ReactMarkdown from 'react-markdown';
@@ -10,6 +10,190 @@ type Message = BaseMessage & {
   originalText?: string;
   isTyping?: boolean;
   processedText?: string;
+};
+
+// Speech Recognition interface for TypeScript
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: {
+      new(): SpeechRecognition;
+    };
+    webkitSpeechRecognition: {
+      new(): SpeechRecognition;
+    };
+  }
+}
+
+// Speech Overlay Component
+interface SpeechOverlayProps {
+  isListening: boolean;
+  transcript: string;
+  isSupported: boolean;
+  error: string | null;
+  onClose: () => void;
+  onSend: (text: string) => void;
+}
+
+const SpeechOverlay: React.FC<SpeechOverlayProps> = ({
+  isListening,
+  transcript,
+  isSupported,
+  error,
+  onClose,
+  onSend
+}) => {
+  const handleSend = () => {
+    if (transcript.trim()) {
+      onSend(transcript.trim());
+      onClose();
+    }
+  };
+
+  return (
+    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 rounded-3xl">
+      <div className="bg-white/95 backdrop-blur-md rounded-3xl p-8 mx-4 max-w-lg w-full shadow-2xl border border-blue-100 animate-scaleUp">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              {isListening ? (
+                <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center animate-pulse">
+                  <Mic className="w-6 h-6 text-white" />
+                  <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping"></div>
+                </div>
+              ) : (
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                  <Mic className="w-6 h-6 text-white" />
+                </div>
+              )}
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-800">Voice Input</h3>
+              <p className="text-sm text-gray-600">
+                {isListening ? "Listening..." : "Ready to listen"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl">
+            <div className="flex items-center space-x-2">
+              <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                <X className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-red-700 text-sm font-medium">Error: {error}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Not Supported Message */}
+        {!isSupported && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl">
+            <div className="flex items-center space-x-2">
+              <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
+                <MicOff className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-yellow-700 text-sm font-medium">
+                Voice recognition is not supported in your browser
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Voice Visualization */}
+        {isListening && (
+          <div className="mb-6 flex justify-center">
+            <div className="flex space-x-1 items-end">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="w-1 bg-gradient-to-t from-blue-400 to-blue-600 rounded-full animate-bounce"
+                  style={{
+                    height: `${Math.random() * 20 + 10}px`,
+                    animationDelay: `${i * 100}ms`,
+                    animationDuration: '0.6s'
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Transcript Display */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Transcript:
+          </label>
+          <div className="min-h-[100px] max-h-[200px] overflow-y-auto p-4 bg-gray-50 border border-gray-200 rounded-2xl">
+            {transcript ? (
+              <p className="text-gray-800 leading-relaxed">{transcript}</p>
+            ) : (
+              <p className="text-gray-500 italic">
+                {isListening ? "Speak now..." : "Click the microphone to start speaking"}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex space-x-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          {transcript.trim() && (
+            <button
+              onClick={handleSend}
+              className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
+            >
+              <Send className="w-4 h-4" />
+              <span>Send</span>
+            </button>
+          )}
+        </div>
+
+        {/* Instructions */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-500">
+            {isSupported ? "Tap the microphone and speak clearly" : "Please use the text input instead"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 // Utility function to detect and convert email addresses to mailto links
@@ -176,6 +360,100 @@ export const ChatBot: React.FC = () => {
   const [emailSending, setEmailSending] = useState<boolean>(false);
   const [emailStage, setEmailStage] = useState<number>(0); // 0: collecting, 1: formatting, 2: sending, 3: sent
 
+  // Voice Recognition State
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const [showSpeechOverlay, setShowSpeechOverlay] = useState<boolean>(false);
+  const [transcript, setTranscript] = useState<string>("");
+  const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
+  const [speechError, setSpeechError] = useState<string | null>(null);
+  const [isSpeechSupported, setIsSpeechSupported] = useState<boolean>(false);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
+      setIsSpeechSupported(true);
+      const recognition = new SpeechRecognition();
+      
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setSpeechError(null);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcriptSegment = event.results[i][0].transcript;
+          
+          if (event.results[i].isFinal) {
+            finalTranscript += transcriptSegment;
+          } else {
+            interimTranscript += transcriptSegment;
+          }
+        }
+
+        setTranscript(finalTranscript + interimTranscript);
+      };
+
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        setIsListening(false);
+        setSpeechError(event.error);
+      };
+
+      setSpeechRecognition(recognition);
+    } else {
+      setIsSpeechSupported(false);
+    }
+  }, []);
+
+  // Voice Recognition Functions
+  const startListening = () => {
+    if (speechRecognition && isSpeechSupported) {
+      setTranscript("");
+      setSpeechError(null);
+      setShowSpeechOverlay(true);
+      speechRecognition.start();
+    }
+  };
+
+  const stopListening = () => {
+    if (speechRecognition) {
+      speechRecognition.stop();
+    }
+  };
+
+  const closeSpeechOverlay = () => {
+    stopListening();
+    setShowSpeechOverlay(false);
+    setTranscript("");
+    setSpeechError(null);
+  };
+
+  const handleVoiceInput = async (text: string) => {
+    const clean = text.trim();
+    if (!clean) return;
+    
+    const userRow: Message = { id: Date.now(), text: clean, sender: "user" };
+    const optimistic = [...messages, userRow];
+    setMessages(optimistic);
+    setNewMessage("");
+    setShowSuggestions(false);
+    setFilteredSuggestions([]);
+    setWaiting(true);
+    await handleSend(clean, optimistic);
+  };
+
   // Reset chat when closed and reopened
   useEffect(() => {
     if (!isOpen) {
@@ -184,6 +462,7 @@ export const ChatBot: React.FC = () => {
       setIsTyping(false);
       setEmailSending(false);
       setEmailStage(0);
+      closeSpeechOverlay();
     }
   }, [isOpen]);
 
@@ -403,9 +682,20 @@ export const ChatBot: React.FC = () => {
           <div className="absolute bottom-6 right-6 flex flex-row items-end gap-6 z-50">
             {/* Chat Window */}
             <div
-              className="w-[95vw] sm:w-[85vw] md:w-[75vw] lg:w-[65vw] xl:w-[55vw] max-w-4xl bg-white/95 backdrop-blur-md border border-blue-100 shadow-2xl rounded-3xl flex flex-col overflow-hidden transition-all duration-500 ease-in-out blue-chat-window animate-scaleUp"
+              className="w-[95vw] sm:w-[85vw] md:w-[75vw] lg:w-[65vw] xl:w-[55vw] max-w-4xl bg-white/95 backdrop-blur-md border border-blue-100 shadow-2xl rounded-3xl flex flex-col overflow-hidden transition-all duration-500 ease-in-out blue-chat-window animate-scaleUp relative"
               style={{ height: `${chatHeight}px` }}
             >
+              {/* Speech Overlay */}
+              {showSpeechOverlay && (
+                <SpeechOverlay
+                  isListening={isListening}
+                  transcript={transcript}
+                  isSupported={isSpeechSupported}
+                  error={speechError}
+                  onClose={closeSpeechOverlay}
+                  onSend={handleVoiceInput}
+                />
+              )}
               {/* Header */}
               <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-5 text-white flex items-center rounded-t-3xl shadow-md border-b border-blue-200">
                 <div className="flex items-center">
@@ -738,6 +1028,22 @@ export const ChatBot: React.FC = () => {
                       onChange={handleInputChange}
                     />
                   </div>
+                  
+                  {/* Voice Recognition Button */}
+                  <button
+                    type="button"
+                    onClick={startListening}
+                    className={`rounded-full p-3 transition-all duration-300 transform hover:scale-105 shadow-md ${
+                      isSpeechSupported 
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" 
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                    disabled={!isSpeechSupported}
+                    title={isSpeechSupported ? "Click to speak" : "Voice recognition not supported"}
+                  >
+                    <Mic className="w-5 h-5" />
+                  </button>
+                  
                   <button
                     type="submit"
                     className="bg-blue-500 text-white rounded-full p-3 hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 shadow-md"
@@ -1015,6 +1321,63 @@ export const ChatBot: React.FC = () => {
         
         .quick-reply-btn:active {
           transform: scale(0.98);
+        }
+        
+        /* Voice Recognition Animations */
+        @keyframes voice-pulse {
+          0%, 100% { 
+            opacity: 1; 
+            transform: scale(1); 
+          }
+          50% { 
+            opacity: 0.7; 
+            transform: scale(1.05); 
+          }
+        }
+        
+        .voice-pulse {
+          animation: voice-pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes voice-wave {
+          0%, 100% { 
+            height: 10px; 
+            background: linear-gradient(to top, #3b82f6, #1d4ed8);
+          }
+          50% { 
+            height: 25px; 
+            background: linear-gradient(to top, #6366f1, #4f46e5);
+          }
+        }
+        
+        .voice-wave {
+          animation: voice-wave 0.6s ease-in-out infinite;
+        }
+        
+        @keyframes listening-glow {
+          0%, 100% { 
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+          }
+          50% { 
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+          }
+        }
+        
+        .listening-glow {
+          animation: listening-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes mic-bounce {
+          0%, 100% { 
+            transform: translateY(0);
+          }
+          50% { 
+            transform: translateY(-3px);
+          }
+        }
+        
+        .mic-bounce {
+          animation: mic-bounce 1s ease-in-out infinite;
         }
       `}</style>
     </>

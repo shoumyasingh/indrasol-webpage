@@ -96,12 +96,13 @@ async def process_contact(form: ContactForm, is_bot: bool = True):
                 f"New Business Enquiry through Contact US Form {form.name}"
                 + (f" ({form.company})" if form.company else "")
             ) 
-        TO_EMAIL = "rithinsai6@gmail.com"
+        # TO_EMAIL = TO_EMAIL
         await send_mailersend(
             subject=subject,
             html_body=html_body,
             to_email=TO_EMAIL,
         )
-        logging.info("Contact email sent.")
+        logging.info(f"Contact email sent successfully to {TO_EMAIL}")
     except Exception as exc:
         logging.error("Failed to send contact email", exc_info=exc)
+        raise  # Re-raise the exception so the caller can handle it

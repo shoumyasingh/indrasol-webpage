@@ -12,4 +12,5 @@ export const API_ENDPOINTS = {
   GET_CONVERSATION: `${API_BASE_URL}/message/conversation`,
   EMAIL_CONTACT: `${API_BASE_URL}/email_contact`,
   NOTIFY_TEAMS: `${API_BASE_URL}/notify_teams`,
+  CONTACT: `${API_BASE_URL}/contact`,
 };

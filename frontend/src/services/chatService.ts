@@ -7,6 +7,7 @@ export interface SendMessageResponse {
   intent: string;
   routed_agent: string;
   suggested?: string[];
+  action?: string;
 }
 
 // ── 1.  Response shape from MCP router ──────────────────────────────
@@ -86,7 +87,12 @@ export const chatService = {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data: SendMessageResponse = await res.json();
-      const botMsg: Message = { id: Date.now() + 1, text: data.response, sender: 'bot' };
+      const botMsg: Message = { 
+        id: Date.now() + 1, 
+        text: data.response, 
+        sender: 'bot',
+        action: data.action 
+      };
 
       const finalHistory = [...updatedHistory, botMsg];
       saveHistory(finalHistory);

@@ -24,11 +24,17 @@ export function ContactSection() {
     setFormStatus("submitting");
 
     try {
-      // Email Contact
-      const res = await fetch(API_ENDPOINTS.EMAIL_CONTACT, {
+      // Generate a proper UUID for the contact form
+      const user_id = crypto.randomUUID();
+      
+      // Email / Teams Contact
+      const res = await fetch(API_ENDPOINTS.CONTACT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formState),
+        body: JSON.stringify({
+          ...formState,
+          user_id
+        }),
       });
   
       if (!res.ok) throw new Error("Network error");
@@ -36,15 +42,15 @@ export function ContactSection() {
       console.log(data);
 
       // Notify Teams
-      const res2 = await fetch(API_ENDPOINTS.NOTIFY_TEAMS, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formState),
-      });
+      // const res2 = await fetch(API_ENDPOINTS.NOTIFY_TEAMS, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(formState),
+      // });
 
-      if (!res2.ok) throw new Error("Network error");
-      const data2 = await res2.json();
-      console.log(data2);
+      // if (!res2.ok) throw new Error("Network error");
+      // const data2 = await res2.json();
+      // console.log(data2);
   
       setFormStatus("success");
       setFormState({ name: "", email: "", company: "", message: "" });

@@ -7,6 +7,7 @@ class ChatResponse(BaseModel):
     intent: str = ""
     routed_agent: str = ""
     suggested: Optional[List[str]] = None
+    action: Optional[str] = None
 
 # class ChatResponse(BaseModel):
 #     turn_id:      str

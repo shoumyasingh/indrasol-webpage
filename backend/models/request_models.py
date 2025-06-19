@@ -13,6 +13,7 @@ class ChatRequest(BaseModel):
     text: str
 
 class ContactForm(BaseModel):
+    user_id: str
     name: str
     email: EmailStr
     company: Optional[str] = None

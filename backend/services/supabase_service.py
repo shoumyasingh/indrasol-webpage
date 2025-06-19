@@ -4,10 +4,11 @@ Supabase helper – async CRUD for
 2. qualified_leads
 """
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+import logging
 
 from db.supabase import safe_supabase_operation, get_supabase_client
-
+from config.settings import ROLLING_WINDOW_MIN
 
 def convert_history_to_structured(history_strings: list) -> list:
     """
@@ -167,25 +168,49 @@ async def sync_qualified_lead(lead: dict):
       user_id, email (str|None), intent, product, qualified (bool), last_message
     """
     supabase = get_supabase_client()
-    payload = {
-        "id": str(uuid4()),
-        "user_id": lead["user_id"],
-        "email": lead.get("email"),
-        "intent": lead["intent"],
-        "product": lead["product"],
-        "service": lead["service"],
-        "qualified": True,
-        "last_message": lead.get("last_message", ""),
-        "submitted_at": datetime.utcnow().isoformat()
-    }
 
-    insert_op = lambda: (
-        supabase
-            .from_("qualified_leads")
-            .insert(payload)
-            .execute()
-    )
-    return await safe_supabase_operation(insert_op, "Failed to insert qualified_lead")
+    email = lead.get("email", "")
+    now   = datetime.now(timezone.utc)
+    start = (now - timedelta(minutes=10)).isoformat()
+
+    try:
+        existing = (
+                supabase
+                .from_("qualified_leads")
+                .select("user_id", count="exact")
+                .eq("email", email)
+                .gte("submitted_at", start)
+                .execute()
+            )
+        if existing.data and len(existing.data) > 0:
+            logging.info("Lead for <%s> logged < %s min ago – skipping.", email, ROLLING_WINDOW_MIN)
+            return existing.data[0]["user_id"]
+
+        payload = {
+            "user_id": lead["user_id"],
+            "email": lead.get("email"),
+            "intent": lead["intent"],
+            "product": lead["product"],
+            "service": lead["service"],
+            "qualified": True,
+            "last_message": lead.get("last_message", ""),
+            "submitted_at": datetime.utcnow().isoformat()
+        }
+
+        insert_op = lambda: (
+            supabase
+                .from_("qualified_leads")
+                .insert(payload)
+                .execute()
+        )
+        resp = await safe_supabase_operation(insert_op, "Failed to insert qualified_lead")
+        lead_id = resp.data[0]["user_id"]
+        logging.info("Lead stored user_id=%s for <%s>", lead_id, email)
+        return resp
+    except Exception as exc:
+            logging.exception("sync_qualified_lead failed: %s", exc)
+            return None
+
 
 
 
@@ -226,22 +251,55 @@ async def fetch_recent_leads(*, email: str, since: datetime) -> dict | None:
 # -------------------------------------------------------------------------
 # insert_lead_log
 # -------------------------------------------------------------------------
-async def insert_lead_log(row: dict) -> dict:
+async def insert_lead_log(lead: dict):
     """
-    Simple INSERT into lead_logs.
-      - caller provides {name,email,company,message,channel:list[str]}
-      - backend Postgres trigger / default fills UUID + created_at
-    Returns the inserted record.
+    Adds a row into qualified_leads.
+    Expects fields:
+      user_id, email (str|None), intent, product, qualified (bool), last_message
     """
     supabase = get_supabase_client()
-    op = lambda: (
-        supabase
-        .from_("lead_logs")
-        .insert(row)
-        .execute()
-    )
-    resp = await safe_supabase_operation(op, "Failed to insert lead_log")
-    return resp.data[0]
+
+    email = lead.get("email", "").lower()
+    now   = datetime.now(timezone.utc)
+    start = (now - timedelta(minutes=10)).isoformat()
+
+    try:
+        existing = (
+                supabase
+                .from_("lead_logs")
+                .select("user_id", count="exact")
+                .eq("email", email)
+                .gte("created_at", start)
+                .execute()
+            )
+        if existing.data and len(existing.data) > 0:
+            logging.info("Lead for <%s> logged < %s min ago – skipping.", email, ROLLING_WINDOW_MIN)
+            return existing.data[0]["user_id"]
+
+        payload = {
+            "user_id": lead["user_id"],
+            "name": lead.get("name"),
+            "email": lead.get("email"),
+            "company": lead.get("company"),
+            "message": lead.get("message", ""),
+            "channel": lead.get("channel", ""),
+            "created_at": datetime.utcnow().isoformat()
+        }
+
+        insert_op = lambda: (
+            supabase
+                .from_("lead_logs")
+                .insert(payload)
+                .execute()
+        )
+        resp = await safe_supabase_operation(insert_op, "Failed to insert qualified_lead")
+        lead_id = resp.data[0]["user_id"]
+        logging.info("Lead stored user_id=%s for <%s>", lead_id, email)
+        return resp
+    except Exception as exc:
+            logging.exception("Lead Logging failed: %s", exc)
+            return None
+
 
 
 # -------------------------------------------------------------------------

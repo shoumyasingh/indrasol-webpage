@@ -4,6 +4,7 @@ export interface Message {
     sender: "user" | "bot";
     isTyping?: boolean;
     suggested?: string[];
+    action?: string;
   }
   
   export interface ChatState {

@@ -62,7 +62,8 @@ const clientLogos = [
   {
     name: "YuMe",
     logo: "/logos/yume.png",
-    url: "https://www.yume.com/"
+    // url: "https://www.yume.com/"
+    url: "https://en.wikipedia.org/wiki/YuMe"
   },
   {
     name: "Mervyn's",
@@ -325,7 +326,7 @@ export function ClientsSection() {
       </div>
       
       {/* Diagonal divider */}
-      <div className="absolute bottom-0 left-0 w-full h-16 overflow-hidden">
+      <div className="absolute bottom-0 left-0 w-full h-0 overflow-hidden">
         <svg className="absolute bottom-0 w-full h-16" viewBox="0 0 1440 70" preserveAspectRatio="none">
           <path fill="#fff" d="M0,70 L1440,0 L1440,70 L0,70 Z"></path>
         </svg>

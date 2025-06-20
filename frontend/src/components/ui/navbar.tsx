@@ -1,3 +1,4 @@
+import { useLocation, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 import { 
   Menu, 
@@ -28,15 +29,24 @@ import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
+  const location = useLocation();
+const navigate = useNavigate();
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+const handleLogoClick = () => {
+  if (location.pathname === "/") {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    navigate("/");
+  }
+};
 
   return (
     <header className="w-full bg-white/95 shadow-sm fixed top-0 left-0 right-0 z-50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center">
+        <Link to="/" onClick={handleLogoClick} className="flex items-center">
           <img 
             src="/lovable-uploads/Indrasol company logo_.png" 
             alt="Indrasol Logo" 

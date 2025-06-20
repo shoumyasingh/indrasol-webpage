@@ -147,12 +147,12 @@ export function AfterHeroSection() {
       </div>
       
       {/* Enhanced diagonal divider with animation */}
-      <div className="absolute bottom-0 left-0 w-full h-16 overflow-hidden">
+      <div className="absolute bottom-0 left-0 w-full h-0 overflow-hidden">
         <motion.svg 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="absolute bottom-0 w-full h-16" 
+          className="absolute bottom-0 w-full h-0" 
           viewBox="0 0 1440 70" 
           preserveAspectRatio="none"
         >

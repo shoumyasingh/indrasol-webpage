@@ -356,9 +356,9 @@ const TechnologySection = () => {
           </div>
 
           {/* LLM-Powered Search */}
-          <div className="relative mt-10 md:mt-5">
+          <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-indrasol-orange/15 to-indrasol-orange/5 rounded-xl transform rotate-1"></div>
-            <div className="relative bg-white p-8 rounded-xl shadow-lg border border-gray-100 z-10">
+            <div className="relative bg-white p-8 rounded-xl shadow-lg border border-gray-100 z-10 h-full">
               <div className="p-3 bg-indrasol-orange/10 rounded-full w-14 h-14 flex items-center justify-center mb-6">
                 <Search className="h-6 w-6 text-indrasol-orange" />
               </div>
@@ -371,7 +371,7 @@ const TechnologySection = () => {
             </div>
           </div>
 
-          {/* LLM-Powered Search */}
+          {/* RFP Genration */}
           <div className="relative mt-10 md:mt-5">
             <div className="absolute inset-0 bg-gradient-to-r from-indrasol-orange/15 to-indrasol-orange/5 rounded-xl transform rotate-1"></div>
             <div className="relative bg-white p-8 rounded-xl shadow-lg border border-gray-100 z-10">

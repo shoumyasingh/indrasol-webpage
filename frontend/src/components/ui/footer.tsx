@@ -72,10 +72,10 @@ export function Footer() {
             <div>
               <h3 className="text-lg font-semibold mb-4 text-white">Company</h3>
               <ul className="space-y-2">
-                <li><Link to="/#about" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">About Us</Link></li>
-                <li><Link to="/#locations" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Locations</Link></li>
-                <li><Link to="https://www.linkedin.com/company/indrasol/" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Contact</Link></li>
-                <li><a href="#" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Careers</a></li>
+                <li><Link to="/company" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">About Us</Link></li>
+                <li><Link to="/locations" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Locations</Link></li>
+                <li><Link to="/contact" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Contact</Link></li>
+                <li><a href="https://www.linkedin.com/company/indrasol/" className="text-white/80 hover:text-[#D5844C] transition-colors block py-1">Careers</a></li>
               </ul>
             </div>
           </div>
